@@ -1,0 +1,11 @@
+<svg width="3060" height="60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-2%" y="-10%" width="104%" height="120%">
+      <feGaussianBlur stdDeviation="7" />
+    </filter>
+  </defs>
+  <style>rect { width: 960px; height: 180px; rx: 30px; ry: 30px; opacity: 1; filter: url(#shadow); }</style>
+  <rect x="30" y="30" fill="#000"/>
+  <rect x="1050" y="-60" fill="#000"/>
+  <rect x="2070" y="-150" fill="#000"/>
+</svg>

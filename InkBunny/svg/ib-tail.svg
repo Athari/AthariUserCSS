@@ -1,0 +1,3 @@
+<svg width="10" height="20" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 10 -10 V 10 H 0 L 10 30 V 50 H 30 V -10 H 10" fill="@{ath-color-bg-3}" fill="@{ath-color-bg-4}"/>
+</svg>
