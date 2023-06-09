@@ -472,30 +472,32 @@
 
   /* Story text */
   & when (@ath-style-story = 1) {
-    div.content > div[style*="relative"]:nth-of-type(2),
-    div#storysectionfoo,
-    div#storysectionbar {
-      font: var(--ath-story-font) !important;
-      color: var(--ath-story-color) !important;
-      text-align: left !important;
-      height: auto !important;
-      width: auto !important;
-      position: static !important;
+    .content:has(#storysectionfoo) {
+      padding: 0 !important;
     }
-    div#storysectionbar {
-      width: var(--ath-story-width) !important;
+    .content > :has(> #storysectionfoo) {
+      display: contents !important;
     }
-    div[id^="story_prev"],
-    div[id^="story_next"],
-    div[id^="story_page"],
-    div.content > div[style*="relative"]:nth-of-type(3),
-    div.content > div[style*="relative"]:nth-of-type(2) > div:not(#storysectionfoo) {
+    [id^="story_prev"],
+    [id^="story_next"],
+    [id^="story_page"],
+    .content > :has(> #storysectionfoo) > :not(#storysectionfoo),
+    .content > :has(> #storysectionpagesfoo) {
       display: none !important;
     }
     #storysectionfoo {
+      position: static !important;
+      height: auto !important;
+      margin: 20px 0 0 0 !important;
+      padding: 15px 0 !important;
       background: var(--ath-story-background) !important;
-      margin: 0 -20px -20px !important;
-      padding: 15px 20px !important;
+    }
+    #storysectionbar {
+      width: var(--ath-story-width) !important;
+      margin: 0 auto !important;
+      font: var(--ath-story-font) !important;
+      color: var(--ath-story-color) !important;
+      text-align: left !important;
     }
   }
 
