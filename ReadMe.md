@@ -14,13 +14,32 @@
 
 3. Adjust the options if needed, then **click on the ![Install style][Install Style Stylus] button** in the left panel.
 
+4. If at any point you want to **adjust options**, click on the Stylus extension button ![][Stylus Logo], then click on the gear wheel button next to the style.
+
+## FurAffinity.net
+
+### FurAffinity.net - Tweaks [![User Style Install][Install FurAffinity.net Tweaks Style]](FurAffinity/FurAffinity-Tweaks.user.css?raw=1)
+
+![FurAffinity.net - Tweaks Screenshot](FurAffinity/FurAffinity-Tweaks.jpg?raw=1)
+
+Various small tweaks in usability and style, all toggled through options. It is designed for the "Modern" layout template and will likely not work in the "Classic" layout.
+
+* Round corners with soft shadows for blocks
+* Search and browse forms on top the page (longer search input, no sidebar)
+* Static Prev/Next buttons overlayed on top of an image submission in static position
+* Image submission height constrained to the screen size (ads are assummed to be hidden with an ad blocking extension)
+* Changing "rating" border thickness
+* Hiding fat "modern" header on top
+* Hiding FA+, virtue signalling, scraping warning
+* Hiding redundant controls on the submission page
+
 ## InkBunny.net
 
-### InkBunny.net - Compact Dark [![User Style Install][Install Style]](InkBunny/InkBunny-CompactDark.user.css?raw=1)
+### InkBunny.net - Compact Dark [![User Style Install][Install InkBunny.net Compact Dark Style]](InkBunny/InkBunny-CompactDark.user.css?raw=1)
 
 ![InkBunny.net - Compact Dark Screenshot](InkBunny/InkBunny-CompactDark.jpg?raw=1)
 
-#### Features
+Primarily a dark theme, but includes several optional usability improvements.
 
 * Dark theme
 * Restyled text submission reading mode with detailed options

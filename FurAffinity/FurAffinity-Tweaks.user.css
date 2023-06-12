@@ -1,0 +1,339 @@
+/* ==UserStyle==
+@name           FurAffinity.net - Tweaks [Ath]
+@namespace      github.com/athari
+@version        1.0.0
+@description    FurAffinity.net: various usability tweaks.
+@preprocessor   less
+@author         Athari
+@license        MIT
+@var            checkbox ath-round-corners "Round corners" 1
+@var            checkbox ath-search-top "Search form on top" 1
+@var            checkbox ath-show-header-banner "Show header banner" 0
+@var            checkbox ath-show-plus "Show FA+ & virtue signalling" 0
+@var            checkbox ath-show-sub-extras "Show submission page redundancy" 0
+@var            checkbox ath-limit-image-height "Constrain submission height" 1
+@var            checkbox ath-static-prev-next "Static prev & next buttons" 1
+@var            range ath-rating-thickness "Submission rating border" [1, 0, 5, 1, 'px']
+==/UserStyle== */
+@-moz-document domain("furaffinity.net") {
+
+  :root {
+    --ath-border-radius: 16px;
+    --ath-border-radius-inner: calc(var(--ath-border-radius) - 0px);
+  }
+
+  section.gallery figure u>a {
+    border-width: @ath-rating-thickness !important;
+  }
+
+  & when (@ath-show-sub-extras = 0) {
+
+    .submission-sidebar {
+      .buttons,
+      .info.text > :nth-child(2),
+      .info.text > :nth-child(3) {
+        display: none !important;
+      }
+    }
+  }
+
+  & when (@ath-limit-image-height = 1) {
+
+    #submissionImg {
+      max-height: calc(100vh - 50px) !important;
+    }
+    .submission-area {
+      padding: 0 !important;
+      margin: 0 0 10px 0 !important;
+    }
+  }
+
+  & when (@ath-static-prev-next = 1) {
+
+    .submission-content {
+      position: relative !important;
+
+      .favorite-nav {
+        a:first-child[href*=view],
+        a:last-child[href*=view] {
+          position: absolute !important;
+          opacity: 0.2 !important;
+          transition: 150ms;
+          transition-property: opacity;
+        }
+        &:hover a[href*=view] {
+          opacity: 1.0 !important;
+        }
+        a:first-child[href*=view] {
+          inset: 10px auto auto 10px !important;
+        }
+        a:last-child[href*=view] {
+          inset: 10px 10px auto auto !important;
+        }
+      }
+      
+      &:has(.submission-area:hover) .favorite-nav {
+        a:first-child,
+        a:last-child {
+          opacity: 1.0 !important;
+        }
+      }
+    }
+  }
+
+  & when (@ath-round-corners = 1) {
+
+    section,
+    .stats-page,
+    .submission-preview,
+    #page-userpage :is(.userpage-profile, .userpage-section-right, .userpage-section-left) {
+      border: none !important;
+      border-radius: var(--ath-border-radius);
+      box-shadow: #0016 2px 2px 3px 1px;
+
+      > :first-child {
+        border-radius: var(--ath-border-radius-inner) var(--ath-border-radius-inner) 0 0;
+      }
+      > :last-child,
+      :has(+ .section-footer:last-child),
+      #gallery-latest-favorites {
+        border-radius: 0 0 var(--ath-border-radius-inner) var(--ath-border-radius-inner);
+      }
+      > :only-child {
+        border-radius: var(--ath-border-radius-inner) var(--ath-border-radius-inner) var(--ath-border-radius-inner) var(--ath-border-radius-inner);
+      }
+    }
+    :is(section, #page-userpage, .submission-sidebar) section {
+      box-shadow: none;
+    }
+
+    .tags a {
+      border-radius: 12px !important;
+    }
+
+    button,
+    .button {
+      border-radius: 8px !important;
+    }
+  }
+
+  & when (@ath-show-header-banner = 0) {
+
+    #header {
+      height: 0 !important;
+    }
+    site-banner {
+      display: none !important;
+    }
+    userpage-nav-header {
+      margin: 0 !important;
+    }
+  }
+
+  & when (@ath-show-plus = 0) {
+
+    #ddmenu li {
+      &.lileft:has(a[href^="/plus"]),
+      a[href*="/blm/"] {
+        display: none !important;
+      }
+    }
+    #footer {
+      a[href^="/plus"],
+      small,
+      br {
+        display: none !important;
+      }
+    }
+    usericon-block-before {
+      display: none !important;
+    }
+  }
+
+  & when (@ath-search-top = 1) {
+
+    .ath-search-header-text(@text) {
+      > h4 {
+        font-size: 0 !important;
+        &::after {
+          content: @text;
+          font-size: 15px !important;
+        }
+      }
+    }
+    .ath-search-label-text(@text) {
+      > label {
+        font-size: 0 !important;
+        &::after {
+          content: " " @text;
+          font-size: 15px !important;
+        }
+      }
+    }
+
+    #browse-search {
+      flex-flow: column-reverse !important;
+
+      .browse-sidebar-container {
+        width: auto !important;
+        padding: 12px 8px !important;
+        display: flex !important;
+        flex-flow: row wrap;
+        gap: 8px 24px !important;
+        align-items: center !important;
+        white-space: nowrap;
+
+        .sidebar-browse-container > h4 {
+          display: none !important;
+        }
+        .browser-sidebar-search-box {
+          padding: 0 !important;
+        }
+
+        .flex-container:has(input[name="order-by"]) {
+          .ath-search-header-text("Sort by");
+        }
+        .jsDateRangeInputs .gridContainer {
+          .ath-search-header-text("Date range");
+          .gridContainer__item:has(input[value="1day"]) {
+            .ath-search-label-text("1d");
+          }
+          .gridContainer__item:has(input[value="3days"]) {
+            .ath-search-label-text("3d");
+          }
+          .gridContainer__item:has(input[value="7days"]) {
+            .ath-search-label-text("7d");
+          }
+          .gridContainer__item:has(input[value="30days"]) {
+            .ath-search-label-text("30d");
+          }
+          .gridContainer__item:has(input[value="90days"]) {
+            .ath-search-label-text("90d");
+          }
+          .gridContainer__item:has(input[value="1year"]) {
+            .ath-search-label-text("1y");
+          }
+          .gridContainer__item:has(input[value="3years"]) {
+            .ath-search-label-text("3y");
+          }
+          .gridContainer__item:has(input[value="5years"]) {
+            .ath-search-label-text("5y");
+          }
+        }
+        .gridContainer:has(input[name="rating-general"]) {
+          .ath-search-header-text("Rating");
+        }
+        .gridContainer:has(input[name="type-art"]) {
+          .ath-search-header-text("Type");
+        }
+        .gridContainer:has(input[name="mode"]) {
+          .ath-search-header-text("Search for");
+          .gridContainer__item:has(input[value="all"]) {
+            .ath-search-label-text("All words");
+          }
+          .gridContainer__item:has(input[value="any"]) {
+            .ath-search-label-text("Any words");
+          }
+          .gridContainer__item:has(input[value="extended"]) {
+            .ath-search-label-text("Advanced syntax");
+          }
+        }
+
+        .jsDateRangeInputs,
+        .jsManualRangeContainer__item,
+        .flex-container,
+        .gridContainer {
+          display: flex !important;
+          flex-flow: row !important;
+          width: auto !important;
+          gap: 8px 12px !important;
+          margin: 0 !important;
+          align-items: center !important;
+        }
+
+        .jsManualRangeContainer__item {
+          height: auto !important;
+          line-height: normal !important;
+          flex-direction: row-reverse !important;
+          input,
+          span {
+            width: auto !important;
+          }
+        }
+
+        .browse-sidebar-content,
+        #sidebar-options,
+        .sidebar-options-content,
+        .sidebar-browse-container,
+        #search-flex-container,
+        #search-advanced,
+        .jsManualRangeContainer:not(.hidden) {
+          display: contents !important;
+        }
+
+        h4 {
+          font-size: inherit !important;
+          line-height: 1 !important;
+          letter-spacing: normal !important;
+          padding: 0 !important;
+          width: auto !important;
+        }
+
+        #search-advanced2 {
+          > [style*=margin] {
+            margin: 0 !important;
+            float: right !important;
+          }
+        }
+
+        .tallRectangleAd {
+          margin: 0 !important;
+        }
+      }
+
+      .browse-search-flex-container {
+        display: flex !important;
+        flex-flow: row wrap;
+        gap: 4px 16px !important;
+        align-items: center !important;
+        white-space: nowrap;
+
+        .browse-search-flex-item {
+          flex: 0 !important;
+          padding: 0 !important;
+
+          input,
+          select {
+            width: 200px !important;
+          }
+        }
+
+        .search-flex-item-title,
+        .search-flex-item-3 {
+          width: auto !important;
+        }
+      }
+
+      #query-stats {
+        display: flex !important;
+        flex-flow: row wrap !important;
+        font-size: 0 !important;
+        gap: 0 16px !important;
+
+        div {
+          display: flex !important;
+          flex-flow: row wrap !important;
+          gap: 0 3px !important;
+
+          h3 {
+            line-height: normal !important;
+            padding: 0 !important;
+          }
+          span {
+            font-size: 13px !important;
+          }
+        }
+      }
+    }
+  }
+}
