@@ -18,7 +18,7 @@
 
 ## FurAffinity.net
 
-### FurAffinity.net - Tweaks [![User Style Install][Install FurAffinity.net Tweaks Style]](FurAffinity/FurAffinity-Tweaks.user.css?raw=1)
+### FurAffinity.net - Tweaks [![Install FurAffinity.net Tweaks Style][Install Style]](FurAffinity/FurAffinity-Tweaks.user.css?raw=1)
 
 ![FurAffinity.net - Tweaks Screenshot](FurAffinity/FurAffinity-Tweaks.jpg?raw=1)
 
@@ -35,7 +35,7 @@ Various small tweaks in usability and style, all toggled through options. It is 
 
 ## InkBunny.net
 
-### InkBunny.net - Compact Dark [![User Style Install][Install InkBunny.net Compact Dark Style]](InkBunny/InkBunny-CompactDark.user.css?raw=1)
+### InkBunny.net - Compact Dark [![Install InkBunny.net Compact Dark Style][Install Style]](InkBunny/InkBunny-CompactDark.user.css?raw=1)
 
 ![InkBunny.net - Compact Dark Screenshot](InkBunny/InkBunny-CompactDark.jpg?raw=1)
 
@@ -50,7 +50,7 @@ Primarily a dark theme, but includes several optional usability improvements.
 
 ## e621.net / e926.net / e6ai.net
 
-### e621.net - Tricksta Esix [![User Style Install][Install e621.net Tricksta Esix Style]](e621/e621-TrickstaEsix.user.css?raw=1)
+### e621.net - Tricksta Esix [![Install e621.net Tricksta Esix Style][Install Style]](e621/e621-TrickstaEsix.user.css?raw=1)
 
 ![e621.net - Tricksta Esix Screenshot](e621/e621-TrickstaEsix.png?raw=1)
 
