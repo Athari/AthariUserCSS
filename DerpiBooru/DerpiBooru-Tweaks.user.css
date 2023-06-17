@@ -1,0 +1,248 @@
+/* ==UserStyle==
+@name           DerpiBooru.org - Tweaks [Ath]
+@namespace      github.com/athari
+@version        1.0.0
+@description    DerpiBooru.org and TrixieBooru.org: various usability tweaks.
+@preprocessor   less
+@author         Athari
+@license        MIT
+@var            checkbox ath-long-search-box "Long search box" 1
+@var            checkbox ath-expand-user-menu "Expand user menu" 1
+@var            checkbox ath-collapse-news "Collapse news line" 1
+@var            checkbox ath-compact-footer "Compact footer" 1
+@var            checkbox ath-thumbs-nospace "Thumbnails: remove spacing" 1
+@var            checkbox ath-thumbs-fixed-size "Thumbnails: fixed maximum size" 1
+@var            checkbox ath-pagination "Pagination: fat static buttons" 1
+@var            checkbox ath-download "Download: static buttons" 1
+@var            checkbox ath-hide-hide "Disable hiding" 0
+@var            range ath-rating-thickness "Thumbnails: rating border" [0, 0, 5, 1, 'px']
+==/UserStyle== */
+
+@-moz-document domain("derpibooru.org"), domain("trixiebooru.org") {
+
+  /* Search box: full width */
+  & when (@ath-long-search-box = 1) {
+    .header {
+      .header__search {
+        flex: 1;
+
+        input#q {
+          flex: 1;
+          max-width: none;
+        }
+      }
+    }
+  }
+
+  & when (@ath-expand-user-menu = 1) {
+    .header:not(.header--secondary) {
+      height: calc(36px + 32px);
+
+      .header__link-user__dropdown-arrow {
+        display: none;
+      }
+
+      .header__dropdown {
+        .dropdown__content {
+          display: flex;
+          inset: unset;
+          right: 0;
+
+          a.header__link {
+            line-height: 32px;
+
+            &:first-child {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  & when (@ath-collapse-news = 1) {
+    .flash--site-notice {
+      position: absolute;
+      inset: calc(36px + 32px * @ath-expand-user-menu) 0 auto 700px;
+      width: auto;
+      height: 32px;
+      line-height: 32px;
+      text-align: right;
+      background: none;
+    }
+  }
+
+  & when (@ath-compact-footer = 1) {
+    #footer {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: center;
+      gap: 0 24px;
+      padding: 4px 12px;
+
+      #footer_content {
+        display: contents;
+      }
+
+      .footercol {
+        flex: 0;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        gap: 4px 12px;
+        margin: 0 !important;
+        white-space: nowrap;
+      }
+
+      #serving_info {
+        flex: 0;
+        white-space: nowrap;
+      }
+
+      br {
+        display: none;
+      }
+    }
+  }
+
+  & when (@ath-thumbs-nospace = 1) {
+    #content.layout--wide {
+      margin: 0;
+      padding: 6px 0 !important;
+
+      .layout--narrow,
+      h1,
+      .js-search-form,
+      .block__content:has(.tag-list) {
+        padding: 6px 6px 0 6px;
+        margin: 0;
+      }
+    }
+    .media-box {
+      margin: 0 0;
+      border: none;
+    }
+    .block__content,
+    .block__tab {
+      padding: 6px 0;
+    }
+    #activity-side {
+      .block__content,
+      .block__tab {
+        padding: 6px 12px;
+      }
+    }
+  }
+
+  & when (@ath-thumbs-fixed-size = 1) {
+    .js-resizable-media-container {
+      .media-box {
+        width: auto !important;
+
+        .media-box__content--small {
+          width: 150px + @ath-rating-thickness * 2 !important;
+          height: 150px + @ath-rating-thickness * 2 !important;
+        }
+
+        .media-box__content--large {
+          width: 250px + @ath-rating-thickness * 2 !important;
+          height: 250px + @ath-rating-thickness * 2 !important;
+        }
+      }
+    }
+  }
+
+  & when (@ath-rating-thickness > 0) {
+    div.image-container.thumb {
+      outline: solid @ath-rating-thickness #ddd;
+      outline-offset: 0;
+    }
+    div.image-container.thumb[data-image-tag-aliases^="grimdark, "],
+    div.image-container.thumb[data-image-tag-aliases*=", grimdark,"],
+    div.image-container.thumb[data-image-tag-aliases$=", grimdark"] {
+      outline-color: #888;
+    }
+    div.image-container.thumb[data-image-tag-aliases^="suggestive, "],
+    div.image-container.thumb[data-image-tag-aliases*=", suggestive,"],
+    div.image-container.thumb[data-image-tag-aliases$=", suggestive"] {
+      outline-color: #99f;
+    }
+    div.image-container.thumb[data-image-tag-aliases^="questionable, "],
+    div.image-container.thumb[data-image-tag-aliases*=", questionable,"],
+    div.image-container.thumb[data-image-tag-aliases$=", questionable"] {
+      outline-color: #99f;
+    }
+    div.image-container.thumb[data-image-tag-aliases^="explicit, "],
+    div.image-container.thumb[data-image-tag-aliases*=", explicit,"],
+    div.image-container.thumb[data-image-tag-aliases$=", explicit"] {
+      outline-color: #f66;
+    }
+  }
+
+  & when (@ath-pagination = 1) {
+    .block__header:has(.page__pagination) {
+      .page__pagination {
+        flex: 1;
+
+        .pagination.hide-mobile-t {
+          display: flex;
+
+          .page-current {
+            padding: 0 12px !important;
+            font-weight: bold;
+            display: flex;
+
+            &:first-child {
+              flex: 1;
+
+              &::before {
+                content: " ";
+                margin-left: auto;
+                flex: 1;
+              }
+            }
+
+            &:last-child {
+              flex: 1;
+
+              &::after {
+                content: " ";
+                margin-right: auto;
+                flex: 1;
+              }
+            }
+          }
+
+          .js-prev {
+            flex: 1;    
+          }
+
+          .js-next {
+            flex: 1;
+            text-align: right;
+          }
+        }
+      }
+
+      .block__header__title,
+      .flex__right {
+        flex: 0;
+        white-space: nowrap;
+        overflow: initial;
+      }
+    }
+
+    & when (@ath-download = 1) {
+      .image-metabar {
+        justify-content: space-between;
+      }
+    }
+
+    & when (@ath-hide-hide = 1) {
+      a[href*="hidden=1"],
+      a.interaction--hide {
+        display: none !important;
+      }
+    }
+  }
+}
