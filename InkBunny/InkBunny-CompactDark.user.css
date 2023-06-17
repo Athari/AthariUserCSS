@@ -434,6 +434,14 @@
   .title {
     color: var(--ath-color-text-header-1) !important;
   }
+  .bbcode_quote_symbol,
+  .bbcode_quote_quote {
+    color: var(--ath-color-text-2) !important;
+    background: var(--ath-color-bg-4) !important;
+  }
+  .widget_commentsList_comment a[style*="color: #888a85"] {
+    color: var(--ath-color-text-4) !important;
+  }
   .notificationnavigation .notification_new_count {
     background: var(--ath-color-header-2) !important;
     border-color: var(--ath-color-header-1) !important;
