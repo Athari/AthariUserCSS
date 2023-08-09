@@ -386,6 +386,10 @@
   [style*="color: #EEE;"] {
     color: var(--ath-color-text-1) !important;
   }
+  .widget_commentsList_comment [style*="background-color: #ffffff"],
+  .widget_commentsList_comment [style*="background-color: #FFFFFF"] {
+    background: var(--ath-color-bg-3) !important;
+  }
   .stat_label,
   [style*="color: #444444"],
   [style*="color: #333333"] {
@@ -434,6 +438,7 @@
   .title {
     color: var(--ath-color-text-header-1) !important;
   }
+  .bbcode_quote,
   .bbcode_quote_symbol,
   .bbcode_quote_quote {
     color: var(--ath-color-text-2) !important;
