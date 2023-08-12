@@ -9,6 +9,7 @@
 @var            checkbox ath-compact-header "Compact header" 0
 @var            checkbox ath-compact-footer "Compact footer" 0
 @var            checkbox ath-big-pagination "Big pagination buttons" 1
+@var            select ath-fixed-upload "Submission upload form" ["default:Default*", "visible:Always visible", "left:Left fixed", "right:Right fixed"]
 @var            checkbox ath-style-story "Style text submissions" 1
 @var            text ath-story-font "Story text font" "20px/1.3 Segoe UI, Verdana, sans-serif"
 @var            color ath-story-color "Story text color" "#bbb"
@@ -447,12 +448,16 @@
   .widget_commentsList_comment a[style*="color: #888a85"] {
     color: var(--ath-color-text-4) !important;
   }
+  .private_messages_unread_count,
   .notificationnavigation .notification_new_count {
-    background: var(--ath-color-header-2) !important;
+    background: var(--ath-color-footer-2) !important;
     border-color: var(--ath-color-header-1) !important;
     color: var(--ath-color-text-1) !important;
     opacity: 1 !important;
     font-weight: 400 !important;
+  }
+  .m_unread * {
+    background: var(--ath-color-header-1) !important;
   }
   [style*="overlays/multipage_large.png"] {
     filter: brightness(0.8);
@@ -621,6 +626,43 @@
   & when (@ath-compact-footer = 1) {
     .footer.elephant_bottom {
       display: none;
+    }
+  }
+
+  /* Fixed file upload form */
+  & when not (@ath-fixed-upload = default) {
+    #new_upload {
+      display: block !important;
+    }
+  }
+
+  & when (@ath-fixed-upload = left), (@ath-fixed-upload = right) {
+    body:has([id$="_controls"]:not(#new_controls)) #new_upload {
+      position: fixed;
+      width: calc(50vw - 480px) !important;
+      & when (@ath-fixed-upload = left) {
+        left: 0 !important;
+      }
+      & when (@ath-fixed-upload = right) {
+        right: 0 !important;
+      }
+
+      .content {
+        padding: if((@ath-fixed-upload = left), 8px, 8px 0 8px 16px) !important;
+
+        > div[style*=float] {
+          width: auto !important;
+          float: none !important;
+          padding: 8px 0 0 0 !important;
+
+          div[style*=float] {
+            display: inline-block !important;
+            width: auto !important;
+            float: none !important;
+            padding: 8px 8px 0 0 !important;
+          }
+        }
+      }
     }
   }
 }
