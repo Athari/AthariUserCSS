@@ -182,7 +182,7 @@
   /* Change background & positions */
   @media all {
     body {
-      background: 50% calc(50% + 30px) / auto auto no-repeat scroll !important;
+      background: 50% 0 / auto auto no-repeat scroll !important;
     }
   }
   @media (max-width: 1280px) {
@@ -219,20 +219,28 @@
       display: none !important;
     }
   }
-  @media (max-height: 900px) {
+  @media (max-height: 1000px) {
     body {
-      background-position-y: calc(100% + 80px) !important;
+      background-position-y: 100% !important;
+    }
+  }
+  @media (max-height: 940px) {
+    body {
+      background-position-y: -60px !important;
     }
   }
   @media (max-height: 830px) {
+    body {
+      background-position-y: calc(100% + 110px) !important;
+    }
     #a-home {
       top: calc(100vh - 330px) !important;
       height: auto !important;
     }
   }
-  @media (max-height: 620px) {
+  @media (max-height: 580px) {
     body {
-      background-position-y: calc(0% - 300px) !important;
+      background-position-y: -310px !important;
     }
   }
   @media (max-height: 490px) {
@@ -246,7 +254,7 @@
   }
 }
 
-@-moz-document domain("e621.net") {
+@-moz-document url("https://e621.net/") {
   & when not (@ath-e621-esix-version = none) {
     .ath-tricksta-style();
     body {
@@ -255,7 +263,7 @@
   }
 }
 
-@-moz-document domain("e926.net") {
+@-moz-document url("https://e926.net/") {
   & when not (@ath-e926-esix-version = none) {
     .ath-tricksta-style();
     body {
@@ -264,7 +272,7 @@
   }
 }
 
-@-moz-document domain("e6ai.net") {
+@-moz-document url("https://e6ai.net/") {
   & when not (@ath-e6ai-esix-version = none) {
     .ath-tricksta-style();
     body {
