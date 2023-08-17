@@ -342,6 +342,9 @@
   ul.dropdown a:hover {
     background: var(--ath-color-header-2) !important;
   }
+  [style*="background-color: #b5f873"] {
+    background: var(--ath-color-bg-2) !important;
+  }
   [style*="background-color: #f0f0f0"],
   [style*="background-color: #F0F0F0"] {
     background: var(--ath-color-bg-3) !important;
