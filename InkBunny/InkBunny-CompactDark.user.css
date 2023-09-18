@@ -374,6 +374,7 @@
   .widget_thumbnailHugeCompleteFromSubmission {
     border-color: var(--ath-color-bg-3) !important;
   }
+  .kw_wordrow_grayon,
   .up_noticebox:hover,
   .up_showolder {
     background: var(--ath-color-bg-4) !important;
@@ -414,6 +415,9 @@
   .title .title_text,
   [style*="color: #555753"] {
     color: var(--ath-color-text-4) !important;
+  }
+  [style*="color: green"] {
+    color: #0d0 !important;
   }
   div.widget_thumbnailFromSubmission_artist_cont div.widget_thumbnailFromSubmission_artist span.widget_thumbnailFromSubmission_artist_by,
   .stat_unimportant {
@@ -461,6 +465,57 @@
   }
   .m_unread * {
     background: var(--ath-color-header-1) !important;
+  }
+  .kw_wordrows {
+    border-color: var(--ath-color-bg-2) !important;
+  }
+  .kw_wordrow {
+    border-color: var(--ath-color-bg-2) !important;
+  }
+  .kw_wordrow_input:hover {
+    background: var(--ath-color-bg-1) !important;
+  }
+  .kw_wordrow_suggestion_accepted,
+  .kw_wordrow_acceptcontrols_accept {
+    border-color: var(--ath-color-bg-2) !important;
+    background: #0f06 !important;
+  }
+  .kw_wordrows_titlescontainer_accept {
+    color: #0f06 !important;
+  }
+  .kw_wordrow_acceptcontrols_none {
+    border-color: var(--ath-color-bg-2) !important;
+  }
+  .kw_wordrow_suggestion_rejected,
+  .kw_wordrow_acceptcontrols_reject {
+    border-color: var(--ath-color-bg-2) !important;
+    background: #f006 !important;
+  }
+  .kw_wordrows_titlescontainer_reject {
+    color: #0f06 !important;
+  }
+  .kw_wordrow_bancontrols,
+  .kw_wordrow_suggestionoptions {
+    color: var(--ath-color-text-3) !important;
+  }
+  .bibliophibian_words {
+    width: auto !important;
+    display: flex !important;
+    flex-flow: row wrap;
+    gap: 2px 1px;
+  }
+  .bibliophibian_word {
+    background: var(--ath-color-bg-3) !important;
+    border-color: var(--ath-color-bg-4) !important;
+    color: var(--ath-color-text-3) !important;
+  }
+  .bibliophibian,
+  .bibliophibian_message {
+    background: var(--ath-color-bg-1) !important;
+    border-color: var(--ath-color-bg-2) !important;
+  }
+  .bibliophibian_message_large {
+    color: var(--ath-color-text-3) !important;
   }
   [style*="overlays/multipage_large.png"] {
     filter: brightness(0.8);
