@@ -9,6 +9,7 @@
 @var            checkbox ath-compact-header "Compact header" 0
 @var            checkbox ath-compact-footer "Compact footer" 0
 @var            checkbox ath-big-pagination "Big pagination buttons" 1
+@var            checkbox ath-static-site-notice "Static site notice" 1
 @var            select ath-fixed-upload "Submission upload form" ["default:Default*", "visible:Always visible", "left:Left fixed", "right:Right fixed"]
 @var            checkbox ath-style-story "Style text submissions" 1
 @var            text ath-story-font "Story text font" "20px/1.3 Segoe UI, Verdana, sans-serif"
@@ -517,6 +518,16 @@
   .bibliophibian_message_large {
     color: var(--ath-color-text-3) !important;
   }
+  .site_notice_centerbox,
+  .site_notice {
+    background: var(--ath-color-bg-3) !important;
+  }
+  .site_notice_borderbox {
+    border-color: var(--ath-color-bg-2) !important;
+  }
+  .site_notice div:not(.site_notice_countdown_timer) {
+    color: var(--ath-color-text-1) !important;
+  }
   [style*="overlays/multipage_large.png"] {
     filter: brightness(0.8);
   }
@@ -684,6 +695,14 @@
   & when (@ath-compact-footer = 1) {
     .footer.elephant_bottom {
       display: none;
+    }
+  }
+
+  & when (@ath-static-site-notice = 1) {
+    .site_notice {
+      position: static !important;
+      padding: 8px 0 0 0 !important;
+      margin: 0 0 8px 0 !important;
     }
   }
 
