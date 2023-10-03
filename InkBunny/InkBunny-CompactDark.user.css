@@ -218,7 +218,7 @@
     background: var(--ath-color-bg-5) !important;
   }
 
-  h1.inkbunny_navigation {
+  .mainnavigation h1.inkbunny_navigation:not(:has(a[title^="Inktubre"])) {
     .svg-image(background-image, ~'<svg width="324" height="98" xmlns="http://www.w3.org/2000/svg">\
       <style>\
         path { fill: #f8f8f8; transform: scaleY(0.9) rotate(-10deg); transform-origin: 50% 50%; }\
@@ -233,6 +233,8 @@
         <path d="@{svg-path-nav-inkbunny}" />\
       </g>\
     </svg>');
+    width: 324px !important;
+    height: 98px !important;
   }
   a.latest_navigation {
     .svg-image-navigation(background-image, @ath-color-link-1-active, 98, 43, 2, 30, 0.9, 2, @svg-path-nav-latest);
@@ -676,6 +678,11 @@
       width: 100%;
       height: 100%;
       z-index: -10;
+    }
+    #banner_clickarea a {
+      display: block !important;
+      position: absolute !important;
+      inset: 0 !important;
     }
     .notificationnavigation {
       left: auto !important;
