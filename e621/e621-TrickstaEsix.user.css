@@ -179,6 +179,36 @@
     display: none !important;
   }
 
+  /* CloudFlare error */
+  body > #cf-wrapper:only-child {
+    --color-blue-medium-alpha: var(--color-blue-medium);
+    --color-blue-medium-alpha: rgb(from var(--color-blue-medium) r g b / 60%);
+
+    color: var(--color-orange-light);
+    text-shadow: 1px 1px 1px var(--color-blue-dark);
+
+    .text-60,
+    .bg-gradient-gray,
+    .leading-relaxed {
+      background: var(--color-blue-medium-alpha);
+      border: solid 2px var(--color-blue-light);
+      border-radius: 20px;
+    }
+    .bg-gradient-gray {
+      margin: 20px;
+    }
+    .leading-relaxed.w-1\/2 {
+      padding: 10px 15px;
+      margin: 0 20px 0 0;
+      width: calc(50% - 40px);
+    }
+    .text-60 {
+      color: var(--color-orange-dark);
+      padding: 5px 20px;
+      margin: 0 0 20px 0;
+    }
+  }
+
   /* Change background & positions */
   @media all {
     body {
