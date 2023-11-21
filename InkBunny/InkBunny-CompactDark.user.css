@@ -218,7 +218,7 @@
     background: var(--ath-color-bg-5) !important;
   }
 
-  .mainnavigation h1.inkbunny_navigation:not(:has(a[title^="Inktubre"])) {
+  .mainnavigation h1:where(.inkbunny_navigation:not(:has(a[title^="Inktubre"]))) {
     .svg-image(background-image, ~'<svg width="324" height="98" xmlns="http://www.w3.org/2000/svg">\
       <style>\
         path { fill: #f8f8f8; transform: scaleY(0.9) rotate(-10deg); transform-origin: 50% 50%; }\
