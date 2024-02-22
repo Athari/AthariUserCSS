@@ -118,11 +118,15 @@
   @ath-color-bg-3: lch((@ath-color-bg-dark + (@ath-color-bg-light - @ath-color-bg-dark) * 0.55) (@ath-color-chroma-base * 0.5) @ath-color-hue-base);
   @ath-color-bg-4: lch((@ath-color-bg-dark + (@ath-color-bg-light - @ath-color-bg-dark) * 0.35) (@ath-color-chroma-base * 0.3) @ath-color-hue-base);
   @ath-color-bg-5: lch((@ath-color-bg-dark + (@ath-color-bg-light - @ath-color-bg-dark) * 0.18) (@ath-color-chroma-base * 0.1) @ath-color-hue-base);
+  @ath-color-bg-no: #f006;
+  @ath-color-bg-yes: #0f06;
   @ath-color-text-1: lch((@ath-color-text-dark + (@ath-color-text-light - @ath-color-text-dark) * 1.00) 0 0);
   @ath-color-text-2: lch((@ath-color-text-dark + (@ath-color-text-light - @ath-color-text-dark) * 0.85) 0 0);
   @ath-color-text-3: lch((@ath-color-text-dark + (@ath-color-text-light - @ath-color-text-dark) * 0.70) 0 0);
   @ath-color-text-4: lch((@ath-color-text-dark + (@ath-color-text-light - @ath-color-text-dark) * 0.35) 0 0);
   @ath-color-text-5: lch((@ath-color-text-dark + (@ath-color-text-light - @ath-color-text-dark) * 0.00) 0 0);
+  @ath-color-text-no: #f449;
+  @ath-color-text-yes: #0f09;
   @ath-color-text-header-1: lighten(saturate(@ath-color-link-1-base, -30, relative), -30, relative);
   @ath-color-link-1: @ath-color-link-1-base;
   @ath-color-link-1-visited: lighten(@ath-color-link-1-base, -20, relative);
@@ -146,12 +150,16 @@
   :root {
     each(@inkbunny-colors-bg, .(@color-name) {
       --@{color-name}: @@color-name;
-    })
+    });
+    --ath-color-bg-no: @ath-color-bg-no;
+    --ath-color-bg-yes: @ath-color-bg-yes;
     --ath-color-text-1: @ath-color-text-1;
     --ath-color-text-2: @ath-color-text-2;
     --ath-color-text-3: @ath-color-text-3;
     --ath-color-text-4: @ath-color-text-4;
     --ath-color-text-5: @ath-color-text-5;
+    --ath-color-text-no: @ath-color-text-no;
+    --ath-color-text-yes: @ath-color-text-yes;
     --ath-color-text-header-1: @ath-color-text-header-1;
     --ath-color-link-1: @ath-color-link-1;
     --ath-color-link-1-visited: @ath-color-link-1-visited;
@@ -481,10 +489,14 @@
   .kw_wordrow_suggestion_accepted,
   .kw_wordrow_acceptcontrols_accept {
     border-color: var(--ath-color-bg-2) !important;
-    background: #0f06 !important;
+    background: var(--ath-color-bg-yes) !important;
   }
+  .ksh_key {
+    color: var(--ath-color-text-5) !important;
+  }
+  .ksh_keyword_accepted,
   .kw_wordrows_titlescontainer_accept {
-    color: #0f06 !important;
+    color: var(--ath-color-text-yes) !important;
   }
   .kw_wordrow_acceptcontrols_none {
     border-color: var(--ath-color-bg-2) !important;
@@ -492,13 +504,36 @@
   .kw_wordrow_suggestion_rejected,
   .kw_wordrow_acceptcontrols_reject {
     border-color: var(--ath-color-bg-2) !important;
-    background: #f006 !important;
+    background: var(--ath-color-bg-no) !important;
   }
+  .ksh_keyword_deleted,
   .kw_wordrows_titlescontainer_reject {
-    color: #0f06 !important;
+    color: var(--ath-color-text-no) !important;
+  }
+  .ksh_keyword_pending {
+    color: var(--ath-color-text-1) !important;
+  }
+  .ksh_banned_marker {
+    color: #bbf9 !important;
+  }
+  .kw_rejected_keyword_remove {
+    color: var(--ath-color-text-2) !important;
   }
   .kw_wordrow_bancontrols,
   .kw_wordrow_suggestionoptions {
+    color: var(--ath-color-text-3) !important;
+  }
+  .ksh_keyword {
+    background: var(--ath-color-bg-4) !important;
+    color: var(--ath-color-text-3) !important;
+  }
+  .ksh_keyword_grey {
+    background: var(--ath-color-bg-3) !important;
+  }
+  .kw_rejected_listcontainer_permanentbox {
+    background: var(--ath-color-bg-4) !important;
+  }
+  .ksh_keyword_date {
     color: var(--ath-color-text-3) !important;
   }
   .bibliophibian_words {
