@@ -385,6 +385,10 @@
   .widget_thumbnailHugeCompleteFromSubmission {
     border-color: var(--ath-color-bg-3) !important;
   }
+  .kw_submission_container_grayon {
+    background: color-mix(in oklab, var(--ath-color-bg-4), var(--ath-color-bg-5) 60%) !important;
+    border-color: var(--ath-color-bg-1);
+  }
   .kw_wordrow_grayon,
   .up_noticebox:hover,
   .up_showolder {

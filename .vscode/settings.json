@@ -2,5 +2,5 @@
     "files.associations": {
         "*.user.css": "less"
     },
-    "git.inputValidation": "off"
+    "git.inputValidation": false
 }
