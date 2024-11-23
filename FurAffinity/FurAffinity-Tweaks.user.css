@@ -134,6 +134,9 @@
     #header {
       height: 0 !important;
     }
+    #pageid-submission #header.has-adminmessage {
+      padding-top: 54px;
+    }
     site-banner {
       display: none !important;
     }
