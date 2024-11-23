@@ -11,6 +11,7 @@
 @var            checkbox ath-show-header-banner "Show header banner" 0
 @var            checkbox ath-show-plus "Show FA+ & virtue signalling" 0
 @var            checkbox ath-show-sub-extras "Show submission page redundancy" 0
+@var            checkbox ath-limit-page-width "Constrain page width" 0
 @var            checkbox ath-limit-image-height "Constrain submission height" 1
 @var            checkbox ath-static-prev-next "Static prev & next buttons" 1
 @var            range ath-rating-thickness "Submission rating border" [1, 0, 5, 1, 'px']
@@ -20,6 +21,17 @@
   :root {
     --ath-border-radius: 16px;
     --ath-border-radius-inner: calc(var(--ath-border-radius) - 0px);
+  }
+
+  & when (@ath-limit-page-width = 0) {
+    html,
+    body,
+    .newsBlock,
+    .generic-message-block,
+    #ddmenu,
+    userpage-nav-header {
+      max-width: none;
+    }
   }
 
   section.gallery figure u>a {
@@ -127,6 +139,23 @@
     }
     userpage-nav-header {
       margin: 0 !important;
+    }
+    .news-block {
+      top: 0px;
+      background: none;
+      z-index: 100000000;
+      margin: 0 550px 0 750px;
+      width: auto;
+      #admin_notice_do_not_adblock2:only-child {
+        margin-top: 13px;
+      }
+    }
+    .newsBlock {
+      font-size: inherit;
+      line-height: 1.1em;
+      padding: 3px;
+      background: none;
+      backdrop-filter: none;
     }
   }
 
