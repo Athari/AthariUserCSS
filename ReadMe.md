@@ -92,9 +92,9 @@ Primarily a dark theme, but includes several optional usability improvements.
 
 ## <a id="kinorium"/> ![](https://icons.duckduckgo.com/ip3/kinorium.com.ico) Kinorium.com
 
-### Kinorium.com – Enhanced [![Install Kinorium.com Enhanced Style][Install Style]](Kinorium/Kinorium.com-Enhanced.user.css?raw=1)
+### Kinorium.com – Enhanced [![Install Kinorium.com Enhanced Style][Install Style]](Kinorium/Kinorium-Enhanced.user.css?raw=1)
 
-![Kinorium.com – Enhanced Screenshot](Kinorium/Kinorium.com-Enhanced.jpg?raw=1)
+![Kinorium.com – Enhanced Screenshot](Kinorium/Kinorium-Enhanced.jpg?raw=1)
 
 Various usability enhancements, with options to toggle some of them:
 
