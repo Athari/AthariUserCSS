@@ -1,11 +1,13 @@
 /* ==UserStyle==
 @name           FurAffinity.net - Tweaks [Ath]
-@namespace      github.com/athari
-@version        1.0.0
+@namespace      furaffinity
+@version        1.0.1
 @description    FurAffinity.net: various usability tweaks.
-@preprocessor   less
-@author         Athari
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
 @license        MIT
+@preprocessor   less
 @var            checkbox ath-round-corners "Round corners" 1
 @var            checkbox ath-search-top "Search form on top" 1
 @var            checkbox ath-show-header-banner "Show header banner" 0

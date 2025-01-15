@@ -1,11 +1,13 @@
 /* ==UserStyle==
 @name           InkBunny.net - Compact Dark [Ath]
 @namespace      github.com/athari
-@version        1.0.0
+@version        1.0.1
 @description    InkBunny.net: dark theme with usability improvements and vector graphics.
-@preprocessor   less
-@author         Athari
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
 @license        MIT
+@preprocessor   less
 @var            checkbox ath-compact-header "Compact header" 0
 @var            checkbox ath-compact-footer "Compact footer" 0
 @var            checkbox ath-big-pagination "Big pagination buttons" 1

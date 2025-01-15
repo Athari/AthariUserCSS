@@ -1,11 +1,13 @@
 /* ==UserStyle==
 @name           e621.net - Tricksta Esix [Ath]
-@namespace      github.com/athari
-@version        1.0.0
+@namespace      e621
+@version        1.0.1
 @description    Tricksta's Esix on the front page of e621.net, e926.net and e6ai.net as a mascot. Restyled controls on the front page to match the image. Small Esix at the bottom of each page.
-@preprocessor   less
-@author         Athari
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
 @license        MIT
+@preprocessor   less
 @var            select ath-e621-esix-version "e621 Esix version" ["none:Original", "v1:Safe", "v2:Before*", "v3:After"]
 @var            select ath-e926-esix-version "e926 Esix version" ["none:Original", "v1:Safe*", "v2:Before", "v3:After"]
 @var            select ath-e6ai-esix-version "e6AI Esix version" ["none:Original*", "v1:Safe", "v2:Before", "v3:After"]

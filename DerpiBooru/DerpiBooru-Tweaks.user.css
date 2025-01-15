@@ -1,11 +1,13 @@
 /* ==UserStyle==
 @name           DerpiBooru.org - Tweaks [Ath]
-@namespace      github.com/athari
-@version        1.0.0
+@namespace      derpibooru
+@version        1.0.1
 @description    DerpiBooru.org and TrixieBooru.org: various usability tweaks.
-@preprocessor   less
-@author         Athari
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
 @license        MIT
+@preprocessor   less
 @var            checkbox ath-long-search-box "Long search box" 1
 @var            checkbox ath-expand-user-menu "Expand user menu" 1
 @var            checkbox ath-collapse-news "Collapse news line" 1
