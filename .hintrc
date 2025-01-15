@@ -7,7 +7,7 @@
     "detect-css-reflows/composite": "off",
     "detect-css-reflows/layout": "off",
     "compat-api/css": [
-      "default",
+      "information",
       {
         "ignore": [
           "@-moz-document"

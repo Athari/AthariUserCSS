@@ -1,0 +1,590 @@
+/* ==UserStyle==
+@name           Kinorium.com – Enhanced [Ath]
+@namespace      kinorium
+@version        1.0.1
+@description    Kinorium.com: various usability enhancements.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+@var            checkbox ath-show-banners       "Show banners" 0
+@var            checkbox ath-show-genre-movies  "Show top genre movies" 1
+@var            checkbox ath-show-actual-movies "Show current movies" 1
+@var            checkbox ath-side-menus         "Side menus" 1
+@var            checkbox ath-native-sliders     "Native sliders (requires userscript)" 1
+@var            checkbox ath-recolor-scrollbars "Recolor scrollbars" 1
+@var            select   ath-hyphens            "Hyphens" ["auto:Automatic", "manual:Manual*"]
+@var            text     ath-font-family        "Font" "Segoe UI"
+==/UserStyle== */
+
+@-moz-document domain("kinorium.com") {
+  body {
+    container: if;
+  }
+
+  @container if style(--ath-show-banners: 0) {
+    .bwannners-left-box {
+      display: none !important;
+    }
+  }
+  @container if style(--ath-show-genre-movies: 0) {
+    .recom-genre-slider {
+      display: none !important;
+    }
+  }
+  @container if style(--ath-show-actual-movies: 0) {
+    .actual-slider {
+      display: none !important;
+    }
+  }
+
+  :not(#\0) {
+    hyphens: var(--ath-hyphens);
+    font-family: var(--ath-font-family, "Arial"), sans-serif;
+  }
+  .text {
+    font-size: 16rem;
+    line-height: 1.3;
+  }
+  .infotable * {
+    font-size: 14rem;
+  }
+
+  @container if style(--ath-recolor-scrollbars: 1) {
+    ::-webkit-scrollbar {
+      background: #1c1c1c !important;
+      opacity: 1 !important;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1c1c1c !important;
+      opacity: 1 !important;
+    }
+    ::-webkit-scrollbar-button {
+      background: #333 !important;
+      opacity: 1 !important;
+    }
+    ::-webkit-scrollbar-button:hover {
+      background: #3c3c3c !important;
+    }
+    ::-webkit-scrollbar-button:active {
+      background: #444 !important;
+    }
+    ::-webkit-scrollbar-button:disabled {
+      background: #222 !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #444 !important;
+      opacity: 1 !important;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4c4c4c !important;
+    }
+    ::-webkit-scrollbar-thumb:active {
+      background: #555 !important;
+    }
+    ::-webkit-scrollbar-corner {
+      background: #222 !important;
+    }
+  }
+
+  .film-page_leftContent {
+    .ratingsBlock {
+      display: flex !important;
+      flex-flow: row;
+      padding: 20rem 0 0 0 !important;
+      justify-content: space-between !important;
+      li {
+        float: none !important;
+        width: auto !important;
+        a {
+          height: auto !important;
+          padding: 0 !important;
+        }
+      }
+      .ratingsBlockIMDbKP:not(#\0) {
+        display: contents !important;
+        .ratingsBlockIMDb,
+        .ratingsBlockKP {
+          display: block !important;
+        }
+      }
+    }
+    .film-page__company-logo {
+      margin: 0 0 0 0 !important;
+    }
+    .headlines-slide {
+      margin: 10rem 0 0 0 !important;
+      &:not(.headlines-slide_hidden-content) {
+        margin: 15rem 0 0 0 !important;
+      }
+    }
+    .headlines-slide__control {
+      top: 0 !important;
+    }
+    .headlines__wrap_show {
+      margin: 0 !important;
+    }
+  }
+
+  .main-table_content {
+    table-layout: fixed;
+  }
+
+  .film-page__buttons-cinema {
+    display: flex !important;
+    flex-flow: row wrap;
+    a {
+      &:hover {
+        filter: contrast(0.8) brightness(1.4);
+      }
+      &::after {
+        display: inline-block;
+        max-width: calc(88px + 36rem);
+        margin: 0 0 0 -36rem;
+        content: attr(href);
+        font-size: 11rem;
+        color: #ccc;
+        overflow: clip;
+        clip-path: margin-box;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .gallery.jsConnectionGallery {
+    display: inline flex !important;
+    flex-flow: column !important;
+    margin: 0 !important;
+    .headlines-slide {
+      margin: 0 !important;
+      a {
+        display: none !important;
+      }
+    }
+    .item_skelet-all {
+      padding-right: 5rem !important;
+    }
+    &:not(.slider_has-first-current-item) :is(.headlines-slide__control, .item_skelet-all) {
+      display: none;
+    }
+  }
+  .film-page :is(.film_gallery_trailers, .slider-container-film)::after {
+    display: none !important;
+  }
+
+  .serial-rating-table-wrap {
+    overflow-x: scroll;
+    &:hover {
+      width: auto !important;
+      max-width: calc(930rem + (50vw - 640rem)) !important;
+      margin-right: calc(640rem - 50vw) !important;
+    }
+  }
+  .serial-rating-table {
+    tr {
+      &.serial-rating-table__tr-hidden {
+        display: revert !important;
+      }
+      &:has(.serial-rating-table__button-all-td) {
+        display: none !important;
+      }
+    }
+    td {
+      /*background: hsl(calc(0deg + var(--h) * 2.5deg) 100% 50%) !important;*/
+      background: oklch(70% 0.7 calc(30 + var(--h) * 2.5)) !important;
+      a {
+        /*color: hsl(calc(0deg + var(--h) * 2.5deg) 100% 20%) !important;*/
+        /*color: oklch(30% 0.7 calc(30 + var(--h) * 2.5)) !important;*/
+        color: color-contrast(oklch(64% 0.7 calc(30 + var(--h) * 2.5)) vs
+          oklch(30% 0.7 calc(30 + var(--h) * 2.5)),
+          oklch(95% 0.7 calc(30 + var(--h) * 2.5))) !important;
+      }
+    }
+    .serial-rating-table__1-0 { --h: 00 }
+    .serial-rating-table__1-1 { --h: 01 }
+    .serial-rating-table__1-2 { --h: 02 }
+    .serial-rating-table__1-3 { --h: 03 }
+    .serial-rating-table__1-4 { --h: 04 }
+    .serial-rating-table__1-5 { --h: 05 }
+    .serial-rating-table__1-6 { --h: 06 }
+    .serial-rating-table__1-7 { --h: 07 }
+    .serial-rating-table__1-8 { --h: 08 }
+    .serial-rating-table__1-9 { --h: 09 }
+    .serial-rating-table__2-0 { --h: 10 }
+    .serial-rating-table__2-1 { --h: 11 }
+    .serial-rating-table__2-2 { --h: 12 }
+    .serial-rating-table__2-3 { --h: 13 }
+    .serial-rating-table__2-4 { --h: 14 }
+    .serial-rating-table__2-5 { --h: 15 }
+    .serial-rating-table__2-6 { --h: 16 }
+    .serial-rating-table__2-7 { --h: 17 }
+    .serial-rating-table__2-8 { --h: 18 }
+    .serial-rating-table__2-9 { --h: 19 }
+    .serial-rating-table__3-0 { --h: 20 }
+    .serial-rating-table__3-1 { --h: 21 }
+    .serial-rating-table__3-2 { --h: 22 }
+    .serial-rating-table__3-3 { --h: 23 }
+    .serial-rating-table__3-4 { --h: 24 }
+    .serial-rating-table__3-5 { --h: 25 }
+    .serial-rating-table__3-6 { --h: 26 }
+    .serial-rating-table__3-7 { --h: 27 }
+    .serial-rating-table__3-8 { --h: 28 }
+    .serial-rating-table__3-9 { --h: 29 }
+    .serial-rating-table__4-0 { --h: 30 }
+    .serial-rating-table__4-1 { --h: 31 }
+    .serial-rating-table__4-2 { --h: 32 }
+    .serial-rating-table__4-3 { --h: 33 }
+    .serial-rating-table__4-4 { --h: 34 }
+    .serial-rating-table__4-5 { --h: 35 }
+    .serial-rating-table__4-6 { --h: 36 }
+    .serial-rating-table__4-7 { --h: 37 }
+    .serial-rating-table__4-8 { --h: 38 }
+    .serial-rating-table__4-9 { --h: 39 }
+    .serial-rating-table__5-0 { --h: 40 }
+    .serial-rating-table__5-1 { --h: 41 }
+    .serial-rating-table__5-2 { --h: 42 }
+    .serial-rating-table__5-3 { --h: 43 }
+    .serial-rating-table__5-4 { --h: 44 }
+    .serial-rating-table__5-5 { --h: 45 }
+    .serial-rating-table__5-6 { --h: 46 }
+    .serial-rating-table__5-7 { --h: 47 }
+    .serial-rating-table__5-8 { --h: 48 }
+    .serial-rating-table__5-9 { --h: 49 }
+    .serial-rating-table__6-0 { --h: 50 }
+    .serial-rating-table__6-1 { --h: 51 }
+    .serial-rating-table__6-2 { --h: 52 }
+    .serial-rating-table__6-3 { --h: 53 }
+    .serial-rating-table__6-4 { --h: 54 }
+    .serial-rating-table__6-5 { --h: 55 }
+    .serial-rating-table__6-6 { --h: 56 }
+    .serial-rating-table__6-7 { --h: 57 }
+    .serial-rating-table__6-8 { --h: 58 }
+    .serial-rating-table__6-9 { --h: 59 }
+    .serial-rating-table__7-0 { --h: 60 }
+    .serial-rating-table__7-1 { --h: 61 }
+    .serial-rating-table__7-2 { --h: 62 }
+    .serial-rating-table__7-3 { --h: 63 }
+    .serial-rating-table__7-4 { --h: 64 }
+    .serial-rating-table__7-5 { --h: 65 }
+    .serial-rating-table__7-6 { --h: 66 }
+    .serial-rating-table__7-7 { --h: 67 }
+    .serial-rating-table__7-8 { --h: 68 }
+    .serial-rating-table__7-9 { --h: 69 }
+    .serial-rating-table__8-0 { --h: 70 }
+    .serial-rating-table__8-1 { --h: 71 }
+    .serial-rating-table__8-2 { --h: 72 }
+    .serial-rating-table__8-3 { --h: 73 }
+    .serial-rating-table__8-4 { --h: 74 }
+    .serial-rating-table__8-5 { --h: 75 }
+    .serial-rating-table__8-6 { --h: 76 }
+    .serial-rating-table__8-7 { --h: 77 }
+    .serial-rating-table__8-8 { --h: 78 }
+    .serial-rating-table__8-9 { --h: 79 }
+    .serial-rating-table__9-0 { --h: 80 }
+    .serial-rating-table__9-1 { --h: 81 }
+    .serial-rating-table__9-2 { --h: 82 }
+    .serial-rating-table__9-3 { --h: 83 }
+    .serial-rating-table__9-4 { --h: 84 }
+    .serial-rating-table__9-5 { --h: 85 }
+    .serial-rating-table__9-6 { --h: 86 }
+    .serial-rating-table__9-7 { --h: 87 }
+    .serial-rating-table__9-8 { --h: 88 }
+    .serial-rating-table__9-9 { --h: 89 }
+    .serial-rating-table__10-0 { --h: 90 }
+  }
+
+  .statusList:not(#\0) {
+    .item {
+      padding: 10rem 0 !important;
+      font-size: 12rem !important;
+      .user {
+        a {
+          font-size: 16rem !important;
+          filter: none !important;
+        }
+        .proximity {
+          filter: none !important;
+          color: #000 !important;
+        }
+      }
+      &.alien a:not(:hover):not(:active) {
+        color: #999 !important;
+      }
+      .status {
+        filter: none !important;
+        margin-top: 3rem !important;
+        display: flex !important;
+        &[class*=number]::before {
+          background: none !important;
+          content: "X" !important;
+          align-self: center !important;
+          justify-self: center !important;
+          /*margin: 1rem 0 -1rem 0 !important;*/
+          color: #000 !important;
+        }
+        &.number-1::before { content: "1" !important; }
+        &.number-2::before { content: "2" !important; }
+        &.number-3::before { content: "3" !important; }
+        &.number-4::before { content: "4" !important; }
+        &.number-5::before { content: "5" !important; }
+        &.number-6::before { content: "6" !important; }
+        &.number-7::before { content: "7" !important; }
+        &.number-8::before { content: "8" !important; }
+        &.number-9::before { content: "9" !important; }
+        &.number-10::before { content: "10" !important; margin: 1rem 1rem -1rem -1rem !important; }
+      }
+      .status-list__comment {
+        margin: 0 !important;
+        .status-list__comment-text {
+          margin: 0 !important;
+        }
+      }
+      p {
+        font-size: 16rem !important;
+        line-height: 1.3 !important;
+        margin: 0 !important;
+        &.placeholder {
+          margin-top: 7rem !important;
+        }
+      }
+    }
+  }
+
+  @container if style(--ath-native-sliders: 1) {
+    :is(.slider-container-film, .film-page__cast-block, .film-page__cast-main-block, .film-page__critics-slider, .film-page__gallery, .film-page__overview):not(#\0) {
+      margin-right: 0 !important;
+    }
+    .headlines__wrap {
+      display: none !important;
+      &.headlines__wrap_show {
+        display: block !important;
+      }
+    }
+    .slider:not(#\0) {
+      display: block !important;
+      width: auto !important;
+      min-width: 0 !important;
+      overflow: auto hidden !important;
+      .inner {
+        width: max-content!important;
+        height: auto !important;
+        display: flex !important;
+        flex-flow: row !important;
+        margin: 0 0 4px 0 !important;
+        overflow: hidden !important;
+        .role:only-child {
+          /*width: auto !important;
+          float: none !important;
+          display: flex !important;
+          flex-flow: row !important;*/
+          display: contents !important;
+        }
+        .item {
+          float: none !important;
+          transition: all 0.1s ease-in-out;
+          .cut_text:not(:has(.slider__name-wrap:empty)) {
+            display: inline-block !important;
+            overflow: clip clip !important;
+            padding: 2px 4px !important;
+            margin: -2px -4px !important;
+          }
+          &:hover {
+            filter: contrast(0.8) brightness(1.4);
+            z-index: 1;
+            .cut_text {
+              width: auto !important;
+              min-width: 85rem !important;
+              overflow: visible clip !important;
+              z-index: 1;
+              background: #000;
+              background-clip: padding-box;
+              &.away-transparency::before {
+                display: none;
+              }
+            }
+          }
+          a {
+            float: none !important;
+          }
+        }
+        .item_skelet {
+          display: none !important;
+        }
+        .film-page__critics-slider-item {
+          min-width: 260rem !important;
+          &.film-page__critics-slider-item_neutral {
+            background: oklch(45% 0.15 200 / 0.3) !important;
+          }
+          &.film-page__critics-slider-item_good {
+            background: oklch(45% 0.15 160 / 0.3) !important;
+          }
+          &.film-page__critics-slider-item_bad {
+            background: oklch(45% 0.15 30 / 0.3) !important;
+          }
+        }
+        .video img,
+        img[style*="width: 100%"] {
+          width: auto !important;
+        }
+        .poster {
+          background: #0000 !important;
+        }
+        img {
+          display: block !important;
+        }
+      }
+    }
+    .slider-handler:not(#\0) {
+      display: none !important;
+    }
+
+    .slider-container-film {
+      margin: 20rem 0 0 0 !important;
+      padding: 0 !important;
+      .inner .item {
+        margin: 0 15rem 0 0 !important;
+      }
+    }
+  }
+  
+  .addCommentPlaceHolder { /* fix random relative offset out of nowhere */
+    .setCommentWindow, .setStatusWindow {
+      position: static !important;
+    }
+  }
+
+  .film-page__critics-slider .headlines__wrap_show {
+    min-height: 100rem !important;
+  }
+
+  .film-page__movie-logo {
+    display: none !important;
+  }
+
+  .collectionsWindow ul.collectionList_extra-item {
+    height: auto;
+    overflow: hidden;
+  }
+
+  .selectMenu {
+    max-height: calc(min(700rem, max(300rem, 80vh)));
+  }
+  .ui-selectmenu-menu .ui-widget.ui-widget-content {
+    height: auto !important;
+    max-height: calc(min(700rem, max(300rem, 80vh)));
+  }
+
+  .container__arrow-wrap,
+  .upButton {
+    display: none !important;
+  }
+
+  :is(.collectionIconHandler, .userCollectionList li, .collectionList li) :is(.emoji-icon.custom, .icon.custom) {
+    filter: none !important;
+    color: #fff !important;
+    opacity: 0.8 !important;
+  }
+  .collectionList li a {
+    color: #fffa !important;
+    &:hover {
+      color: #f53 !important;
+    }
+  }
+
+  @container if style(--ath-side-menus: 1) {
+    @media (min-width: 1800px) and (min-height: 800px) {
+      .commentOverlay {
+        z-index: 2;
+      }
+      .main-container_experimentFixedMenu {
+        z-index: 2;
+      }
+      .topMenu__wrapper {
+        top: 0 !important;
+        height: 0 !important;
+        z-index: 1;
+        .topMenu {
+          position: static;
+          padding: 0;
+          .toolbox {
+            display: flex;
+            flex-flow: column;
+            position: absolute;
+            left: calc(1280rem / 2 - 50vw + 20px);
+            top: 16px;
+            width: calc(100vw - 40px);
+            .topMenu__logo {
+              margin: 0 0 0 24px;
+            }
+            .topMenu__notify {
+              position: absolute;
+              inset: 0 auto auto calc(50vw - 1280rem / 2 - 130rem);
+            }
+            .topMenu__chat {
+              position: absolute;
+              inset: 0 auto auto calc(50vw - 1280rem / 2 - 90rem);
+            }
+            .topMenu__avatar {
+              position: absolute;
+              inset: 0 0 auto auto;
+            }
+            .userMenu {
+              display: revert !important;
+              opacity: 1 !important;
+              background: none;
+              box-shadow: none;
+              li {
+                background: none !important;
+              }
+            }
+            .topMenu__search-wrap {
+              position: absolute;
+              inset: 40rem auto auto 30rem;
+              width: auto;
+            }
+            .topMenu__menu_desktop {
+              flex-flow: column;
+              padding: 40rem 0 0 0;
+              .topMenu__menu-wrapper {
+                display: flex;
+                flex-flow: column;
+                > li > .trailerCounter,
+                > .topMenu__status-counter > .statusCounter {
+                  display: none !important;
+                }
+                .topMenu__item_bull {
+                  display: none;
+                }
+                .submenu-opener {
+                  padding: 4px 0;
+                }
+                .submenu {
+                  position: static;
+                  display: block !important;
+                  width: 270rem;
+                  padding: 0 0 0 36rem;
+                  opacity: 1 !important;
+                  background: none !important;
+                  .submenu__item {
+                    display: flex;
+                    flex-flow: row;
+                    background: none !important;
+                    &:hover {
+                      border-color: transparent;
+                      background-color: rgba(33, 176, 208, .25) !important;
+                    }
+                    .submenu__extra-links {
+                      position: static;
+                      margin: 8rem 0 0 auto;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
