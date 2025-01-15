@@ -1,6 +1,6 @@
 # User CSS
 
-## Instructions
+## ![](https://icons.duckduckgo.com/ip3/github.com.ico) Instructions
 
 1. **Install ![][Stylus Logo] Stylus extension**:
 
@@ -8,15 +8,15 @@
 
    * [Stylus for Firefox](https://addons.mozilla.org/firefox/addon/styl-us/)
 
-   It is recommended to **put the extension's button on the toolbar** as it'll give access to the currently installed user styles and their options.
+2. It is recommended to **put the extension's button on the toolbar** as it'll give access to the currently installed user styles and their options.
 
-2. Go to the style and **click on its ![User Style Install][Install Style] badge**. You'll see a preview of the style and sometimes an options dialog.
+3. Go to a user style below and **click on its ![User Style Install][Install Style] badge**. You'll see a preview of the style and sometimes an options dialog.
 
-3. Adjust the options if needed, then **click on the ![Install style][Install Style Stylus] button** in the left panel.
+4. Adjust the options if needed, then **click on the ![Install style][Install Style Stylus] button** in the left panel.
 
-4. If at any point you want to **adjust options**, click on the Stylus extension button ![][Stylus Logo], then click on the gear wheel button next to the style.
+5. If at any point you want to **adjust options**, click on the Stylus extension button ![][Stylus Logo], then click on the gear wheel button next to the style.
 
-## FurAffinity.net
+## ![](https://icons.duckduckgo.com/ip3/furaffinity.net.ico) FurAffinity.net
 
 ### FurAffinity.net - Tweaks [![Install FurAffinity.net Tweaks Style][Install Style]](FurAffinity/FurAffinity-Tweaks.user.css?raw=1)
 
@@ -33,7 +33,7 @@ Various small tweaks in usability and style, all toggled through options. It is 
 * Hiding FA+, virtue signalling, scraping warning
 * Hiding redundant controls on the submission page
 
-## InkBunny.net
+## ![](https://icons.duckduckgo.com/ip3/inkbunny.net.ico) InkBunny.net
 
 ### InkBunny.net - Compact Dark [![Install InkBunny.net Compact Dark Style][Install Style]](InkBunny/InkBunny-CompactDark.user.css?raw=1)
 
@@ -48,7 +48,7 @@ Primarily a dark theme, but includes several optional usability improvements.
 * Compact header and footer options
 * Pagination improvements
 
-## e621.net / e926.net / e6ai.net
+## ![](https://icons.duckduckgo.com/ip3/e621.net.ico) e621.net / e926.net / e6ai.net
 
 ### e621.net - Tricksta Esix [![Install e621.net Tricksta Esix Style][Install Style]](e621/e621-TrickstaEsix.user.css?raw=1)
 
@@ -61,7 +61,7 @@ Redesign of the front page. It is optimized for high screen resolutions, but sho
 * Redesigned controls to match the mascot.
 * Small Esix at the bottom of every page.
 
-## DerpiBooru.org / TrixieBooru.org
+## ![](https://icons.duckduckgo.com/ip3/derpibooru.org.ico) DerpiBooru.org / TrixieBooru.org
 
 ### DerpiBooru.org - Tweaks [![Install DerpiBooru.org Tweaks Style][Install Style]](DerpiBooru/DerpiBooru-Tweaks.user.css?raw=1)
 
