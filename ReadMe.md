@@ -10,6 +10,8 @@ A collection of **user styles** by [@Athari](/Athari).
 
 **See also:** [User JS](https://github.com/Athari/AthariUserJS) (@Athari's collection of user scripts).
 
+**Note:** Functionality may be limited in Firefox as some user styles rely on [CSS container style queries](https://caniuse.com/css-container-queries-style) for conditionally applying configurable options. Sadly, all CSS preprocessors supported by the Stylus extension are essentially abandoned and break basic CSS features, which turns writing styles into navigating a minefield; and Firefox is behind in implementing modern CSS features, which limits the functionality available to pure CSS styles. With Firefox's dwindling worldwide usage numbers, I have to make the choice in favor of preserving whatever remains of my sanity.
+
 ## ⚙️ Instructions
 
 1. **Install ![][Stylus Logo] Stylus extension**:
