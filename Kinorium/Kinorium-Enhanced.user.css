@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Kinorium.com – Enhanced [Ath]
-@namespace      kinorium
-@version        1.0.1
+@namespace      athari
+@version        1.2.1
 @description    Kinorium.com: various usability enhancements.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -88,6 +88,10 @@
     }
   }
 
+  .userPage__follow-buttons-box {
+    width: 300rem;
+  }
+
   .film-page_leftContent {
     .ratingsBlock {
       display: flex !important;
@@ -155,6 +159,7 @@
   .gallery.jsConnectionGallery {
     display: inline flex !important;
     flex-flow: column !important;
+    max-width: 100%;
     margin: 0 !important;
     .headlines-slide {
       margin: 0 !important;
@@ -423,9 +428,13 @@
             background: oklch(45% 0.15 30 / 0.3) !important;
           }
         }
-        .video img,
+        .videoBg img,
         img[style*="width: 100%"] {
           width: auto !important;
+          .sliderMainList li & {
+            width: 100% !important;
+            object-fit: cover;
+          }
         }
         .poster {
           background: #0000 !important;
