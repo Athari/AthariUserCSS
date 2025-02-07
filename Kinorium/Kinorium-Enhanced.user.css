@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Kinorium.com – Enhanced [Ath]
 @namespace      athari
-@version        1.2.2
+@version        1.2.3
 @description    Kinorium.com: various usability enhancements.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -472,6 +472,12 @@
 
   .film-page__movie-logo {
     display: none !important;
+  }
+
+  .sites_page .sites {
+    .sites-page__title-group {
+      margin: 20rem 0 10rem 0;
+    }
   }
 
   .collectionsWindow ul.collectionList_extra-item {
