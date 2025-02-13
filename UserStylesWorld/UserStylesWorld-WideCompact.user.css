@@ -1,0 +1,495 @@
+/* ==UserStyle==
+@name           UserStyles.world – Wide Compact [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Wide compact layout for UserStyles.world. Minimum supported screen width: 1280 pixels. Includes all pages: explore, search, style, profile, settings, documentation. Many configurable options: page width, form column width, fixed toolbar, fitting of thumbnails, all fonts etc. Compatible with all current feature previews. Disable sidebar navigation in site settings to restore search box in the toolbar.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+@var            number   ath-page-thumbs-width  "Page max width (thumbnails)" [10000, 1000, 1000000, 20, 'px']
+@var            number   ath-page-width         "Page max width (content)"    [2000, 1000, 4000, 20, 'px']
+@var            number   form-max-width         "Form column width"           [600, 400, 900, 20, 'px']
+@var            number   card-min-width         "Thumbnail width"             [300, 180, 300, 10, 'px']
+@var            select   ath-thumb-fit          "Thumbnail fit"               ["contain:Contain*", "cover:Cover", "fill:Fill", "scale_down:Scale down"]
+@var            select   ath-resize-preview     "Resize preview on"           ["never:Never", "hover:Hover", "active:Click*"]
+@var            checkbox ath-fixed-toolbar      "Fixed toolbar"               1
+@var            checkbox ath-show-empty         "Show empty sections"         0
+@var            checkbox ath-show-footer        "Show footer"                 1
+@var            checkbox ath-show-external-link "Show 🔗 on external links"   1
+@var            text     font-sans              "Font - Sans-serif"           "Segoe UI, Inter, -apple-system, Roboto, Helvetica, Arial, Droid Sans, sans-serif"
+@var            text     font-mono              "Font - Monospace"            "Cascadia Code, Iosevka, Fira Code, Fira Mono, Droid Mono, Ubuntu Mono, Monaco, monospace"
+@var            text     font-emoji             "Font - Emoji"                "Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol"
+==/UserStyle== */
+
+@-moz-document domain("userstyles.world") {
+  :root {
+    --bg-a: light-dark(#fff, #000);
+    --bg-0: light-dark(#eee, #111);
+    --layout-max-width: var(--ath-page-thumbs-width);
+  }
+
+  @container style(--ath-thumb-fit: scale_down) { body { --ath-thumb-fit: scale-down } }
+
+  select.Form-select, input {
+    padding: 3px 10px !important;
+    min-height: 0;
+    min-width: 200px;
+  }
+  h1 {
+    font-size: 1.3rem !important;
+  }
+  h2 {
+    text-decoration: none !important;
+    font-size: 1.2rem;
+  }
+
+  body {
+    display: flex !important;
+    flex-flow: column !important;
+    min-height: 100vh;
+    padding: 0 !important;
+    overflow: hidden scroll;
+    font-size: 15px;
+  }
+  @container style(--ath-show-external-link: 0) {
+    a:is([href^='/link/'], [href^='http'])::after {
+      content: unset;
+    }
+  }
+  @container style(--ath-show-external-link: 1) {
+    a:is([href^='/link/'], [href^='http'])::after {
+      content: " 🔗";
+      color: #000a;
+      vertical-align: initial;
+    }
+  }
+  #navbar, .navbar {
+    position: static;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: space-between;
+    max-width: none;
+    padding: 0 20px;
+    background: var(--bg-0);
+    border: solid 1px var(--bg-2);
+    border-width: 0 0 1px 0;
+    box-shadow: 0 0 4px light-dark(#0008, #000);
+    .menu {
+      display: contents;
+      .Dropdown {
+        display: flex;
+        flex-flow: row;
+        gap: 20px;
+        padding: 2px;
+        .btn {
+          display: none;
+        }
+        ul {
+          display: flex;
+          flex-flow: row;
+          li {
+            margin: 0;
+            a {
+              padding: 7px 10px;
+            }
+          }
+        }
+      }
+    }
+    .wrapper /*old toolbar layout*/ {
+      padding: 2px 0;
+      display: flex;
+      align-items: center;
+      > a {
+        padding: 0;
+      }
+      li {
+        &:has(a[href^="/user/"]) {
+          margin-left: auto;
+        }
+        a {
+          margin: 0;
+          padding: 5px 10px;
+          text-decoration: none;
+        }
+      }
+      form {
+        margin: 0;
+        padding: 0;
+        max-width: 16em;
+        input {
+          margin: 0 !important;
+          background: rgb(from var(--bg-1) r g b / 0.3);
+          &:focus {
+            background: rgb(from var(--bg-1) r g b / 0.7);
+          }
+          &::placeholder {
+            color: var(--fg-3);
+          }
+          &::-webkit-search-cancel-button {
+            cursor: pointer;
+            margin: 0 24px 0 0;
+            opacity: 0.6;
+          }
+        }
+        button {
+          margin: 0 !important;
+          right: 0;
+          background: rgb(from var(--bg-1) r g b / 0.4);
+        }
+      }
+    }
+  }
+  @container style(--ath-fixed-toolbar: 1) {
+    #navbar, .navbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 1000;
+      background: rgb(from var(--bg-0) r g b / 0.6);
+      border-color: rgb(from var(--bg-2) r g b / 0.6);
+      backdrop-filter: brightness(1.5) saturate(3) blur(10px);
+      .menu a:hover {
+        background: rgb(from var(--bg-5) r g b / 0.3);
+      }
+    }
+    body {
+      padding-top: calc(1rem + 25px) !important;
+    }
+  }
+  main#content {
+    flex: 1;
+    display: flex !important;
+    gap: 0;
+    min-height: 0;
+    margin: 0 0 20px 0;
+    padding: 0 !important;
+    section:has(h1):not([id]) /*header*/ {
+      display: flex;
+      flex-flow: row wrap;
+      margin: 5px;
+      gap: 5px 20px;
+      align-items: baseline;
+      p {
+        margin: 0;
+      }
+    }
+    section:has(h1) + section:not([class]):not([id]):has(.grid.flex .card) /*main after header*/ {
+      margin: calc(0px - 1.3rem - 12px) 0 0 0;
+    }
+    .grid.flex {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
+      justify-content: space-between;
+      gap: 10px;
+      margin: 10px 0;
+      .card.col {
+        display: subgrid;
+        margin: 0;
+        picture img {
+          background: #000;
+          object-fit: var(--ath-thumb-fit);
+          object-position: center;
+        }
+        * {
+          font-size: 0.8rem;
+        }
+        .card-body {
+          display: flex;
+          flex-flow: row wrap;
+          padding: 4px 8px;
+          align-items: baseline;
+          > small {
+            span {
+              font-size: 0;
+            }
+            order: 3;
+            width: auto;
+            margin: 0 0 0 auto;
+          }
+          > a {
+            order: 1;
+            font-weight: 500;
+          }
+          > span {
+            order: 2;
+            width: auto;
+          }
+        }
+        .card-footer {
+          padding: 4px 8px;
+        }
+      }
+    }
+    &:has(#preview) /*style page*/ {
+      max-width: var(--ath-page-width);
+      margin: 0 auto !important;
+      padding: 0 !important;
+      #preview {
+        --ath-resize-preview-enabled: 0;
+        --ath-resize-preview-cursor: default;
+        @container style(--ath-resize-preview: hover) {
+          &:has(.card:hover) {
+            --ath-resize-preview-enabled: 1;
+          }
+        }
+        @container style(--ath-resize-preview: active) {
+          & {
+            --ath-resize-preview-cursor: pointer;
+          }
+          &:has(.card:active) {
+            --ath-resize-preview-enabled: 1;
+          }
+        }
+        position: relative;
+        margin: 10px 0;
+        padding: 0;
+        h1 {
+          margin: 0 20px !important;
+        }
+        p:has(code) {
+          position: absolute;
+          inset: 5px 20px 0 auto;
+        }
+        .card {
+          position: absolute;
+          inset: 90px 50% auto auto;
+          min-width: 0;
+          margin: 0 0 0 20px;
+          display: flex;
+          flex-flow: column;
+          z-index: 100;
+          font-size: 0;
+          cursor: var(--ath-resize-preview-cursor);
+          .screenshot {
+            padding: 0;
+            .blurred {
+              display: none;
+            }
+            picture {
+              position: static;
+              display: block;
+            }
+          }
+        }
+        @container style(--ath-resize-preview-enabled: 1) {
+          .card {
+            right: auto;
+            left: 0;
+            min-width: calc(50% - 20px);
+            max-width: calc(100vw - 50px);
+            picture {
+              text-align: right;
+            }
+          }
+        }
+      }
+      .header {
+        padding: 0 20px !important;
+      }
+      section {
+        margin: 0;
+        &[id]:not(#preview) {
+          display: inline-block;
+          width: fit-content;
+          max-width: calc(min(50vw - 40px, var(--ath-page-width) / 2));
+          margin: 10px 20px 0 calc(50% + 10px);
+          padding: 3px 10px;
+          background: var(--bg-2);
+          border: solid 1px var(--bg-3);
+          border-radius: 10px;
+        }
+        &#stats {
+          position: absolute;
+          inset: 140px calc(50vw - min(50vw, var(--ath-page-width) / 2 + 10px)) auto auto;
+        }
+        @supports (position-anchor: --a) {
+          &#details {
+            anchor-name: --ath-anchor-details;
+          }
+          &#stats {
+            position-anchor: --ath-anchor-details;
+            position-area: right span-bottom;
+            left: anchor(right);
+            top: anchor(top);
+            bottom: anchor(bottom);
+            margin: 0 0 0 10px !important;
+          }
+        }
+        &#code {
+          order: 100;
+          max-width: calc(min(100vw, var(--ath-page-width)) - 60px) !important;
+          margin-inline: auto 20px !important;
+          text-align: right;
+          &:hover {
+            z-index: 100;
+          }
+          .Style-source {
+            border: none;
+          }
+          pre {
+            position: static;
+            font-size: 12px;
+            height: 80vh;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            text-align: left;
+            border: none;
+          }
+        }
+        &:is(#notes, #description, #reviews) {
+          width: calc(var(--ath-page-width) / 2 - 30px) !important;
+        }
+        @container style(--ath-hide-empty: 0) {
+          &:is(#notes, #description):has(i:nth-child(2)):not(:has(i + *)) {
+            display: none !important;
+          }
+        }
+        @container style(--ath-hide-empty: 1) {
+          &:is(#notes, #description):has(i:nth-child(2)):not(:has(i + *)) {
+            i {
+              color: var(--fg-4);
+            }
+          }
+        }
+        #share {
+          max-width: none;
+        }
+        h2 {
+          font-size: 1rem;
+          margin: 0;
+        }
+        p {
+          margin: 0;
+          font-size: 0.9rem;
+          color: var(--fg-3);
+          &:not(:has(.minw)) {
+            color: var(--fg-5);
+          }
+          .minw {
+            color: var(--fg-1);
+          }
+        }
+        .md {
+          max-height: none;
+          p {
+            color: var(--fg-3);
+          }
+        }
+      }
+    }
+    &:has(#password) /*settings page*/ {
+      display: block !important;
+      margin-inline: auto !important;
+      column-width: var(--form-max-width);
+      column-gap: 20px;
+      column-fill: balance;
+      section {
+        break-inside: avoid;
+        > :is(h2, p) {
+          break-after: avoid;
+        }
+        > form {
+          break-before: avoid;
+        }
+      }
+    }
+    &:has(#details .joined) /*profile page*/ {
+      display: flex !important;
+      flex-flow: row wrap;
+      justify-content: center;
+      align-items: baseline;
+      gap: 10px;
+      section:not(#styles) {
+        width: auto;
+        margin: 0;
+        h1, h2 {
+          margin: 0 0 10px 0;
+        }
+        p {
+          margin: 0;
+          .minw {
+            color: var(--fg-3);
+          }
+        }
+      }
+      #styles {
+        margin-bottom: auto;
+      }
+    }
+    article.docs.md /*help docs*/ {
+      max-width: var(--ath-page-width);
+    }
+  }
+  footer.Footer {
+    background: var(--bg-0);
+    margin: 10px 0 0 0;
+    .Footer-wrapper {
+      display: flex;
+      flex-flow: column;
+      padding: 15px 20px;
+      margin: 0;
+      .Footer-list {
+        display: flex;
+        flex-flow: row;
+        gap: 20px;
+        margin: 2px 0;
+        padding: 2px 10px;
+        &.half /*about line*/ {
+          justify-content: space-between;
+          order: 3;
+          color: var(--fg-5);
+        }
+        &:not(.half) {
+          -border-bottom: solid 1px var(--bg-2);
+        }
+        &:nth-child(3) {
+          background: var(--bg-1);
+        }
+        li {
+          padding: 0;
+          margin: 0;
+          a, b {
+            padding: 0;
+            margin: 0;
+          }
+          b {
+            color: var(--fg-2);
+          }
+        }
+        .about {
+          max-width: none !important;
+        }
+        li:has(.copyright) {
+          margin-left: auto;
+        }
+      }
+    }
+  }
+  @container style(--ath-show-footer: 0) {
+    footer.Footer {
+      display: none;
+    }
+  }
+
+  :is(form, .form-wrapper):not(.Form) {
+    max-width: calc(100vw - 50px);
+    display: block;
+    margin-inline: 15px !important;
+    column-width: var(--form-max-width);
+    column-gap: 10px;
+    column-fill: balance;
+    label, i {
+      break-after: avoid;
+    }
+    input {
+      break-before: avoid;
+    }
+    button[type=submit] {
+      column-span: all;
+      margin: 10px auto 0;
+    }
+  }
+}
