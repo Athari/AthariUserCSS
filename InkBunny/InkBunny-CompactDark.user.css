@@ -1,6 +1,6 @@
 /* ==UserStyle==
-@name           InkBunny.net - Compact Dark [Ath]
-@namespace      github.com/athari
+@name           InkBunny.net – Compact Dark [Ath]
+@namespace      athari
 @version        1.0.1
 @description    InkBunny.net: dark theme with usability improvements and vector graphics.
 @author         Athari (https://github.com/Athari)
@@ -8,25 +8,25 @@
 @supportURL     https://github.com/Athari/AthariUserCSS/issues
 @license        MIT
 @preprocessor   less
-@var            checkbox ath-compact-header "Compact header" 0
-@var            checkbox ath-compact-footer "Compact footer" 0
-@var            checkbox ath-big-pagination "Big pagination buttons" 1
-@var            checkbox ath-static-site-notice "Static site notice" 1
-@var            select ath-fixed-upload "Submission upload form" ["default:Default*", "visible:Always visible", "left:Left fixed", "right:Right fixed"]
-@var            checkbox ath-style-story "Style text submissions" 1
-@var            text ath-story-font "Story text font" "20px/1.3 Segoe UI, Verdana, sans-serif"
-@var            color ath-story-color "Story text color" "#bbb"
-@var            color ath-story-background "Story background color" "#28282d"
-@var            range ath-story-width "Story text width" [800, 400, 920, 10, 'px']
-@var            checkbox ath-color-scheme "Dark color scheme" 1
-@var            range ath-color-hue-base "Theme color hue" [300, 0, 360]
-@var            range ath-color-chroma-base "Theme color saturation" [6, 0, 100]
-@var            color ath-color-link-1-base "Link color (main)" #aae
-@var            color ath-color-link-2-base "Link color (marked)" #f33
-@var            range ath-color-bg-dark "Background darkness" [6, 0, 100]
-@var            range ath-color-bg-light "Background lightness" [40, 0, 100]
-@var            range ath-color-text-dark "Text darkness" [60, 0, 100]
-@var            range ath-color-text-light "Text lightness" [90, 0, 100]
+@var            checkbox ath-compact-header     "Compact header"         0
+@var            checkbox ath-compact-footer     "Compact footer"         0
+@var            checkbox ath-big-pagination     "Big pagination buttons" 1
+@var            checkbox ath-static-site-notice "Static site notice"     1
+@var            select   ath-fixed-upload       "Submission upload form" ["default:Default*", "visible:Always visible", "left:Left fixed", "right:Right fixed"]
+@var            checkbox ath-style-story        "Style text submissions" 1
+@var            text     ath-story-font         "Story text font"        "20px/1.3 Segoe UI, Verdana, sans-serif"
+@var            color    ath-story-color        "Story text color"       "#bbb"
+@var            color    ath-story-background   "Story background color" "#28282d"
+@var            range    ath-story-width        "Story text width"       [800, 400, 920, 10, 'px']
+@var            checkbox ath-color-scheme       "Dark color scheme"      1
+@var            range    ath-color-hue-base     "Theme color hue"        [300, 0, 360]
+@var            range    ath-color-chroma-base  "Theme color saturation" [6, 0, 100]
+@var            color    ath-color-link-1-base  "Link color (main)"      #aae
+@var            color    ath-color-link-2-base  "Link color (marked)"    #f33
+@var            range    ath-color-bg-dark      "Background darkness"    [6, 0, 100]
+@var            range    ath-color-bg-light     "Background lightness"   [40, 0, 100]
+@var            range    ath-color-text-dark    "Text darkness"          [60, 0, 100]
+@var            range    ath-color-text-light   "Text lightness"         [90, 0, 100]
 ==/UserStyle== */
 @-moz-document domain("inkbunny.net") {
   @import (css) url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700');
