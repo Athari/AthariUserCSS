@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           UserStyles.world – Wide Compact [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.1.0
 @description    Wide compact layout for UserStyles.world. Minimum supported screen width: 1280 pixels. Includes all pages: explore, search, style, profile, settings, documentation. Many configurable options: page width, form column width, fixed toolbar, fitting of thumbnails, all fonts etc. Compatible with all current feature previews. Disable sidebar navigation in site settings to restore search box in the toolbar.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -32,7 +32,7 @@
 
   @container style(--ath-thumb-fit: scale_down) { body { --ath-thumb-fit: scale-down } }
 
-  select.Form-select, input {
+  select.Form-select, input:not([type=checkbox], [type=radio]) {
     padding: 3px 10px !important;
     min-height: 0;
     min-width: 200px;
@@ -390,13 +390,50 @@
         break-inside: avoid;
         > :is(h2, p) {
           break-after: avoid;
+          .minw {
+            color: var(--fg-3);
+          }
         }
         > form {
           break-before: avoid;
         }
+        .Form-box {
+          display: flex;
+          flex-flow: row wrap;
+          align-items: flex-end;
+          gap: 10px;
+          padding: 10px 12px 14px;
+          .Form-section {
+            flex: 1;
+            display: flex;
+            flex-flow: row wrap;
+            align-items: baseline;
+            gap: 0 20px;
+            margin: 0;
+            &:has(#current-password) {
+              flex: 100%;
+            }
+            i {
+              margin: 0 0 0 auto;
+            }
+            input {
+              width: 100%;
+            }
+          }
+          .Form-control {
+            margin: 0;
+            width: 100%;
+          }
+          button[type=submit] {
+            margin-right: 100px;
+          }
+        }
+      }
+      #welcome {
+        column-span: all;
       }
     }
-    &:has(#details .joined) /*profile page*/ {
+    &:has(#details .joined):not(:has(#password)) /*profile page*/ {
       display: flex !important;
       flex-flow: row wrap;
       justify-content: center;
