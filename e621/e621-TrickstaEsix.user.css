@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           e621.net - Tricksta Esix [Ath]
-@namespace      e621
-@version        1.0.1
+@namespace      athari
+@version        1.1.0
 @description    Tricksta's Esix on the front page of e621.net, e926.net and e6ai.net as a mascot. Restyled controls on the front page to match the image. Small Esix at the bottom of each page.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -59,126 +59,112 @@
   }
 
   /* Hexagon boxes */
+  #page:not(#\0) {
+    display: contents;
+  }
+  #c-static {
+    display: contents;
+  }
   #a-home {
     position: absolute !important;
+    inset: 0;
     inset: 500px 0 0 0 !important;
-    height: calc(100vh - 500px) !important;
+  }
+  .home-section {
+    backdrop-filter: none !important;
+  }
+  .home-section:has(#home-search-form) {
+    width: 380px;
+    margin: 0 auto;
+    padding: 30px 100px 120px;
     background: var(--hexagon-image) 50% 0 no-repeat !important;
-  }
-  .mascotbox {
-    padding: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-  #searchbox {
-    width: 420px !important;
-    height: 120px !important;
-    h1 {
-      margin: 0 auto !important;
+    .home-buttons a {
+      background: #25477b66;
+      &:hover {
+        background: #25477baa;
+      }
     }
   }
-  #searchbox2 {
-    width: 320px;
-    height: 80px;
+  .home-section:has(.news-excerpt) {
+    position: absolute;
+    inset: auto 1rem 5px auto;
+    display: flex;
+    flex-flow: column-reverse;
+    width: calc(min(50vw - 10rem, 800px));
+    background: none !important;
+    opacity: 0.8;
+    margin: 0 !important;
+    padding: 0 !important;
+    .news-excerpt,
+    .previous-news-link {
+      text-align: right;
+    }
   }
-
-  /* Footer */
+  .home-footer-top {
+    display: none !important;
+  }
+  .home-footer-bottom {
+    margin: -104px 0 0 0 !important;
+    background: none !important;
+    .home-footer-links {
+      position: absolute;
+      inset: auto auto 5px 1rem;
+      width: calc(min(50vw - 10rem, 800px));
+      text-align: left;
+      br {
+        display: none;
+      }
+    }
+  }
   #a-home::before {
     content: "Mascot by Tricksta";
     position: absolute !important;
-    inset: auto auto 5px 1rem !important;
+    inset: auto 0 5px 0 !important;
     font-size: 80% !important;
-    text-align: left !important;
-  }
-  #searchbox3 {
-    position: absolute !important;
-    inset: auto 1rem 5px auto !important;
-    width: auto !important;
-    height: auto !important;
-    background: none !important;
-    padding: 0 !important;
-    text-align: right !important;
-  }
-  #searchbox3::before,
-  #searchbox3::after {
-    display: none !important;
-  }
-  #news-excerpt-box {
-    position: absolute !important;
-    margin: 0 !important;
-    text-align: right !important;
-    inset: auto 1rem 3rem auto !important;
-    width: calc((100vw - 2rem - 700px) / 2) !important;
-    max-width: 400px !important;
-    .news-excerpt {
-      padding: 0 !important;
-    }
+    text-align: center !important;
   }
 
   /* Controls and links */
-  .mascotbox a {
-    --link-color: var(--color-white);
-    --link-stroke-width: 1px;
-    --link-stroke-color: var(--color-blue-light);
-    color: var(--link-color) !important;
-    text-shadow:
-      calc(var(--link-stroke-width) * 1) calc(var(--link-stroke-width) * 1) 0 var(--link-stroke-color),
-      calc(var(--link-stroke-width) * 1) calc(var(--link-stroke-width) * -1) 0 var(--link-stroke-color),
-      calc(var(--link-stroke-width) * -1) calc(var(--link-stroke-width) * 1) 0 var(--link-stroke-color),
-      calc(var(--link-stroke-width) * -1) calc(var(--link-stroke-width) * -1) 0 var(--link-stroke-color)
-      !important;
+  menu {
+    a {
+      --link-color: var(--color-white);
+      --link-stroke-width: 1px;
+      --link-stroke-color: var(--color-blue-light);
+      color: var(--link-color) !important;
+      text-shadow:
+        calc(var(--link-stroke-width) * 1) calc(var(--link-stroke-width) * 1) 0 var(--link-stroke-color),
+        calc(var(--link-stroke-width) * 1) calc(var(--link-stroke-width) * -1) 0 var(--link-stroke-color),
+        calc(var(--link-stroke-width) * -1) calc(var(--link-stroke-width) * 1) 0 var(--link-stroke-color),
+        calc(var(--link-stroke-width) * -1) calc(var(--link-stroke-width) * -1) 0 var(--link-stroke-color)
+        !important;
+      &:hover {
+        --link-color: var(--color-orange-medium);
+      }
+    }
   }
-  .mascotbox a:hover {
-    --link-color: var(--color-orange-medium);
-  }
-  .mascotbox h1 a {
-    --link-color: var(--color-orange-medium);
-    --link-stroke-width: 2px;
-    --link-stroke-color: var(--color-blue-dark);
-  }
-  .mascotbox h1 a:hover {
-    --link-color: var(--color-orange-dark);
-  }
-  .mascotbox input {
-    border-radius: 3px;
-    box-shadow: 0 0 3px 1px var(--color-blue-dark) !important;
-  }
-  .mascotbox input[type=text] {
-    color: var(--color-blue-dark) !important;
-    background: var(--color-white) !important;
-    border: solid 1px var(--color-orange-dark) !important;
-  }
-  .mascotbox input[type=text]:hover,
-  .mascotbox input[type=text]:focus {
-    background: var(--color-orange-light) !important;
-    border-color: var(--color-blue-light) !important;
-  }
-  .mascotbox input[type=submit] {
-    color: var(--color-blue-dark) !important;
-    background: var(--color-orange-medium) !important;
-    border: solid 1px var(--color-orange-dark) !important;
-  }
-  .mascotbox input[type=submit]:hover,
-  .mascotbox input[type=submit]:focus {
-    background: var(--color-orange-dark) !important;
-    border-color: var(--color-blue-light) !important;
-  }
-  #searchbox3 a {
-    text-shadow: none !important;
-  }
-  #content2::before,
-  #searchbox3 {
-    opacity: 0.6 !important;
-  }
-  #searchbox3:hover {
-    opacity: 1.0 !important;
-  }
-
-  /* Remove unneeded boxes */
-  #searchbox br,
-  #mascot_artist,
-  input[value="Change Mascot"] {
-    display: none !important;
+  .home-search {
+    input, button {
+      border-radius: 3px;
+      box-shadow: 0 0 3px 1px var(--color-blue-dark) !important;
+      &[type=text] {
+        color: var(--color-blue-dark) !important;
+        background: var(--color-white) !important;
+        border: solid 1px var(--color-orange-dark) !important;
+        &:is(:focus, :hover) {
+          background: var(--color-orange-light) !important;
+          border-color: var(--color-blue-light) !important;
+        }
+      }
+      &[type=submit] {
+        color: var(--color-blue-dark) !important;
+        background: var(--color-orange-medium) !important;
+        border: solid 1px var(--color-orange-dark) !important;
+        &:is(:focus, :hover) {
+          background: var(--color-orange-dark) !important;
+          border-color: var(--color-blue-light) !important;
+        }
+      }
+    }
   }
 
   /* CloudFlare error */
@@ -217,21 +203,9 @@
       background: 50% 0 / auto auto no-repeat scroll !important;
     }
   }
-  @media (max-width: 1280px) {
-    #news-excerpt-box {
-      inset: auto 1rem 3rem auto !important;
-      width: 250px !important;
-    }
-  }
   @media (max-width: 980px) {
     #a-home {
       background-position: calc(100% - 215px) 0 !important;
-    }
-    #searchbox {
-      margin: 10px 250px 10px auto !important;
-    }
-    #searchbox2 {
-      margin: 10px calc(250px + (420px - 320px) / 2) 10px auto !important;
     }
   }
   @media (max-width: 800px) {
@@ -243,11 +217,8 @@
     #a-home {
       background-position: 50% 10px !important;
     }
-    #searchbox,
-    #searchbox2 {
-      margin: 10px auto !important;
-    }
-    #news-excerpt-box {
+    .home-footer-links,
+    .home-section:has(.news-excerpt) {
       display: none !important;
     }
   }
