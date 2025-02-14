@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           UserStyles.world – Wide Compact [Ath]
 @namespace      athari
-@version        1.1.0
+@version        1.2.0
 @description    Wide compact layout for UserStyles.world with extras. Supports all pages. Many configurable options: page width, form column width, fixed toolbar, fonts etc.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -11,7 +11,7 @@
 @var            number   ath-page-thumbs-width  "Page max width (thumbnails)" [10000, 1000, 1000000, 20, 'px']
 @var            number   ath-page-width         "Page max width (content)"    [2000, 1000, 4000, 20, 'px']
 @var            number   form-max-width         "Form column width"           [600, 400, 900, 20, 'px']
-@var            number   card-min-width         "Thumbnail width"             [300, 180, 300, 10, 'px']
+@var            number   card-min-width         "Thumbnail width"             [300, 180, 400, 10, 'px']
 @var            select   ath-thumb-fit          "Thumbnail fit"               ["contain:Contain*", "cover:Cover", "fill:Fill", "scale_down:Scale down"]
 @var            select   ath-resize-preview     "Resize preview on"           ["never:Never", "hover:Hover", "active:Click*"]
 @var            checkbox ath-fixed-toolbar      "Fixed toolbar"               1
@@ -56,6 +56,9 @@
     }
     p, li {
       margin: 0.3rem 0;
+    }
+    code, pre {
+      font-size: 0.9rem;
     }
     :is(h1, h2, h3, h4, h5, h6) {
       margin: 0.4em 0 0.3em;
@@ -214,7 +217,7 @@
     section:has(h1) + section:not([class]):not([id]):has(.grid.flex .card) /*main after header*/ {
       margin: calc(0px - 1.3rem - 12px) 0 0 0;
     }
-    .grid.flex {
+    .grid.flex /*style list*/ {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
       justify-content: space-between;
@@ -280,18 +283,27 @@
           }
         }
         position: relative;
+        display: flex !important;
+        flex-flow: row;
+        gap: 20px;
+        align-items: baseline;
         margin: 10px 0;
         padding: 0;
         h1 {
-          margin: 0 20px !important;
+          margin: 0 auto 0 20px !important;
+        }
+        p {
+          color: var(--fg-3);
         }
         p:has(code) {
-          position: absolute;
-          inset: 5px 20px 0 auto;
+          margin: 0 20px 0 0;
+        }
+        p:not(:has(code)) {
+          text-align: center;
         }
         .card {
           position: absolute;
-          inset: 90px 50% auto auto;
+          inset: calc(3.3rem + 41px) 50% auto auto;
           min-width: 0;
           margin: 0 0 0 20px;
           display: flex;
@@ -380,7 +392,6 @@
           order: 100;
           max-width: calc(min(100vw, var(--ath-page-width)) - 60px) !important;
           margin-inline: auto 20px !important;
-          text-align: right;
           &:hover {
             z-index: 100;
           }
@@ -397,19 +408,33 @@
             border: none;
           }
         }
-        &:is(#notes, #description, #reviews) {
-          width: calc(var(--ath-page-width) / 2 - 30px) !important;
-        }
-        @container style(--ath-show-empty: 0) {
-          &:is(#notes, #description, #reviews):has(i:nth-child(2)):not(:has(i + *)) {
-            display: none !important;
+        @supports (position-anchor: --a) {
+          &#reviews {
+            anchor-name: --ath-anchor-reviews;
+          }
+          &#preview .card {
+            anchor-name: --ath-anchor-preview;
+          }
+          &#code {
+            anchor-name: --ath-anchor-code;
+            position: absolute;
+            top: max(anchor(--ath-anchor-preview bottom), anchor(--ath-anchor-reviews bottom));
+            left: 0;
+            right: 0;
+            margin-inline: auto !important;
           }
         }
-        @container style(--ath-show-empty: 1) {
-          &:is(#notes, #description, #reviews):has(i:nth-child(2)):not(:has(i + *)) {
+        &:is(#notes, #description, #reviews) {
+          width: calc(var(--ath-page-width) / 2 - 30px) !important;
+          &:has(i:nth-child(2)):not(:has(i + *)) {
             i {
               color: var(--fg-4);
             }
+          }
+        }
+        @container style(--ath-show-empty: 0) {
+          &:is(#notes, #description):has(i:nth-child(2)):not(:has(i + *)) {
+            display: none !important;
           }
         }
         #share {
@@ -419,7 +444,6 @@
           font-size: 1rem;
           margin: 0;
         }
-        /**/
       }
     }
     &:has(#password) /*settings page*/ {
@@ -576,6 +600,14 @@
         li:has(.copyright) {
           margin-left: auto;
         }
+      }
+    }
+    @supports (position-anchor: --a) {
+      :has(section#preview) & {
+        position: absolute;
+        top: anchor(--ath-anchor-code bottom);
+        left: 0;
+        right: 0;
       }
     }
   }
