@@ -2,7 +2,7 @@
 @name           UserStyles.world – Wide Compact [Ath]
 @namespace      athari
 @version        1.1.0
-@description    Wide compact layout for UserStyles.world. Minimum supported screen width: 1280 pixels. Includes all pages: explore, search, style, profile, settings, documentation. Many configurable options: page width, form column width, fixed toolbar, fitting of thumbnails, all fonts etc. Compatible with all current feature previews. Disable sidebar navigation in site settings to restore search box in the toolbar.
+@description    Wide compact layout for UserStyles.world with extras. Supports all pages. Many configurable options: page width, form column width, fixed toolbar, fonts etc.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
 @supportURL     https://github.com/Athari/AthariUserCSS/issues
@@ -43,6 +43,41 @@
   h2 {
     text-decoration: none !important;
     font-size: 1.2rem;
+  }
+
+  .md:not(#\0) {
+    font-size: 0.95rem;
+    line-height: 1.3;
+    max-height: none;
+    :not(a) {
+      font-size: inherit;
+      line-height: 1.3;
+      color: var(--fg-2);
+    }
+    p, li {
+      margin: 0.3rem 0;
+    }
+    :is(h1, h2, h3, h4, h5, h6) {
+      margin: 0.4em 0 0.3em;
+    }
+    h1 {
+      font-size: 1.6rem !important;
+    }
+    h2 {
+      font-size: 1.4rem !important;
+    }
+    h3 {
+      font-size: 1.2rem !important;
+    }
+    h4 {
+      font-size: 1.1rem !important;
+    }
+    h5 {
+      font-size: 1.0rem !important;
+    }
+    h6 {
+      font-size: 0.9rem !important;
+    }
   }
 
   body {
@@ -211,6 +246,7 @@
           }
           > a {
             order: 1;
+            font-size: 0.95rem;
             font-weight: 500;
           }
           > span {
@@ -304,6 +340,28 @@
         &#stats {
           position: absolute;
           inset: 140px calc(50vw - min(50vw, var(--ath-page-width) / 2 + 10px)) auto auto;
+          h2 + p {
+            height: 2lh;
+            line-height: 1.3;
+            text-align: right;
+            overflow: clip;
+          }
+          a {
+            display: block;
+          }
+        }
+        &:is(#details, #stats) {
+          p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--fg-1);
+            &:not(:has(.minw)) {
+              color: var(--fg-5);
+            }
+            .minw {
+              color: var(--fg-3);
+            }
+          }
         }
         @supports (position-anchor: --a) {
           &#details {
@@ -311,9 +369,9 @@
           }
           &#stats {
             position-anchor: --ath-anchor-details;
-            position-area: right span-bottom;
             left: anchor(right);
             top: anchor(top);
+            height: anchor-size(height);
             bottom: anchor(bottom);
             margin: 0 0 0 10px !important;
           }
@@ -331,7 +389,7 @@
           }
           pre {
             position: static;
-            font-size: 12px;
+            font-size: 0.8rem;
             height: 80vh;
             white-space: pre-wrap;
             overflow-wrap: break-word;
@@ -342,13 +400,13 @@
         &:is(#notes, #description, #reviews) {
           width: calc(var(--ath-page-width) / 2 - 30px) !important;
         }
-        @container style(--ath-hide-empty: 0) {
-          &:is(#notes, #description):has(i:nth-child(2)):not(:has(i + *)) {
+        @container style(--ath-show-empty: 0) {
+          &:is(#notes, #description, #reviews):has(i:nth-child(2)):not(:has(i + *)) {
             display: none !important;
           }
         }
-        @container style(--ath-hide-empty: 1) {
-          &:is(#notes, #description):has(i:nth-child(2)):not(:has(i + *)) {
+        @container style(--ath-show-empty: 1) {
+          &:is(#notes, #description, #reviews):has(i:nth-child(2)):not(:has(i + *)) {
             i {
               color: var(--fg-4);
             }
@@ -361,23 +419,7 @@
           font-size: 1rem;
           margin: 0;
         }
-        p {
-          margin: 0;
-          font-size: 0.9rem;
-          color: var(--fg-3);
-          &:not(:has(.minw)) {
-            color: var(--fg-5);
-          }
-          .minw {
-            color: var(--fg-1);
-          }
-        }
-        .md {
-          max-height: none;
-          p {
-            color: var(--fg-3);
-          }
-        }
+        /**/
       }
     }
     &:has(#password) /*settings page*/ {
@@ -403,6 +445,15 @@
           align-items: flex-end;
           gap: 10px;
           padding: 10px 12px 14px;
+          &:has(.checkbox.iflex) {
+            justify-content: space-between;
+            label {
+              margin: 0;
+            }
+          }
+          > label {
+            margin: 0;
+          }
           .Form-section {
             flex: 1;
             display: flex;
@@ -434,11 +485,37 @@
       }
     }
     &:has(#details .joined):not(:has(#password)) /*profile page*/ {
-      display: flex !important;
+      /*display: flex !important;
       flex-flow: row wrap;
       justify-content: center;
-      align-items: baseline;
+      align-items: baseline;*/
+      display: grid !important;
+      grid-template-areas:
+        "detail bio    links "
+        "styles styles styles";
+      grid-template-columns: 1fr auto 1fr;
+      grid-template-rows: auto 1fr;
       gap: 10px;
+      #details {
+        grid-area: detail;
+        justify-self: flex-end;
+      }
+      #biography {
+        grid-area: bio;
+      }
+      #links {
+        grid-area: links;
+        justify-self: flex-start;
+        div {
+          display: flex;
+          gap: 10px;
+          flex-flow: column;
+        }
+      }
+      #styles {
+        grid-area: styles;
+        margin-bottom: auto;
+      }
       section:not(#styles) {
         width: auto;
         margin: 0;
@@ -451,9 +528,6 @@
             color: var(--fg-3);
           }
         }
-      }
-      #styles {
-        margin-bottom: auto;
       }
     }
     article.docs.md /*help docs*/ {
