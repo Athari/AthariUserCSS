@@ -1,0 +1,195 @@
+/* ==UserStyle==
+@name           MultiTran.com – Dark Clean [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Dark theme for MultiTran.com (dictionary and forum). Includes several tweaks to layout and a few options for font and background.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var            checkbox ath-textured-background "Textured background" 1
+@var            text     ath-font                "Font"                "14px/1.3 Segoe UI, sans-serif"
+==/UserStyle== */
+
+@-moz-document domain("multitran.com") {
+  
+  :root {
+    color-scheme: dark;
+  }
+  
+  tr, td {
+    height: auto !important;
+  }
+  
+  body {
+    position: relative;
+    padding: 1px;
+    min-height: 100vh;
+
+    .small {
+      font-size: 1em;
+    }
+
+    .menu,
+    .menu1 {
+      font: inherit !important;
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0 0 0 0;
+      background: url('/gif/bg.gif') !important;
+      filter: invert(1) brightness(0.3);
+      @container style(--ath-textured-background: 0) {
+        background: #000 !important;
+        filter: none;
+      }
+      z-index: -1;
+    }
+    
+    .container {
+      background: #fff1;
+      border-radius: 20px;
+      width: 1000px;
+      margin: 10px auto;
+      
+      img[src*=logo] {
+        margin: -5px 0 -5px 16px;
+        --ath-logo-border: #bbb;
+        filter:
+          drop-shadow(1px 1px 1px var(--ath-logo-border))
+          drop-shadow(-1px 1px 1px var(--ath-logo-border))
+          drop-shadow(1px -1px 1px var(--ath-logo-border))
+          drop-shadow(-1px -1px 1px var(--ath-logo-border))
+          drop-shadow(0px 0px 2px var(--ath-logo-border));
+        
+        &:hover {
+          --ath-logo-border: #fff;
+        }
+      }
+      
+      [class*=mclass] {
+        padding: 0 16px !important;
+        margin: 0 !important;
+      }
+      
+      .rules,
+      .forumbox {
+        padding: 2px 0 !important;
+        margin: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+        background: none !important;
+        border: none !important;
+      }
+      
+      .pic {
+        width: 450px;
+        height: auto;
+      }
+      
+      #suggest {
+        background: #333 !important;
+        border: #888 !important;
+        color: #ddd !important;
+        
+        div,
+        span {
+          background: #0000 !important;
+          color: inherit !important;
+          
+          &:hover {
+            background: #fff4 !important;
+          }
+        }
+      }
+    }
+  }
+  
+  table:has(.phras_cnt) {
+    display: block !important;
+    padding: 4px 0;
+    
+    tbody, tr {
+      display: contents !important;
+    }
+    td {
+      display: inline-block !important;
+
+      &.phras {
+        padding: 0;
+        
+        &:empty,
+        &:empty + .phras_cnt {
+          display: none !important;
+        }
+      }
+      
+      &.phras_cnt {
+        padding: 0;
+        color: #aaa;
+
+        &::before {
+          content: " (";
+        }
+        &::after {
+          content: "), ";
+        }
+        &:empty {
+          display: none !important;
+        }
+      }
+    }
+  }
+
+  /* Fonts */
+  body,
+  td {
+    font: var(--ath-font);
+    color: #ddd;
+    text-align: left !important;
+  }
+  td[align=right] {
+    text-align: right !important;
+  }
+  input, textarea {
+    font-size: 15px;
+  }
+  font[size="1"] {
+    font-size: 12px !important;
+  }
+  font[color="dimgray"] {
+    color: #999 !important;
+  }
+  span[style*=gray] {
+    color: #aaa !important;
+  }
+  span[style*="color:#008000"] {
+    color: #6f6 !important;
+  }
+  a[style*=black] {
+    color: #77c !important;
+  }
+  [bgcolor="#DBDBDB"],
+  .orig11,
+  .graytable,
+  .forumgrayline,
+  .rightround,
+  .leftround,
+  .plaingray,
+  .grayline,
+  .gray {
+    color: #ccc !important;
+    background: #fff2 !important;
+
+    [bgcolor="#DBDBDB"] {
+      background: #0000 !important;
+    }
+  }
+  a[style*="background-color"] {
+    background: #88f4 !important;
+  }
+}
