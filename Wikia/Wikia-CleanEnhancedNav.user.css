@@ -1,0 +1,365 @@
+/* ==UserStyle==
+@name           Fandom.com – Clean Enhanced Nav [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Redesigns Wikia.com/Fandom.com and moves community menu to the left side. Removes all panels you don't need. Configurable hiding of panels, menu depth and page size. Unique feature: doesn't break website when logged in.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var            number   ath-sidebar-width       "Sidebar width"                           [250, 150, 500, 10, 'px']
+@var            number   ath-max-content-width   "Max content width"                       [1000, 800, 10000, 10, 'px']
+@var            checkbox ath-center-content      "Center content"                          1
+@var            range    ath-expand-menu         "Expand menu level (1-6 subitems)"        [2, 1, 4, 1]
+@var            checkbox ath-show-left-sidebar   "Show left explore sidebar"               0
+@var            checkbox ath-show-right-sidebar  "Show right sidebar (when not logged in)" 1
+@var            checkbox ath-show-top-bar        "Show top toolbar"                        0
+@var            checkbox ath-show-bottom-bar     "Show bottom social bar"                  0
+==/UserStyle== */
+
+@-moz-document domain("fandom.com") {
+  :root {
+    color-scheme: dark light;
+    --ath-top-margin: 110px;
+  }
+
+  .fandom-sticky-header#community-navigation {
+    position: static !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 10px 0 auto 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    display: grid !important;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    background: none !important;
+    border: none !important;
+    transform: none !important;
+    .fandom-sticky-header__logo {
+      grid-area: 1 / 1;
+      img {
+        margin: 0;
+        width: auto !important;
+        max-width: var(--ath-sidebar-width);
+        height: auto !important;
+        max-height: 300px;
+      }
+    }
+    .fandom-sticky-header__sitename {
+      grid-area: 2 / 1;
+      max-width: var(--ath-sidebar-width);
+      margin: 0;
+    }
+    .community-navigation__fandom-heart {
+      grid-area: 3 / 1;
+      width: 40px;
+    }
+    .search-container {
+      grid-area: 3 / 1;
+      margin: 0 0 0 50px;
+      width: auto;
+      min-width: 0;
+      .search-app__wrapper {
+        width: auto;
+        margin: 0;
+      }
+      .search-app__button {
+        display: none;
+      }
+      .search-app__suggestions-box {
+        z-index: 500;
+      }
+    }
+    .sign-in {
+      grid-area: 4 / 1;
+      margin: 0 auto 0 0;
+      .sign-in__dropdown-content {
+        inset-inline: 0 auto;
+        z-index: 500;
+      }
+    }
+    .wiki-tools {
+      grid-area: 4 / 1;
+    }
+    .global-action__user {
+      grid-area: 4 / 1;
+      margin: 0 auto 0 0;
+    }
+    .global-action-notifications {
+      grid-area: 4 / 1;
+      margin: 0 auto 0 40px;
+    }
+    .fandom-community-header__local-navigation {
+      grid-area: 5 / 1;
+      margin: 0;
+      > .wds-tabs {
+        display: flex;
+        flex-flow: column;
+        align-items: stretch;
+        ::before, ::after {
+          display: none;
+        }
+        .wds-dropdown:not(.explore-menu) {
+          display: flex;
+          flex-flow: column;
+          align-items: stretch;
+          margin: 5px 0;
+          padding: 8px 0;
+          background: var(--wds-dropdown-background-color);
+          color: var(--wds-dropdown-linked-item-color);
+          border-color: var(--wds-dropdown-border-color);
+          border-radius: 10px;
+          .wds-tabs__tab-label {
+            display: flex;
+            height: auto;
+            max-width: none;
+            a {
+              flex: 1;
+              padding: 10px 10px;
+              text-decoration: none;
+              &:hover {
+                background: var(--wds-dropdown-linked-item-background-color);
+                color: var(--wds-dropdown-linked-item-color);
+              }
+            }
+            .wds-dropdown__toggle-chevron {
+              display: none !important;
+            }
+          }
+          .wds-dropdown__content {
+            position: static;
+            width: auto;
+            min-width: 0;
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            display: block;
+            transform: none;
+            border: none;
+            border-radius: 10px;
+            > li {
+              padding: 0 0 0 20px;
+            }
+          }
+          .wds-dropdown-level-nested__content {
+            min-width: min(var(--ath-sidebar-width), 150px);
+          }
+          @container style(--ath-expand-menu: 2) or style(--ath-expand-menu: 3) or style(--ath-expand-menu: 4) {
+            .wds-dropdown-level-nested__toggle[data-tracking="custom-level-2"]:not(:has(+ div > ul > li:nth-child(7))) {
+              svg {
+                display: none;
+              }
+            }
+            [data-tracking="custom-level-2"] + .wds-dropdown-level-nested__content:not(:has(> ul > li:nth-child(7))) {
+              position: static;
+              width: auto;
+              min-width: 0;
+              max-width: none;
+              margin: 0;
+              padding: 0;
+              display: block;
+              transform: none;
+              border: none;
+              border-radius: 10px;
+            }
+          }
+          @container style(--ath-expand-menu: 3) or style(--ath-expand-menu: 4) {
+            .wds-dropdown-level-nested__toggle[data-tracking="custom-level-3"]:not(:has(+ div > ul > li:nth-child(7))) {
+              svg {
+                display: none;
+              }
+            }
+            [data-tracking="custom-level-3"] + .wds-dropdown-level-nested__content:not(:has(> ul > li:nth-child(7))) {
+              position: static;
+              width: auto;
+              min-width: 0;
+              max-width: none;
+              margin: 0;
+              padding: 0;
+              display: block;
+              transform: none;
+              border: none;
+              border-radius: 10px;
+            }
+          }
+          @container style(--ath-expand-menu: 4) {
+            .wds-dropdown-level-nested__toggle[data-tracking="custom-level-4"]:not(:has(+ div > ul > li:nth-child(7))) {
+              svg {
+                display: none;
+              }
+            }
+            [data-tracking="custom-level-4"] + .wds-dropdown-level-nested__content:not(:has(> ul > li:nth-child(7))) {
+              position: static;
+              width: auto;
+              min-width: 0;
+              max-width: none;
+              margin: 0;
+              padding: 0;
+              display: block;
+              transform: none;
+              border: none;
+              border-radius: 10px;
+            }
+          }
+        }
+        .wds-dropdown.explore-menu {
+          .wds-dropdown__content {
+            inset-inline: 0 auto;
+            transform: none;
+            z-index: 500;
+          }
+        }
+        .wds-tabs__tab {
+          margin: 0 10px;
+        }
+      }
+    }
+  }
+
+  body {
+    display: grid !important;
+    grid-template-areas:
+      "r1a sidebar main   rail r1b"
+      "r2a footer  footer rail r2b";
+    grid-template-columns: minmax(20px, 1fr) var(--ath-sidebar-width) var(--ath-max-content-width) auto minmax(20px, 1fr);
+    grid-template-rows: 1fr auto;
+    @container style(--ath-center-content: 1) {
+      grid-template-areas:
+        "r1a sidebar main   rail    r1b"
+        "r2a footer  footer footer  r2b";
+      grid-template-columns: minmax(20px, 1fr) var(--ath-sidebar-width) var(--ath-max-content-width) var(--ath-sidebar-width) minmax(20px, 1fr);
+    }
+    .community-navigation#community-navigation {
+      grid-area: sidebar;
+    }
+    .main-container {
+      display: contents;
+      > :not(:is(.fandom-community-header__background, .resizable-container, .global-footer)) {
+        display: none !important;
+      }
+      .fandom-community-header__background {
+        grid-area: 1 / 1 / 1 / span all;
+      }
+      .resizable-container {
+        display: contents !important;
+        > :not(.page) {
+          display: none !important;
+        }
+        .page {
+          display: contents !important;
+          .page__main {
+            grid-area: main;
+            margin: var(--ath-top-margin) 0px auto 30px;
+            border-radius: 10px;
+          }
+          .page__right-rail {
+            grid-area: rail;
+            align-self: flex-start !important;
+            position: relative !important;
+            margin: var(--ath-top-margin) 0px 0px 30px;
+            width: var(--ath-sidebar-width) !important;
+            max-width: var(--ath-sidebar-width) !important;
+            height: auto !important;
+            min-height: 0 !important;
+            border-radius: 10px !important;
+            #WikiaAdInContentPlaceHolder,
+            .render-new-wiki-recommendations,
+            .rail-module,
+            .right-rail-wrapper {
+              display: block !important;
+              width: auto !important;
+              height: auto !important;
+            }
+            .alice-carousel__stage {
+              flex-wrap: wrap !important;
+              gap: 10px;
+            }
+            .alice-carousel__arrow {
+              display: none !important;
+            }
+            .alice-carousel__stage-item,
+            .slider-item {
+              padding: 0 !important;
+              width: auto !important;
+            }
+          }
+          .page__right-rail.is-rail-hidden {
+            width: 0 !important;
+            .right-rail-toggle {
+              position: relative !important;
+              left: -57px !important;
+            }
+          }
+        }
+      }
+      .global-footer {
+        grid-area: footer;
+      }
+    }
+  }
+  html.is-content-expanded body {
+    grid-template-columns: 20px var(--ath-sidebar-width) 1fr 20px;
+  }
+  .notifications-placeholder {
+    z-index: 1000;
+  }
+  
+  @container style(--ath-show-left-sidebar: 0) {
+    .global-explore-navigation#global-explore-navigation {
+      display: none !important;
+    }
+  }
+  @container style(--ath-show-right-sidebar: 0) {
+    .page__right-rail:not(:has(.right-rail-toggle)) {
+      display: none !important;
+    }
+  }
+  @container style(--ath-show-top-bar: 0) {
+    body:not(:has(.global-action-notifications)) {
+      .global-top-navigation#global-top-navigation {
+        display: none !important;
+      }
+    }
+    body:has(.global-action-notifications) {
+      .global-top-navigation#global-top-navigation {
+        position: absolute !important;
+        height: 0;
+        > a {
+          height: 0;
+        }
+        .search-container {
+          display: none;
+        }
+        .global-top-navigation__action-wrapper {
+          margin-top: -45px !important;
+        }
+        .navigation-tab,
+        #notifications__content {
+          top: 0 !important;
+          height: 100% !important;
+        }
+      }
+    }
+    .fandom-community-header__background {
+      transform: none !important;
+    }
+    .global-explore-navigation {
+      top: 0px !important;
+    }
+  }
+  @container style(--ath-show-bottom-bar: 0) {
+    #WikiaBar {
+      display: none !important;
+    }
+  }
+ 
+  #rail-boxad-wrapper,
+  .gpt-ad {
+    display: none;
+  }
+}
