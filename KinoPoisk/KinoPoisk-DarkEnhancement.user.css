@@ -1,0 +1,391 @@
+/* ==UserStyle==
+@name           KinoPoisk.ru – Dark Enhancement [Ath]
+@namespace      kinopoisk.ru
+@version        1.0.0
+@description    Dark color scheme for KinoPoisk.ru/КиноПоиск.ру (both classic and modern parts), with minor enhancements.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var checkbox ath-show-hd "Acknowledge existence of HD.KinoPoisk.ru" 0
+==/UserStyle== */
+
+@-moz-document domain("kinopoisk.ru") {
+  /* Common */
+  :root {
+    color-scheme: dark;
+  }
+  body {
+    container: if;
+  }
+
+  @container if style(--ath-show-hd: 0) {
+    a[href^="https://hd.kinopoisk.ru/"] {
+      display: none !important;
+    }
+
+    :is(input, select, textarea):is([class], [id], [name]) {
+      color: revert !important;
+      background: revert !important;
+      &::placeholder {
+        color: revert !important;
+      }
+    }
+  }
+
+  /* Classic Kinopoisk */
+  body:is(:not([class]), [class="svg-background_yes"], .Theme) {
+    color: oklch(90% 0 0) !important;
+    background: oklch(0% 0 0) !important;
+
+    div:has(> #social_teaser_link),
+    .randomMovie,
+    .kadr_scroller {
+      display: none !important;
+    }
+
+    main.page-content {
+      /*> div:not(.shadow) {
+        display: none !important;
+      }*/
+      > div.shadow.shadow-restyle {
+        box-shadow: none !important;
+      }
+    }
+    [style*="background-color: #fff"],
+    [style*="background-color: white"],
+    [bgcolor="#ffffff"],
+    #footer_wrapper {
+      background: oklch(10% 0 0) !important;
+    }
+    [style*="background: #f2f2f2"],
+    [style*="background-color:#f2f2f2"],
+    [bgcolor="#f2f2f2"],
+    td.thbox_n,
+    td.main_line,
+    ul.resp_type,
+    div.response span.date,
+    div.response ul.useful,
+    form.response,
+    form.info,
+    #suggest-container > div,
+    .search_adv form,
+    .sorts dd,
+    .bestMoviesNav,
+    .subscribe {
+      background: oklch(20% 0 0) !important;
+    }
+    .kinopoisk-header-suggest-item:hover,
+    .kinopoisk-header-suggest__groups-container + a {
+      background: oklch(25% 0 0) !important;
+    }
+    [bgcolor="#E5E5F1"] {
+      background: oklch(15% 0.15 200) !important;
+    }
+    [bgcolor="#D9D9E5"] {
+      background: oklch(25% 0.15 200) !important;
+    }
+    [bgcolor="#000077"] {
+      background: oklch(25% 0.35 200) !important;
+    }
+
+    .bestMoviesNav,
+    .bestMoviesNav .title,
+    #block_left, #block_left_pad, #block_left_padtop, #block_left_index, #block_left_gray,
+    td.news {
+      color: oklch(90% 0 0) !important;
+    }
+    td {
+      color: oklch(90% 0 0);
+    }
+    .kinopoisk-header-suggest-item__subtitle,
+    div.response p.sub_title,
+    .breadcrumbs__sub {
+      color: oklch(80% 0 0);
+    }
+    [style*="color:#666"],
+    div.clear_all,
+    form.response span,
+    .kinopoisk-header-suggest-group__title,
+    .dub {
+      color: oklch(75% 0 0) !important;
+    }
+    a {
+      color: oklch(75% 0.05 260);
+    }
+    span[style*="color:#005"],
+    a.all,
+    .kinopoisk-header-suggest__groups-container + a,
+    .breadcrumbs__item a.breadcrumbs__link,
+    .subscribe .name,
+    :is(
+      :is(.tenItems, .search_results, .dub .actorInfo, .personPageItems, form.response) .name,
+      .search_gray, .keywordsList, .geo, div.thermo, div.response) a {
+      color: oklch(75% 0.05 260) !important;
+    }
+    [style*="color:#000055"] {
+      color: oklch(90% 0.5 260) !important;
+    }
+
+    div.response ul.voter,
+    div.response ul.useful,
+    .dub {
+      border-color: oklch(35% 0 0) !important;
+    }
+
+    div.thermo,
+    td.border-tb {
+      color: oklch(70% 0 0) !important;
+      background: oklch(20% 0 0) !important;
+      border-color: oklch(30% 0 0) !important;
+    }
+    .old_settings,
+    .search_gray,
+    .search_results_top {
+      color: oklch(70% 0 0) !important;
+      background: oklch(20% 0 0) !important;
+    }
+    .WidgetStars,
+    .subscribe .stripe {
+      filter: invert(1) hue-rotate(180deg);
+    }
+    div.response ul.voter li {
+      filter: hue-rotate(180deg) invert(1) contrast(0.5) brightness(1.5) contrast(2);
+    }
+    .MyKP_Folder_Select .select {
+      .title {
+        filter: invert(1) hue-rotate(180deg);
+      }
+      .list,
+      .list dd {
+        color: oklch(95% 0 0) !important;
+        background: oklch(20% 0 0);
+      }
+      .list .arrow {
+        color: oklch(75% 0.05 260);
+      }
+    }
+    .bestMoviesNav {
+      .whiteBlock {
+        filter: invert(1) brightness(1.5) hue-rotate(180deg);
+        text-shadow: 0 0 1px #0006; /* antialias */
+        color: oklch(50% 0 0) !important;
+        .title {
+          color: oklch(50% 0 0) !important;
+        }
+      }
+      .selectCustom {
+        filter: invert(1) hue-rotate(180deg);
+        color: oklch(30% 0 0) !important;
+      }
+      .selectList {
+        color: oklch(90% 0 0) !important;
+        background: oklch(20% 0 0);
+        li:hover {
+          background: oklch(25% 0 0);
+        }
+      }
+    }
+    dl.block {
+      dt {
+        filter: invert(1) hue-rotate(180deg);
+      }
+      dd.dl a {
+        background: oklch(20% 0 0) !important;
+        s {
+          color: oklch(75% 0.05 260) !important;
+        }
+      }
+      dd.more {
+        filter: invert(1) hue-rotate(180deg);
+      }
+    }
+    div.response {
+      background: oklch(35% 0.15 200);
+      &.bad {
+        background: oklch(35% 0.15 30) !important;
+      }
+      &.good {
+        background: oklch(35% 0.15 160) !important;
+      }
+    }
+  }
+
+  /* Modern Kinopoisk */
+  body.body {
+    [class*=styles_hdMetaTableContainer__],
+    /*[class*=styles_watchingServices__],
+    [class*=styles_watchingServicesOnline__],*/
+    [class*=styles_onlineCaption__],
+    [class*=style_buttonPlus__],
+    [class*=styles_withPromotionBlock__] > div:has(img[class*=styles_background__]),
+    div:has(> [data-tid="OfferButton"]),
+    div:has(> [class*=styles_subscriptionText__]),
+    div:has(> div > #hd-onboarding-block) {
+      display: none;
+    }
+
+    [class*=styles_text__],
+    [class*=styles_filmSynopsis__],
+    [class*=styles_description__][class*=styles_shrinked__],
+    #add_user_review_form [class*=style_formTitle__],
+    .film-bloopers-block :is(li, div),
+    .film-facts-block :is(li, div) {
+      color: oklch(90% 0 0);
+    }
+    [class*=styles_title__],
+    [class*=styles_basicInfo__] [class*=styles_primaryName__],
+    [class*=styles_tableHeader__],
+    [class*=style_buttonPrimary__][class],
+    [class*=styles_rootSecondary__],
+    [class*=styles_moreButton__],
+    [class*=styles_filter__] button *,
+    [class*=styles_trailerIcon__],
+    [class*=styles_sidebar__] button,
+    [class*=styles_addNodeButton__] button,
+    [class*=styles_episode__][class*=styles_released__],
+    [class*=styles_select__]:has(> [class*=styles_selectButton__]) [class*=styles_buttonCaption__],
+    [data-testid="kp-ui-kit.Dropdown.content"] > div,
+    [data-testid="kp-ui-kit.MenuItem.button"],
+    :is([class*=styles_tabsSection__], [class*=styles_tabs__]) [class*=styles_itemsSpoiler__] li :is(span:not([class*=styles_itemDisabled__]), button),
+    button[class*=styles_button__],
+    summary[class*=styles_heading__][class],
+    .film-page-section-title,
+    .kinopoisk-header-suggest__groups-container + a {
+      color: oklch(95% 0 0);
+    }
+    [class*=styles_originalTitle__],
+    [class*=desktop-person-main-info_secondaryText__] {
+      color: oklch(80% 0 0);
+    }
+    [class*=styles_valueDark__],
+    [class*=styles_valueContainer__] button,
+    [class*=styles_subtitle__],
+    [class*=styles_agreement__],
+    [class*=styles_titleWrapper__] [class*=styles_subtitle__],
+    [class*=styles_carouselItem__] [class*=styles_caption__],
+    [class*=styles_count__][class]:not([class*=styles_countPositive__]):not([class*=styles_countNegative__]),
+    [class*=styles_reviewCount__],
+    [class*=styles_kinopoiskCount__],
+    [class*=styles_suggestion__],
+    [class*=styles_date__][class],
+    [class*=styles_publishedDate__],
+    [class*=styles_captions__] [class*=styles_subtitle__][class],
+    [class*=styles_quantifiers__] [class*=styles_percent__],
+    [class*=styles_loginWrapper__] [class*=styles_percent__],
+    [class*=styles_fullName__],
+    [class*=styles_subtitle__][class*=styles_released__],
+    a[href^="/lists/movies/"] :is([class*=styles_filmsCount__], [class*=styles_watchStat__]),
+    #popover-root [class*=styles_subtitle__],
+    #popover-root [class*=styles_additionalInfo__] span,
+    #popover-root [class*=styles_bestMovieTitle__]::after,
+    .kinopoisk-header-suggest-item__subtitle {
+      color: oklch(75% 0 0);
+    }
+    [class*=styles_ageRate__],
+    [class*=styles_addNodeButton__] div,
+    :is([class*=styles_tabsSection__], [class*=styles_tabs__]) [class*=styles_itemsSpoiler__] li span[class*=styles_itemDisabled__] {
+      color: oklch(55% 0 0);
+    }
+    [class*=styles_link__],
+    [class*=styles_list__] a[class],
+    [class*=styles_captions__] [class*=styles_title__][class],
+    [class*=styles_loginWrapper__] a,
+    [class*=styles_numberOfComments__][class],
+    [class*=styles_sidebarContainer__] a[class],
+    [class*=base-movie-main-info_mainInfo__] span,
+    a[class*=styles_page__],
+    a[class*=styles_start__],
+    a[class*=styles_end__],
+    a[href^="/lists/movies/"] [class*=styles_name__],
+    :is([class*=styles_tabsSection__], [class*=styles_tabs__]) [class*=styles_itemsSpoiler__] li a,
+    h1 a,
+    #add_user_review_form :is(a, button[type=button]),
+    #popover-root a,
+    .film-facts-block a,
+    .film-bloopers-block a,
+    .film-trailer a[class] {
+      color: oklch(75% 0.05 260);
+    }
+
+    [class*=styles_root__]:has(> [class*=styles_headerContainer__]),
+    [class*=styles_root__]:has(> [class*=styles_headerContainer__]) > [class*=styles_wideContentContainer__] > [class*=styles_rootLight__],
+    [class*=styles_baseContainer__],
+    [class*=styles_baseContainer__] > [class*=styles_mainContainer__],
+    :is(main, [class*=styles_baseContainer__]) > [class*=styles_rootLight__] {
+      background: oklch(5% 0 0);
+    }
+    [class*=styles_topbarSlot__] > div,
+    [class*=styles_dropDown__],
+    [class*=styles_dropdownMenu__],
+    [class*=styles_filterDropdown__],
+    [class*=styles_selectDropdown__],
+    [class*=styles_select__]:has(> [class*=styles_selectButton__]),
+    [data-testid="kp-ui-kit.Dropdown.content"] > div,
+    [data-testid="kp-ui-kit.MenuItem.button"],
+    #suggest-container > div,
+    #popover-root [class*=styles_root__],
+    .film-facts-block div,
+    .film-bloopers-block div {
+      background: oklch(20% 0 0);
+    }
+    [class*=styles_select__]:has(> [class*=styles_selectButton__]) label:hover,
+    [data-testid="kp-ui-kit.MenuItem.button"]:hover,
+    .kinopoisk-header-suggest-item:hover {
+      background: oklch(25% 0 0);
+    }
+    [class*=style_buttonPrimary__][class],
+    .kinopoisk-header-suggest__groups-container + a {
+      background: oklch(35% 0.05 260);
+    }
+    [class*=styles_rootSecondary__],
+    [class*=styles_moreButton__],
+    [class*=styles_toogleFilters__] a,
+    [class*=styles_trailerIcon__],
+    [class*=styles_friendsVotingSortChips__] button[class*=styles_rootSelected__],
+    [class*=styles_filter__] button,
+    button[class*=styles_button__]:not([class*=styles_foldersButtons__]) {
+      background: oklch(30% 0.05 260);
+    }
+    [class*=styles_carouselItem__] article {
+      background: oklch(30% 0 0);
+    }
+
+    a[href^="/lists/movies/"] [class*=styles_progressBar__] {
+      stroke: oklch(75% 0 0);
+    }
+
+    [data-test-id="movie-list-item"] {
+      &:hover {
+        background: oklch(30% 0 0);
+      }
+      &:has([class*=styles_removeFilmText__]) {
+        opacity: 0.4;
+      }
+      [class*=styles_mainTitle__] {
+        color: oklch(75% 0.05 260);
+      }
+      [class*=desktop-list-main-info_secondaryTitleSlot__] * {
+        color: oklch(80% 0 0);
+      }
+      [class*=desktop-list-main-info_additionalInfo__] * {
+        color: oklch(75% 0 0);
+      }
+    }
+
+    [class*=styles_review__] {
+      background: oklch(35% 0.15 200);
+      [class*=styles_nameLink__] {
+        color: oklch(75% 0.05 260);
+      }
+    }
+    [class*=styles_review__][class*=styles_rootNegative__] {
+      background: oklch(35% 0.15 30);
+    }
+    [class*=styles_review__][class*=styles_rootPositive__] {
+      background: oklch(35% 0.15 160);
+    }
+  }
+}
