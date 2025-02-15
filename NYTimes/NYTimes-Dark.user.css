@@ -1,0 +1,106 @@
+/* ==UserStyle==
+@name           NYTimes.com – Dark Paywall Bypass [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Dark theme for New York Times (NYTimes.com). Includes paywall bypass.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+==/UserStyle== */
+
+@-moz-document domain("nytimes.com") {
+  :root {
+    --color-content-primary: #eee;
+    --color-content-secondary: #ccc;
+    --color-content-tertiary: #999;
+    --color-background-primary: #111;
+    --color-background-secondary: #222;
+    --color-background-tertiary: #333;
+    --color-background-elevated: #222;
+    --color-stroke-primary: #ccc;
+    --color-stroke-quaternary: #aaa;
+  }
+
+  html, body, main,
+  .vi-gateway-container {
+    height: auto !important;
+  }
+  html {
+    color-scheme: dark;
+    overflow: hidden scroll;
+  }
+  body {
+    overflow: visible;
+    background: var(--color-background-primary) !important;
+  }
+  svg[fill="#000000"] {
+    fill: #ccc;
+  }
+
+  .vi-gateway-container {
+    position: static !important;
+    > div:last-child {
+      display: none !important;
+    }
+  }
+  
+  a {
+    color: var(--color-content-primary);
+  }
+  [class], [class][class]::before, [class][class]::after {
+    border-color: #555;
+  }
+
+  #in-story-masthead,
+  [data-testid="masthead-container"] {
+    background: #1f1f1f !important;
+    border: none;
+    header {
+      border: none;
+    }
+    span, a {
+      color: #ccc;
+    }
+  }
+  [data-testid="desktop-nested-nav"] > ul > li {
+    > div {
+      background: var(--color-background-secondary) !important;
+    }
+    button {
+      background: var(--color-background-secondary) !important;
+    }
+  }
+  div:has(> div > [data-testid="floating-desktop-nested-nav"]) {
+    background: var(--color-background-secondary) !important;
+    button {
+      background: var(--color-background-secondary) !important;
+    }
+    [data-testid^="nav-dropdown-"] {
+      background: #1f1f1f !important;
+    }
+  }
+  #site-index {
+    background: #444;
+  }
+  
+  path[fill="#000"],
+  path[fill="#121212"] {
+    fill: var(--color-stroke-quaternary) !important;
+  }
+
+  [data-testid="onsite-messaging-unit-gateway"],
+  [data-testid="NextBestAction"],
+  #dock-container {
+    display: none !important;
+  }
+
+  html {
+    font-size: 14px;
+  }
+  section[name="articleBody"] p {
+    font-family: Segoe UI !important;
+    line-height: 1.3 !important;
+  }
+}
