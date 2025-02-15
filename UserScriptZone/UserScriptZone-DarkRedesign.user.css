@@ -1,9 +1,13 @@
 /* ==UserStyle==
 @name           UserScript.zone – Dark Redesign [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.0.1
 @description    Complete redesign of UserScript.zone in dark colors. Aims to display all contents on a single screen at reslutions 1920×1080+. Configurable block size.
-@author         Athari
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
 
 @var            checkbox ath-max-desc-lines-enabled "Description: Limit height"    1
 @var            range    ath-min-desc-lines         "Description: Min lines"       [4, 1, 12]
