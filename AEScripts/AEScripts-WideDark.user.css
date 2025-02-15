@@ -1,0 +1,622 @@
+/* ==UserStyle==
+@name           AEScripts.com – Wide Dark Enhancement [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Dark theme for AEScripts.com with enhancements: expanded product info, combined tabs, wide page layout for product lists etc. Configurable with options.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var            checkbox ath-show-top-banner      "Show top bar"               0
+@var            checkbox ath-show-social          "Show social share buttons"  0
+@var            checkbox ath-expand-slideshow     "Expand product slideshow"   1
+@var            checkbox ath-combine-tabs         "Combine info tabs"          1
+@var            checkbox ath-override-light-font  "Override light font weight" 1
+@var            text     ath-font                 "Font"                      "Segoe UI, Arial, sans-serif"
+==/UserStyle== */
+
+@-moz-document domain("aescripts.com") {
+  :root {
+    color-scheme: dark;
+    --ath-base-layout-width: 980px;
+  }
+  @container style(--ath-show-social: 0) {
+    #product-sharing {
+      display: none;
+    }
+  }
+  body {
+    background: #000;
+    color: #eee;
+    font-family: var(--ath-font);
+    overflow: hidden scroll;
+    nav {
+      background: #000;
+      border-color: #333;
+
+      /* menu */
+      .level-top.pages a {
+        background: #333 !important;
+      }
+      .level-top, .level0, .level1, .level2, .level3, .level4 {
+        background: #333 !important;
+        a {
+          text-decoration: none !important;
+          span {
+            width: calc(100% - 50px) !important;
+          }
+        }
+      }
+      .level-top {
+        ul {
+          border: solid 1px #222 !important;
+        }
+        li:has(> ul) > a {
+          display: grid !important;
+          grid-template-areas: "a";
+          grid-template-columns: 1fr;
+          grid-template-rows: auto;
+          align-items: center;
+          span {
+            grid-area: a;
+          }
+          &::after {
+            grid-area: a;
+            content: "►";
+            margin: 0 15px 0 auto;
+            color: #777;
+            transform: scaleY(2.4) scaleX(0.7);
+          }
+        }
+        li:has(> ul > li > ul) > a::after {
+          content: "►►";
+        }
+        li:has(> ul > li > ul > li > ul) > a::after {
+          content: "►►►";
+        }
+        li:has(> ul > li > ul > li > ul > li > ul) > a::after {
+          content: "►►►►";
+        }
+      }
+      a:not(#nav-category-click):hover {
+        background: #555 !important;
+        color: #222 !important;
+        span {
+          background: inherit !important;
+        }
+      }
+      span {
+        border-color: #555 !important;
+      }
+    }
+    .main-container {
+      background: #111;
+      #top-search {
+        background: #222;
+      }
+      .main {
+        background: #111;
+      }
+    }
+  }
+
+  .fieldset {
+    background: #222 !important;
+    border-color: #333 !important;
+  }
+  .box,
+  .box-title,
+  .box-head {
+    border-color: #333 !important;
+  }
+  :is(.box-head, .fieldset) h2 {
+    background: #333 !important;
+    border-color: #444 !important;
+  }
+  input, select, textarea {
+    background: revert !important;
+    color: revert !important;
+    border-color: revert !important;
+    &::placeholder {
+      color: revert !important;
+    }
+  }
+  [role="combobox"] {
+    background: Field !important;
+    border-color: ButtonBorder !important;
+    * {
+      color: FieldText !important;
+    }
+  }
+  .select2-dropdown {
+    background: Field !important;
+    [aria-selected="true"] {
+      background: SelectedItem !important;
+      color: SelectedItemText !important;
+    }
+  }
+  .pluginsio-relate-index li.control div {
+    background: #333 !important;
+    color: #ccc !important;
+    border-color: #444 !important;
+    box-shadow: none;
+  }
+
+  /* posts & news */
+  .postWrapper {
+    .postTitle,
+    img.post-thumb,
+    h1, h2, h3 {
+      border-color: #444 !important;
+    }
+    .media_embed {
+      background: #222 !important;
+      border-color: #333 !important;
+    }
+  }
+
+  /* hide crap */
+  @container style(--ath-show-top-banner: 0) {
+    #home-banner,
+    .top-header {
+      display: none !important;
+    }
+  }
+
+  /* disable stupid fonts */
+  .form-search label,
+  .product-tabs li a,
+  .container, .container h2, .container h3 {
+    font-family: inherit !important;
+  }
+  .price {
+    font-family: inherit !important;
+    font-weight: bold !important;
+  }
+
+  /* wide layout */
+  .main {
+    --ath-wide-layout-actual: 0;
+    display: flex;
+    flex-flow: row;
+    .col-left {
+      order: 1;
+    }
+    .col-main {
+      order: 2;
+      flex: 1;
+    }
+    &:has(.block-layered-nav) /*has sidebar*/ {
+      --ath-wide-layout-actual: 1;
+      width: auto;
+      .col-main {
+        width: auto;
+        float: none;
+      }
+    }
+  }
+  @container style(--ath-wide-layout-actual: 0) {
+    .col-main:only-child:has(.category-products) {
+      margin-inline: calc(var(--ath-base-layout-width) / 2 - 50vw + 20px) !important;
+      --ath-wide-layout-actual: 1;
+    }
+    .products-grid {
+      margin-inline: calc(var(--ath-base-layout-width) / 2 - 50vw + 20px) !important;
+      --ath-wide-layout-actual: 1;
+    }
+  }
+
+  /* sidebar */
+  .col-left.sidebar {
+    width: 240px !important;
+    padding: 0 0 0 20px !important;
+    .block-layered-nav {
+      .block-content {
+        padding: 0 !important;
+        line-height: 1.4 !important;
+      }
+      ol {
+        background: #ffffff08 !important;
+        margin: 0 !important;
+        li {
+          margin: 0 0 0 6px !important;
+        }
+      }
+      a {
+        display: block !important;
+        padding: 1px 0 1px 6px !important;
+        &:hover {
+          color: #eee !important;
+          background: #444 !important;
+        }
+        span {
+          color: #999 !important;
+        }
+      }
+    }
+  }
+  .col-main {
+    border-color: #333 !important;
+  }
+
+  #browse-main-categories {
+    display: flow-root;
+    background: #222 !important;
+    border-color: #333 !important;
+    .wrapper {
+      width: auto !important;
+      margin: 10px;
+      ul {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 10px;
+        margin: 0;
+        a {
+          margin: 0;
+          padding: 3px 6px;
+          background: #444;
+        }
+      }
+    }
+  }
+  footer {
+    border-color: #333 !important;
+  }
+
+  /* autocomplete */
+  .sbs_autocomplete_inner {
+    background: #333 !important;
+    border-color: #111 !important;
+    .suggested-item {
+      span {
+        color: #bbb !important;
+      }      
+      &:hover {
+        background: #444 !important;
+        span {
+          color: #bbb !important;
+        }
+      }
+      strong {
+        color: #eee !important;
+      }
+    }
+    .sbs_search_autocomplete_box_bottom {
+      background: #444 !important;
+      border-color: #111 !important;
+    }
+    .suggest_divider {
+      border-color: #333 !important;
+    }
+  }
+
+  /* disable hiding of product info */
+  .products-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, 280px);
+    justify-content: center;
+    gap: 20px;
+    li.item {
+      display: flex !important;
+      flex-flow: column !important;
+      width: auto !important;
+      height: auto !important;
+      margin: 0 !important;
+      background: #333;
+    }
+    .product-info-wrapper {
+      display: contents !important;
+    }
+    .product-name a {
+      color: #f66000 !important;
+      font-weight: bold !important;
+    }
+    .product-link {
+      display: none !important;
+    }
+    .product-image {
+      width: 100%;
+      img {
+        width: 100%;
+      }
+    }
+    .product-info-hover {
+      flex: 1;
+      position: static !important;
+      display: flex;
+      flex-flow: column;
+      height: auto !important;
+      background: #222;
+      > .row {
+        margin: 0 !important;
+      }
+      h2 {
+        order: -1;
+      }
+      .desc {
+        flex: 1;
+        position: relative !important;
+        height: auto !important;
+        max-height: calc(12lh + 6px);
+        padding: 3px 6px !important;
+        color: #ccc;
+        &::after {
+          content: "";
+          position: absolute;
+          inset: calc(10lh + 12px) 0 0 0;
+          height: 2lh;
+          background: linear-gradient(to bottom, #2220, #222f);
+        }
+      }
+      .actions {
+        position: static !important;
+        height: auto !important;
+        button {
+          height: 26px !important;
+        }
+        form,
+        .more-info,
+        .list-more-info {
+          display: none !important;
+        }
+        .actions-links {
+          a {
+            height: 26px !important;
+            font-size: 13px !important;
+            line-height: 28px !important;
+          }
+        }
+      }
+    }
+    .compatibility li {
+      transition-duration: 0s !important;
+    }
+  }
+
+  /* expand slideshow */
+  @container style(--ath-expand-slideshow: 1) {
+    #slideshow {
+      display: inline-block !important;
+      width: auto !important;
+      padding: 0 !important;
+      border: none !important;
+      background: #222 !important;
+    }
+    #slider-dots,
+    #slider-thumbs {
+      display: none !important;
+    }
+    .scroller {
+      width: auto !important;
+      height: auto !important;
+    }
+    .scroller .content {
+      width: auto !important;
+    }
+    .scroller .content .section {
+      width: 80px !important;
+      height: auto !important;
+    }
+    .scroller .content .section:hover {
+      width: auto !important;
+    }
+    .category-title {
+      float: none !important;
+      width: auto !important;
+    }
+  }
+
+  /* product page */
+  .product-view {
+    .product-options,
+    .product-options-bottom,
+    .box-tags,
+    .short-description,
+    .quick-add-to-wrapper,
+    .quick-add-to-box {
+      background: #222 !important;
+      border-color: #444 !important;
+    }
+    .short-description {
+      padding: 10px 12px;
+    }
+    .box-tags a {
+      color: #ccc;
+    }
+  }
+
+  .data-table :is(td, th) {
+    background: #111 !important;
+    border-color: #333 !important;
+    &.label {
+      background: #222 !important;
+    }
+  }
+
+  .downloadplus-product-history-entry {
+    margin: 20px 0 !important;
+    padding: 10px 14px !important;
+    background: #111 !important;
+    border-color: #282828 !important;
+    color: #ccc !important;
+  }
+
+  /* always display tabs */
+  @container style(--ath-combine-tabs: 1) {
+    .product-collateral {
+      display: flex !important;
+      flex-direction: column;
+      > * {
+        order: 10 !important;
+      }
+      > .product-tabs-content {
+        padding: 0 !important;
+      }
+      > .clearer {
+        order: 1 !important;
+      }
+      > #product-tabs {
+        order: 2 !important;
+      }
+      &:has(#product_tabs_description.active) {
+        #product_tabs_compatibility_contents {
+          display: block !important;
+          order: 3 !important;
+          .data-table {
+            margin: 0 !important;
+          }
+        }
+        #product_tabs_compatibility_contents {
+          display: block !important;
+          order: 3 !important;
+        }
+        #product_tabs_description_contents {
+          display: block !important;
+          order: 4 !important;
+        }
+        #product_tabs_version_history_contents {
+          display: block !important;
+          order: 5 !important;
+        }
+        #product_tabs_description_contents::before {
+          content: "Description";
+        }
+        #product_tabs_compatibility_contents::before {
+          content: "Compatibility";
+        }
+        #product_tabs_version_history_contents::before {
+          content: "Version history";
+        }
+      }
+      .product-tabs-content::before {
+        display: block !important;
+        font-weight: bold !important;
+        font-size: 1.2rem !important;
+        color: #fff !important;
+        padding: 15px 0 5px !important;
+      }
+    }
+    .downloadplus-product-history-links {
+      margin: 0 !important;
+    }
+    .downloadplus-product-history h4 {
+      margin: 3px !important;
+    }
+    #product_tabs_compatibility,
+    #product_tabs_version_history {
+      display: none !important;
+    }
+  }
+
+  @font-face { font-family: "Segoe UI"; src: local("Segoe UI"); font-weight: 100 400; }
+  @font-face { font-family: "Segoe UI"; src: local("Segoe UI Semibold"); font-weight: 600; }
+  @font-face { font-family: "Segoe UI"; src: local("Segoe UI Bold"); font-weight: 700; }
+  @font-face { font-family: "Segoe UI"; src: local("Segoe UI Black"); font-weight: 900; }
+  @container (--ath-override-light-font: 1) {
+    #product_tabs_description_contents:not(#\0) {
+      font-family: "Segoe UI", var(--ath-font) !important;
+    }
+    #product_tabs_description_contents :not(#\0) {
+      font-family: inherit !important;
+    }
+  }
+
+  .toolbar.pager {
+    display: flex !important;
+    flex-flow: row !important;
+    height: auto !important;
+    padding: 16px;
+    .pages {
+      position: static !important;
+      display: flex !important;
+      flex-flow: row !important;
+      align-items: baseline !important;
+      margin: 0 auto !important;
+      ol, li {
+        margin: 0 !important;
+      }
+      strong {
+        display: none;
+      }
+      a, li.current {
+        padding: 8px 16px !important;
+        background: #222 !important;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  /* comments */
+  .MessageForm {
+    background: #333 !important;
+    border-color: #555 !important;
+  }
+  .MessageList {
+    .Item {
+      color: #ccc !important;
+      border-color: #555 !important;
+      &.AuthorComment:not(#\0) {
+        color: #cdc !important;
+        background: #121 !important;
+      }
+      .Meta {
+        border-color: #333 !important;
+      }
+      .Message {
+        blockquote,
+        .Quote {
+          background: #3338 !important;
+          font-size: inherit !important;
+        }
+      }
+    }
+  }
+  
+  /* forum */
+  body:is([id^=vanilla], [id^=dashboard]) {
+    #Head {
+      background: #000 !important;
+    }
+    #Body {
+      background: #111 !important;
+    }
+    .MessageForm, .Tabs, .Headings {
+      background: #222 !important;
+      border-color: #333 !important;
+    }
+    .Tag,
+    .DataList .Meta a.Category {
+      background: #444 !important;
+    }
+    .MenuTitle {
+      background: #333 !important;
+      color: #ccc !important;
+      border-color: #444 !important;
+    }
+    .TabLink {
+      background: #444 !important;
+    }
+    a.Bookmark, a.Bookmarked, a.Bookmarking {
+      filter: invert(1) hue-rotate(180deg);
+    }
+    #DiscussionForm form {
+      background: #333 !important;
+      border-color: #444 !important;
+    }
+    ul.token-input-list {
+      background: #444 !important;
+      border-color: #555 !important;
+    }
+  }
+
+  [style*="color"]:not([style*="background"]),
+  [style*="color"]:not([style*="background"]) [style*="color"]:not([style*="background"]) [style*="color"]:not([style*="background"]) {
+    filter: invert(1);
+    -webkit-text-stroke: currentcolor 0.4px;
+  }
+  [style*="color"]:not([style*="background"]) [style*="color"]:not([style*="background"]) {
+    filter: none;
+  }
+}
