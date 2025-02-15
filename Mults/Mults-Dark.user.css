@@ -1,0 +1,169 @@
+/* ==UserStyle==
+@name           Mults.info – Dark [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Dark theme for Mults.info (Мультики). Configurable page width and thumbnail size.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var            range  ath-page-width   "Page width"        [1200, 800, 2000, 50, 'px']
+@var            range  ath-thumb-height "Thumbnail height"  [200, 100, 340, 10, 'px']
+@var            select ath-thumb-width  "Thumbnail width"   ["fixed:Fixed*", "auto:Auto"]
+@var            range  ath-dim-head     "Header brightness" [0.85, 0.5, 1.0, 0.05]
+==/UserStyle== */
+
+@-moz-document domain("mults.info") {
+  :root {
+    color-scheme: dark;
+
+    --ath-invert: invert(1) hue-rotate(180deg);
+  }
+
+  body {
+    display: flow-root;
+    overflow: hidden;
+    backdrop-filter: var(--ath-invert);
+    min-height: 100vh;
+
+    &, table, td {
+      color: #eee;
+    }
+    .top,
+    h1, fieldset, td {
+      border-color: #333 !important;
+    }
+    fieldset {
+      text-align: left;
+    }
+
+    input:is([type=checkbox], [type=radio]) {
+      vertical-align: middle;
+    }
+
+    [style*="background-color: Yellow"] {
+      color: #111;
+      padding: 0 1px;
+    }
+    [style*="background-color: #fff"] {
+      background-color: #222 !important;
+    }
+    [style*="border-bottom: 1px #FFE8E2"] {
+      border-color: #444 !important;
+    }
+    [style*="font-family: Courier New"] {
+      font-family: Consolas, monospace !important;
+    }
+    [style*="font-size: 8pt"] {
+      font-size: 13px !important;
+    }
+
+    .main {
+      width: auto;
+      max-width: var(--ath-page-width);
+      background: #111;
+      border-color: #222;
+    }
+    .top {
+      filter: brightness(var(--ath-dim-head));
+      position: relative;
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: #0000;
+        backdrop-filter: brightness(var(--ath-dim-head));
+      }
+      img {
+        filter: brightness(calc(1 / var(--ath-dim-head)));
+      }
+    }
+    .foot {
+      display: flex;
+      flex-flow: row wrap;
+      gap: 4px;
+      justify-content: center;
+      background: #111 !important;
+      border-color: #333 !important;
+      font-size: 13px;
+    }
+
+    .top {
+      /*background-position: center 0;*/
+      margin: 0 calc(var(--ath-page-width) / 2 - 50vw);
+    }
+
+    [itemtype="http://schema.org/Movie"] > h2 + br + table,
+    form[action="/mults/"] > table {
+      &, tbody, tr {
+        display: contents;
+      }
+      /*mult w/ img*/
+      td[align=center]:not(:has(+ td[align=left]:is([colspan="2"], :not([colspan])))) {
+        display: inline-block;
+        margin: 10px;
+        position: relative;
+        img {
+          display: flow-root;
+          height: var(--ath-thumb-height) !important;
+          width: auto !important;
+          @container style(--ath-thumb-width: fixed) {
+            width: calc(var(--ath-thumb-height) * 4 / 3) !important;
+            object-fit: cover;
+          }
+        }
+        span /*duration*/ {
+          position: absolute;
+          inset: 0 0 auto auto;
+          margin: 2px;
+          padding: 1px 2px;
+          background: #0006;
+          color: #eee !important;
+          border-radius: 4px;
+        }
+        .imgblock .imgtext {
+          inset: auto 0 0 0;
+          width: auto;
+          padding: 4px 0 6px;
+        }
+      }
+      /* mult w/o img - title */
+      td[align=left]:is([colspan="2"], :not([colspan])) {
+        position: relative;
+        left: 30px;
+        display: block;
+      }
+      /* mult w/o img - icon */
+      td[align=center]:has(+ td[align=left]:is([colspan="2"], :not([colspan]))) {
+        position: absolute;
+        left: 0;
+        display: inline-block;
+      }
+      /* series header */
+      td[align=left][colspan="5"] {
+        display: block;
+        margin: 10px 10px 5px;
+        text-align: center;
+      }
+    }
+    form[action="/mults/"] {
+      position: relative;
+      text-align: center;
+      img[src^="/img/"][src$=".gif"] {
+        filter: var(--ath-invert);
+        width: auto !important;
+        height: auto !important;
+      }
+      fieldset {
+        > div /*pagination*/ {
+          b, a {
+            padding: 3px 13px !important;
+            background: #fff1;
+          }
+        }
+      }
+    }
+  }
+}
