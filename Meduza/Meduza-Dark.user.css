@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Meduza.io – Dark [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.0.1
 @description    Dark theme for Meduza.io (Медуза.io). Supports all types of articles.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -34,6 +34,20 @@
   .TopicBlockItem-module-footer,
   .RichBlock-module-meta {
     color: #999;
+  }
+  .RichBlock-module-withTheme {
+    background: #222 !important;
+    --bgColor: #222 !important;
+    --textColor: #eee !important;
+    --metaColor: #999 !important;
+  }
+
+  .Modal-module-isAuth .Modal-module-container {
+    background: #333;
+  }
+  .Header-module-itemAuth,
+  .Header-module-itemSearch {
+    filter: drop-shadow(0 0 1px #fff);
   }
 
   /* Main: Chronology */
@@ -71,9 +85,12 @@
   .Skeleton-module-wrapper:before {
     background: #555;
   }
-  .Skeleton-module-card.Skeleton-module-card {
+  .Skeleton-module-card:not(#\0) {
     box-shadow: inset 0 0 0 1px #000;
     border: none;
+    &:before {
+      background-color: #333;
+    }
   }
   .Skeleton-module-animation {
     border-color: #222;
