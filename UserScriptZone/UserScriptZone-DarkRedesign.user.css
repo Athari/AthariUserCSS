@@ -1,0 +1,430 @@
+/* ==UserStyle==
+@name           UserScript.zone – Dark Redesign [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Complete redesign of UserScript.zone in dark colors. Aims to display all contents on a single screen at reslutions 1920×1080+. Configurable block size.
+@author         Athari
+
+@var            checkbox ath-max-desc-lines-enabled "Description: Limit height"    1
+@var            range    ath-min-desc-lines         "Description: Min lines"       [4, 1, 12]
+@var            range    ath-max-desc-lines         "Description: Max lines"       [4, 1, 12]
+@var            select   ath-desc-hover             "Description: On hover"        ["scroll:Scroll*", "overlay:Overlay", "none:Do nothing"]
+@var            number   ath-script-width           "Script block width"           [590, 300, 1000, 10, 'px']
+==/UserStyle== */
+
+@-moz-document domain("userscript.zone") {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    display: flex;
+    flex-flow: column;
+    height: auto;
+    min-height: 100vh;
+    overflow: hidden scroll;
+  }
+
+  * {
+    color: #ccc;
+    font: 15px/1.3 Segoe UI, Lato, sans-serif;
+  }
+
+  .row.row {
+    background: #111;
+    border-color: #333 !important;
+  }
+  body:not(.howto) {
+    .row {
+      margin: 0;
+      padding: 0;
+    }
+    [class^="col"] {
+      display: contents;
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+    }
+    table, tbody, tr {
+      display: contents;
+    }
+    .container.small {
+      width: 100%;
+      max-width: none;
+      margin: 55px 40px 10px 40px;
+      padding: 0;
+    }
+  }
+
+  a:not([data-weight]),
+  .row.pagination input {
+    color: #88f !important;
+    text-decoration: none !important;
+    &:hover {
+      color: #ccf !important;
+    }
+  }
+  a[data-weight] {
+    letter-spacing: 1px;
+    filter: brightness(1.2) drop-shadow(0 0 1px #fff8) drop-shadow(0 0 3px #000);
+    -webkit-text-stroke: currentcolor 1px;
+    text-decoration: none;
+    transition: all;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+    transition-behavior: allow-discrete;
+    transition-delay: 50ms;
+    transform: scale(1);
+    &:hover {
+      transition-delay: 0ms;
+      filter: brightness(2) drop-shadow(0 0 1px #fff8) drop-shadow(0 0 3px #000);
+      transform: scale(1.3);
+      z-index: 1;
+    }
+  }
+  .highlight {
+    border-radius: 4px;
+    color: #bb0;
+    font-weight: 500 !important;
+  }
+
+  .row.pagination {
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+    input {
+      font-size: 1rem !important;
+      margin: 0 4px;
+      padding: 6px 14px;
+      background: #222;
+    }
+    form.selected input {
+      color: #fff !important;
+      font-weight: bold !important;
+    }
+  }
+
+  #search {
+    width: 25em;
+    padding: 2px 6px;
+    box-shadow: none;
+    background: #222;
+    border: solid 1px #555;
+    border-radius: 4px;
+    transition-duration: 0s;
+  }
+  input[type=submit] {
+    margin: 0;
+  }
+
+  .row.header:not(#\0) {
+    position: fixed;
+    inset: 0 0 auto 0;
+    display: flex;
+    flex-flow: row;
+    gap: 20px;
+    align-items: center;
+    padding: 3px 40px;
+    background: #0008;
+    backdrop-filter: brightness(1.5) blur(8px);
+    z-index: 100;
+    table, tbody, tr, td, ul, li, div, .row {
+      display: contents !important;
+      visibility: visible !important;
+    }
+    > .name {
+      filter: brightness(1.2) drop-shadow(1px 1px 1px #000) drop-shadow(0 0 3px #000);
+      .logo {
+        &:hover {
+          filter: brightness(1.6) drop-shadow(0 0 1px #fff) drop-shadow(0 0 3px #000);
+        }
+        -webkit-text-stroke: currentcolor 1px;
+        span {
+          font-size: 2rem;
+          letter-spacing: 1px;
+        }
+        .chars + .chare {
+          color: #088;
+          margin: 0 3px 0 -3px;
+        }
+        .charc {
+          color: #55f;
+        }
+        .chari {
+          color: seagreen;
+        }
+        .charZ, .charo, .charn, .chare {
+          color: #888;
+        }
+      }
+      > span {
+        color: #777;
+      }
+    }
+    > .tools {
+      display: contents;
+      td.label {
+        display: block !important;
+        padding: 0;
+        color: #999;
+      }
+      form {
+        display: flex;
+        flex-flow: row;
+        gap: 5px;
+        margin: 0 0 0 auto;
+      }
+      .entry.start label {
+        margin-left: auto;
+      }
+      .entry.tools {
+        label {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .row:has(> .search_stats) {
+    &, & > div {
+      display: contents;
+    }
+    .search_stats {
+      display: block;
+      margin: 10px 0;
+      font-size: 1rem;
+    }
+  }
+  .trywithallurls {
+    margin: 10px 0;
+  }
+
+  .row.script:not(.steps) {
+    position: static;
+    anchor-name: --ath-anchor-script;
+    height: anchor-size(--ath-anchor-script height);
+    display: inline grid !important;
+    grid-template-areas:
+      "origin   origin   origin   origin  "
+      "name     name     name     name    "
+      "desc     desc     desc     desc    "
+      "action-1 action-2 action-3 action-4";
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: auto;
+    align-items: baseline;
+    width: var(--ath-script-width);
+    margin: 0 10px 16px 0 !important;
+    padding: 6px 12px;
+    background: #222 !important;
+    border: solid 1px #333 !important;
+    border-radius: 10px;
+    .row {
+      display: contents;
+    }
+    .origins {
+      grid-area: origin;
+      display: flex;
+      gap: 0.7ch;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      * {
+        font-size: 0.9rem;
+      }
+      .origin {
+        font-weight: 500;
+        color: #999;
+      }
+      .origin_item_id {
+        max-width: none;
+        color: #999;
+      }
+    }
+    .all_urls {
+      grid-area: origin;
+      margin: 0 0 0 auto;
+      padding: 0;
+    }
+    .name {
+      grid-area: name;
+      margin: 4px 0;
+      a {
+        font-size: 1.1rem;
+      }
+    }
+    .version {
+      grid-area: name;
+      margin: 0 0 0 auto;
+      font-size: 1rem;
+      color: #aaa;
+    }
+    .description {
+      grid-area: desc;
+      display: block;
+      margin: 5px 0;
+      color: #ccc;
+      min-height: calc(1lh * var(--ath-min-desc-lines));
+      @container style(--ath-max-desc-lines-enabled: 1) {
+        max-height: calc(1lh * var(--ath-max-desc-lines));
+        overflow: hidden;
+        text-overflow: ellipsis;
+        @supports (-webkit-line-clamp: 1) {
+          display: --webkit-box;
+          -webkit-line-clamp: var(--ath-max-desc-lines);
+          line-clamp: var(--ath-max-desc-lines);
+          -webkit-box-orient: vertical;
+        }
+        @container style(--ath-desc-hover: scroll) {
+          scrollbar-gutter: stable;
+          &:hover {
+            overflow: hidden auto;
+            @supports (-webkit-line-clamp: 1) {
+              -webkit-line-clamp: none;
+              line-clamp: none;
+            }
+          }
+          &::-webkit-scrollbar-thumb {
+            display: none;
+          }
+        }
+        @container style(--ath-desc-hover: overlay) {
+          scrollbar-gutter: stable;
+          &:hover {
+            overflow: visible;
+            z-index: 100;
+            @supports (-webkit-line-clamp: 1) {
+              -webkit-line-clamp: none;
+              line-clamp: none;
+            }
+            text-shadow: 0 0 1px #000,
+              -1px -1px 0 #000, +0px -1px 0 #000, +1px -1px 0 #000,
+              -1px +0px 0 #000, +0px +0px 0 #000, +1px +0px 0 #000,
+              -1px +1px 0 #000, +0px +1px 0 #000, +1px +1px 0 #000;
+            -webkit-text-stroke: 0.2px;
+          }
+        }
+      }
+    }
+    .script_actions {
+      .action {
+        text-align: center;
+        &.install {
+          grid-area: action-4;
+          margin: 0 0 0 auto;
+          a {
+            padding: 4px 16px;
+            text-align: center;
+            background: #444 !important;
+            color: #ccc !important;
+            border: solid 1px #555 !important;
+            border-radius: 10px;
+            &:hover {
+              background: #666 !important;
+              color: #fff !important;
+              border: solid 1px #777 !important;
+            }
+          }
+        }
+        &.issues {
+          grid-area: action-3;
+          margin: 0 20px 0 0;
+        }
+        &.code {
+          grid-area: action-2;
+          margin: 0 20px 0 0;
+        }
+        &.report {
+          grid-area: action-1;
+          margin: 10px auto 10px 0;
+          a {
+            color: #f88 !important;
+            font-size: 0;
+            opacity: 0.5;
+            &::after {
+              content: "Report";
+              font-size: 1rem;
+            }
+            &:hover {
+              opacity: 1;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .middle:has(.popular-searches) {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    margin: 20px;
+    .row.popular-searches {
+      justify-content: center;
+      max-width: 900px;
+      margin: 20px;
+      padding: 15px 20px;
+      background: #222;
+      border: solid 1px #333;
+      border-radius: 20px;
+      h2 {
+        font-size: 2rem;
+        margin: 10px 0;
+        font-weight: 500;
+      }
+      .cloud {
+        gap: 0 10px;
+        line-height: 1em;
+        li {
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  .row.navigation {
+    position: static;
+    margin: 55px 0 0 0;
+    border-color: #0000 !important;
+    * {
+      background: #222 !important;
+      color: #ccc !important;
+      border-color: #0000 !important;
+      &:hover {
+        color: #fff !important;
+      }
+    }
+    label {
+      padding: 0;
+    }
+    .entries {
+      width: auto;
+      .tabs {
+        display: flex;
+        flex-flow: row;
+        gap: 30px;
+      }
+    }
+  }
+  .subnav .tab-switch:checked + .tab-label * {
+    font-weight: bold !important;
+  }
+
+  .row.footer:not(#\0) {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    min-height: 0;
+    margin: auto 0 0 0;
+    padding: 10px;
+    background: #000;
+    [class^="col"] {
+      display: contents;
+    }
+    .hidden {
+      display: block !important;
+    }
+  }
+}
