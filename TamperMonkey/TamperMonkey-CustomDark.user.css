@@ -1,0 +1,299 @@
+/* ==UserStyle==
+@name           TamperMonkey.net – Dark [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Dark theme for TamperMonkey.net. Also applies to the docs and the popup during userscript installation. Colors configurable using dark magic™.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var            range    l "Lightness base"     [1.2, -1.0, 2.0, 0.02]
+@var            range    m "Lightness contrast" [-1.0, -2.0, 2.0, 0.02]
+@var            range    c "Chroma base"        [0.03, 0.0, 0.37, 0.01]
+@var            range    d "Chroma contrast"    [1.6, -2.0, 2.0, 0.05]
+@var            range    h "Hue base"           [180, 0, 360, 5]
+@var            range    i "Hue contrast"       [0.0, -1.0, 1.0, 0.05]
+@var            checkbox q "Invert images"      1
+==/UserStyle== */
+
+@-moz-document domain("tampermonkey.net") {
+  /* manual */
+  :root {
+    color-scheme: dark;
+  }
+
+  /* generated */
+  .mainnav, .mainnav .tabs {
+    background-color: oklch(from #000000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .tabview .tab + .tab {
+    border-left-color: oklch(from #000000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .tabview .tab-label {
+    background-color: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .tabview .tab-label, .tabview .tab-label * {
+    color: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    fill: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .tabview .tab-content {
+    background-color: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    color: oklch(from #363636 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-bottom-color: oklch(from #bdc3c7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .tabview .tab-switch:checked + .tab-label {
+    background-color: oklch(from #eeeeed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-right-color: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .tabview .tab-switch:checked + .tab-label, .tabview .tab-switch:checked + .tab-label * {
+    color: oklch(from #363636 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    fill: oklch(from #363636 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .tabview .menu-button {
+    color: oklch(from white calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  @media only screen and (max-width: 45em) {
+    .tabview .menu-button-switch:checked + .menu-button ~ .tabs .tab {
+      border-bottom-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    }
+  }
+  .subnav, .subnav .tabs {
+    background-color: oklch(from #eeeeed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) !important;
+    background: -moz-linear-gradient(to bottom, oklch(from #eeeeed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) 0, oklch(from #DDD calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) 100%);
+    background: -webkit-linear-gradient(top, oklch(from #eeeeed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) 0, oklch(from #DDD calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) 100%);
+    background: linear-gradient(to bottom, oklch(from #eeeeed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) 0, oklch(from #DDD calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) 100%);
+  }
+  .subnav .menu-button {
+    color: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .subnav .tab-label {
+    background-color: oklch(from #888 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-color: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .subnav .tab + .tab {
+    border-left-color: oklch(from #DDD calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .subnav .tab-switch:checked + .tab-label {
+    background-color: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body.acceptable .advent_head {
+    background-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    color: oklch(from #393838 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .content .searcad .head {
+    color: oklch(from #777777 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .content .searcad.incontent.right {
+    background-color: oklch(from white calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .not_found h1 {
+    color: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .dialog.modal > .overlay:after {
+    background-color: oklch(from rgba(0, 0, 0, 0.5) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .dialog > .container {
+    background-color: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    color: oklch(from white calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .dialog > .container .head {
+    border-left-color: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-top-color: oklch(from #606060 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-right-color: oklch(from #666 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .dialog > .container .content {
+    border-left-color: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-right-color: oklch(from #666 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-bottom-color: oklch(from #606060 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    background-color: oklch(from #fefefe calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .language {
+    color: oklch(from #eee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .language select {
+    background-color: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    box-shadow: 2px 2px 5px 1px oklch(from rgba(0, 0, 0, 0.3) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    color: oklch(from #eee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .language::before {
+    color: oklch(from #eee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .malicious-warning {
+    color: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles ul li + li {
+    border-left-color: oklch(from grey calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .tile {
+    background-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles div {
+    color: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .hint {
+    color: oklch(from #444 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .button {
+    background-color: oklch(from #4CAF50 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    color: oklch(from white calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .button svg {
+    fill: oklch(from white calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .button.file {
+    background-color: oklch(from #a0a0a0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .button.help {
+    background-color: oklch(from #258df4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles a.button, .download .tiles a.button:visited {
+    color: oklch(from white calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) !important;
+  }
+  .download .tiles a.button svg, .download .tiles a.button:visited svg {
+    fill: oklch(from white calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .done.button {
+    background-color: oklch(from #a0a0a0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .done.button:hover {
+    background-color: oklch(from #8e8e8e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .button:hover {
+    background-color: oklch(from #3C8F30 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    color: oklch(from black calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .button.file:hover {
+    background-color: oklch(from #676666 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .download .tiles .button.help:hover {
+    background-color: oklch(from #1b6cbc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .changelog .changeset + .changeset {
+    border-top-color: oklch(from grey calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .changelog .changeset .changes .change.category {
+    color: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    background-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .faq .row.md > table th, .documentation .row.md > table th {
+    border-bottom-color: oklch(from lightgray calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .faq .row.md > table td + td, .faq .row.md > table th + th, .documentation .row.md > table td + td, .documentation .row.md > table th + th {
+    border-left-color: oklch(from lightgray calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .contrib .container select:focus, .contrib .container input:focus {
+    border: 1px oklch(from darkgray calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) solid;
+    border-color: oklch(from darkgray calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    box-shadow: 0 0 5px oklch(from darkgray calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .contrib .container .red_border {
+    border: 1px oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) solid;
+  }
+  .contrib .container .red_border:focus {
+    border-color: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    box-shadow: 0 0 5px oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .contrib .container .blue_border {
+    border: 1px oklch(from #0075ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) solid;
+  }
+  .contrib .container .blue_border:focus {
+    border-color: oklch(from #0075ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    box-shadow: 0 0 5px oklch(from #0075ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .row.contrib > table {
+    background-color: oklch(from #fafafa calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-top-color: oklch(from #d1d1d0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-bottom-color: oklch(from #d1d1d0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .uninstallation .info {
+    background-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .global_hint .close:hover {
+    color: oklch(from #e13d14 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h)) !important;
+  }
+  .global_hint a:link, .global_hint a:visited {
+    color: oklch(from black calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .global_hint_notice {
+    background-color: oklch(from rgba(211, 211, 211, 0.86) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .global_hint_warning {
+    background-color: oklch(from rgba(255, 165, 0, 0.86) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .global_hint_information {
+    background-color: oklch(from rgba(162, 194, 242, 0.86) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .promorequest .info {
+    background-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body {
+    background-color: oklch(from #eeeeed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  input[type=text], input[type=email], textarea {
+    border: 2px solid oklch(from #ccc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  button, input[type=submit] {
+    border: 2px solid oklch(from #ccc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  input[type=text]:focus, input[type=email]:focus, textarea:focus {
+    box-shadow: 0 0 5px oklch(from #51cbee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border: 2px solid oklch(from #51cbee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  a:link {
+    color: oklch(from #cb8a3e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  a:visited {
+    color: oklch(from #cb8a3e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body > .content .col-full {
+    background-color: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body > .content .col-full .row h1 {
+    background-color: oklch(from #484848 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    color: oklch(from white calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body > .content .col-full .row h2 {
+    color: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    background-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  code, .changelog .changeset .changes .change span i {
+    background-color: oklch(from rgba(175, 184, 193, 0.2) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .back-to-top {
+    background-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    color: oklch(from black calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border: 1px solid oklch(from #aaa calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .back-to-top, .back-to-top:visited, .back-to-top:hover, .back-to-top:link {
+    color: oklch(from black calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .footer {
+    background-color: oklch(from #eeeeee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    border-top-color: oklch(from lightgrey calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+
+  /* fixes */
+  /* remove: "*.hljs*", "body > .header*" */
+  body {
+    color: oklch(from #333 calc(var(--l) + var(--m) * l) c h);
+  }
+  .mainnav, .mainnav .tabs {
+    background-color: oklch(from #ddd calc(var(--l) + var(--m) * l) c h);
+  }
+  .tabview .tab + .tab {
+    border-left-color: oklch(from #ddd calc(var(--l) + var(--m) * l) c h);
+  }
+  svg {
+    fill: currentColor;
+  }
+  @container style(--q: 1) {
+    img {
+      filter: brightness(0.9) invert(1) hue-rotate(0.5turn);
+    }
+    img:is([src$="/ape.svg"], [src$="/edge.png"], [src$="/chrome.png"], [src$="/firefox.png"], [src$="/chromium.png"], [src$="/edge_beta.png"], [src$="/firefox_nightly.png"], [src$="/safari.png"]) {
+      filter: none;
+    }
+  }
+}
