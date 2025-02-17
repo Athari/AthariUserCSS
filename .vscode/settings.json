@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "*.user.css": "less"
+        "*.user.css": "less",
+        "sites.json": "json5"
     },
     "git.inputValidation": false
 }

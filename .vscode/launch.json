@@ -9,38 +9,52 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Recolor CSS (prompt)",
+      "name": "Recolor CSS: prompt path",
+      "cwd": "${workspaceFolder}/!recolor",
       "program": "${workspaceFolder}/!recolor/index.js",
       "args": ["recolor-css"],
       "runtimeArgs": ["--preserve-symlinks"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Recolor CSS (specified output)",
+      "name": "Recolor CSS: prompt site",
+      "cwd": "${workspaceFolder}/!recolor",
       "program": "${workspaceFolder}/!recolor/index.js",
-      "args": ["recolor-css", "C:/Docs/Projects/UserCSS/!recolor/tampermonkey.css"],
+      "args": ["recolor-site-css"],
       "runtimeArgs": ["--preserve-symlinks"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Recolor CSS: test path",
+      "cwd": "${workspaceFolder}/!recolor",
+      "program": "${workspaceFolder}/!recolor/index.js",
+      "args": ["recolor-css", "C:/Docs/Projects/UserCSS/!recolor/tmp/meta.stackexchange.com/stacks.css"],
+      "runtimeArgs": ["--preserve-symlinks"],
+      "console": "integratedTerminal",
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Show Version",
+      "cwd": "${workspaceFolder}/!recolor",
       "program": "${workspaceFolder}/!recolor/index.js",
       "args": ["version"],
       "runtimeArgs": ["--preserve-symlinks"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Show Help",
+      "cwd": "${workspaceFolder}/!recolor",
       "program": "${workspaceFolder}/!recolor/index.js",
       "args": ["help"],
       "runtimeArgs": ["--preserve-symlinks"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
     },
   ]
 }
