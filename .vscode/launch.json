@@ -1,0 +1,46 @@
+{
+  "version": "0.2.0",
+  "debug.javascript.terminalOptions": {
+    "skipFiles": [
+      "<node_internals>/**"
+    ]
+  },
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Recolor CSS (prompt)",
+      "program": "${workspaceFolder}/!recolor/index.js",
+      "args": ["recolor-css"],
+      "runtimeArgs": ["--preserve-symlinks"],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Recolor CSS (specified output)",
+      "program": "${workspaceFolder}/!recolor/index.js",
+      "args": ["recolor-css", "C:/Docs/Projects/UserCSS/!recolor/tampermonkey.css"],
+      "runtimeArgs": ["--preserve-symlinks"],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Show Version",
+      "program": "${workspaceFolder}/!recolor/index.js",
+      "args": ["version"],
+      "runtimeArgs": ["--preserve-symlinks"],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Show Help",
+      "program": "${workspaceFolder}/!recolor/index.js",
+      "args": ["help"],
+      "runtimeArgs": ["--preserve-symlinks"],
+      "console": "integratedTerminal"
+    },
+  ]
+}
