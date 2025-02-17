@@ -1,8 +1,8 @@
 /* ==UserStyle==
 @name           NpmJS.com – Dark [Ath]
 @namespace      athari
-@version        1.0.0
-@description    Dark theme for NPM (NpmJS.com).
+@version        1.1.0
+@description    Dark theme for NPM (NpmJS.com). Includes styling of documentation.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
 @supportURL     https://github.com/Athari/AthariUserCSS/issues
@@ -100,7 +100,7 @@
   }
 
   :not(#\0) {
-    word-break: break-word;
+    word-break: normal;
   }
 
   input {
@@ -267,10 +267,23 @@
     code, pre {
       background: var(--code-bg);
       font-size: var(--code-font-size);
+      word-break: normal !important;
     }
     blockquote {
       background: #222;
       border-color: #333;
+    }
+    table, tr, th, td {
+      border-color: #333;
+    }
+    td {
+      background: #111;
+      tr:nth-child(even) & {
+        background: #181818;
+      }
+    }
+    th {
+      background: #222;
     }
   }
 
