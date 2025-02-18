@@ -4,6 +4,7 @@ import safeParser from 'postcss-safe-parser';
 import enquirer from 'enquirer';
 import JSON5 from 'json5';
 import { format as prettifyCode } from 'prettier';
+import monkeyutils from '@athari/monkeyutils';
 import {
   Command,
   Option as CommandOption,
@@ -22,6 +23,7 @@ import {
   isTokenHash, isTokenIdent,
   tokenize as tokenizeCssValue,
 } from '@csstools/css-tokenizer';
+const { assignDeep, throwError } = monkeyutils;
 
 const reColorFunction = /^rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color$/i;
 const reColorPropSimple = /^(-moz-|-webkit-|-ms-|)(color|fill|stroke|(background|outline|text-decoration|text-emphasis|text-outline|tap-highlight|accent|column-rule|caret|stop|flood|lighting)-color|border(-top|-right|-left|-bottom|(-block|-inline)(-start|-end)|)-color|scrollbar(-3dlight|-arrow|-base|-darkshadow|-face|-highlight|-shadow|-track|)-color|(box|text)-shadow|background-image)$/i;
@@ -30,9 +32,10 @@ const reColorPropComplexSplit = /^(-moz-|-webkit-|-ms-|)(border(-block|-inline|)
 const reAtRuleMediaDark = /prefers-color-scheme\s*:\s*dark/i;
 const reAtRuleMediaNameAllowed = /container|media|scope|starting-style|supports/i;
 
-const recolorPlugin = () => ({
+const recolorPlugin = (opts = {}) => ({
   postcssPlugin: 'recolor',
   Once(css) {
+    opts = Object.assign({ colorFormula: 'dark' }, opts);
     css.walkAtRules(rule => {
       //console.log(`rule: ${rule.name} = ${rule.params}`);
       // TODO: Support animating colors with @keyframes
@@ -60,10 +63,18 @@ const recolorPlugin = () => ({
           const colorVar = (s, i) => `var(--${colorVarPrefix}${String.fromCharCode(s.charCodeAt(0) + i)})`;
           const colorComp = (c, b) => typeof b == 'string' ? b : b ? `calc(${colorVar(c, 0)} + ${colorVar(c, 1)} * ${c})` : c;
           const colorOkLch = (orig, l, c, h) => `oklch(from ${orig.toString()} ${colorComp('l', l)} ${colorComp('c', c)} ${colorComp('h', h)})`;
-          const colorDark = colorOkLch(node, 1, 0, 'calc(180 - h)');
-          const colorCustomDark = colorOkLch(node, 1, 1, 1);
-          const colorCustomAuto = `light-dark(${node}, ${colorCustomDark})`;
-          const colorResult = colorDark;
+          const colorAutoTheme = (orig, expr) => `light-dark(${orig.toString()}, ${expr})`;
+          //const colorDark = colorOkLch(node, 1, 0, 'calc(180 - h)');
+          const colorDark = colorOkLch(node, 1, 0, 0);
+          const colorDarkAuto = colorAutoTheme(node, colorDark);
+          const colorDarkFull = colorOkLch(node, 1, 1, 1);
+          const colorDarkFullAuto = colorAutoTheme(node, colorDarkFull);
+          const colorResult = {
+            'dark': colorDark,
+            'dark-full': colorDarkFull,
+            'dark-auto': colorDarkAuto,
+            'dark-full-auto': colorDarkFullAuto,
+          }[opts.colorFormula] ?? colorDark;
           if (reColorPropSimple.test(decl.prop) || decl.variable || isComplexValue) {
             //console.log(`simple: ${decl.prop} = ${node.toString()}`);
             newDeclProp = decl.prop;
@@ -101,22 +112,22 @@ const recolorPlugin = () => ({
 });
 recolorPlugin.postcss = true;
 
-const prettifyCss = (filepath, css) => prettifyCode(css, {
-  filepath, printWidth: 999, tabWidth: 2,
-});
+const prettifyCss = async (filepath, css) => (await prettifyCode(css, {
+  filepath, printWidth: 999, tabWidth: 2, endOfLine: 'cr',
+})).trimEnd();
 
-const recolorCss = async (inputPath, outputPath) => {
+const recolorCss = async (inputPath, outputPath, opts) => {
   const inputCss = await fs.readFile(inputPath, 'utf-8');
   const result = await postCss([
-    recolorPlugin,
+    recolorPlugin(opts),
   ]).process(inputCss, { from: inputPath, parser: safeParser });
-  //const outputCss = result.css.replace(/    /g, "  ").replace(/^/mg, "  ");
   const outputCssPretty = await prettifyCss(outputPath, result.css);
-  await fs.writeFile(outputPath, outputCssPretty, 'utf-8');
+  const outputCssUserstyle = (opts.header + outputCssPretty).replace(/^/mg, "  ");
+  await fs.writeFile(outputPath, outputCssUserstyle, 'utf-8');
   console.log(`Transformed CSS written to ${outputPath}`);
 };
 
-const recolorSiteCss = async (siteName, site) => {
+const recolorSiteCss = async (siteName, site, opts) => {
   for (const [ cssName, cssUrl ] of Object.entries(site)) {
     const siteDir = `./sites/${siteName}`;
     fs.mkdir(siteDir, { recursive: true });
@@ -130,7 +141,16 @@ const recolorSiteCss = async (siteName, site) => {
     const inputCssPretty = await prettifyCss(inputPath, inputCss);
     await fs.writeFile(inputPathPretty, inputCssPretty, 'utf-8');
     console.log(`Prettier CSS written to ${inputPath}`);
-    await recolorCss(inputPath, outputPath);
+    const headerLines = [
+      "generated",
+      `formula: ${opts.colorFormula ?? 'dark'}`,
+      `site-name: ${siteName}`,
+      `file-name: ${cssName}`,
+      `url: ${cssUrl}`,
+    ].map(s => ` * ${s}\n`).join("");
+    await recolorCss(inputPath, outputPath, Object.assign(opts, {
+      header: `/*\n${headerLines} */\n`,
+    }));
   }
 };
 
@@ -139,6 +159,7 @@ const validateRequired = (name) => (input) => input ? true : `Argument ${name} c
 const question = (type, a, name, message, opts, cfg) =>
   Object.assign(cfg ?? {}, {
     type, name, message,
+    skip: () => !!a[name],
     initial: () => a[name] ?? opts.initial?.(),
     result: v => a[name] = v,
     validate: validateRequired(name),
@@ -158,15 +179,20 @@ const jsonPackage = await loadJson("./package.json");
 const jsonSites = await loadJson("./sites.json");
 
 const program = new Command();
+const optionColorFormula = new CommandOption('-c, --color-formula', "Color transform formula")
+  .choices([ 'dark', 'dark-full', 'dark-auto', 'dark-full-auto' ]);
+
 program
   .name('recolor')
   .version(jsonPackage.version)
   .description(jsonPackage.description);
-  program
+
+program
   .command('recolor-css [inputPath] [outputPath]')
   .description("Recolor CSS file")
-  .action(async (inputPath, outputPath) => {
-    const a = { inputPath, outputPath };
+  .addOption(optionColorFormula)
+  .action(async (inputPath, outputPath, o) => {
+    const a = Object.assign(o, { inputPath, outputPath });
     if (!a.inputPath?.length) {
       await enquirer.prompt([
         questionInput(a, 'inputPath', "Path to input CSS file:"),
@@ -178,14 +204,15 @@ program
         }),
       ]);
     }
-    await recolorCss(a.inputPath, a.outputPath);
+    await recolorCss(a.inputPath, a.outputPath, { ...a });
   });
+
 program
   .command('recolor-site-css [siteName]')
   .description("Recolor all CSS files of a site defined in sites.json")
-  .addOption()
-  .action(async (siteName) => {
-    const a = { siteName };
+  .addOption(optionColorFormula)
+  .action(async (siteName, o) => {
+    const a = Object.assign(o, { siteName });
     if (!a.siteName?.length) {
       await enquirer.prompt([
         questionSelect(a, 'siteName', "Site to download CSS from:", {
@@ -193,8 +220,20 @@ program
         }),
       ]);
     }
-    await recolorSiteCss(a.siteName, jsonSites[a.siteName]);
+    const site = assignDeep(
+      { options: {}, html: {}, css: {} },
+      jsonSites[a.siteName] ?? throwError(`Site ${a.siteName} not found`));
+    if (!(site.options.colorFormula ??= o.colorFormula)) {
+      await enquirer.prompt([
+        questionSelect(site.options, optionColorFormula.attributeName(), optionColorFormula.description, {
+          choices: optionColorFormula.argChoices,
+        })
+      ]);
+    }
+    console.log("Site config: ", a.siteName, site);
+    await recolorSiteCss(a.siteName, site.css, site.options);
   });
+
 program
   .command('version')
   .description("Show version")
