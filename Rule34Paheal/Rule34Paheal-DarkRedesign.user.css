@@ -3,7 +3,10 @@
 @namespace      athari
 @version        1.0.0
 @description    Dark theme for Paheal Rule 34 (Rule34.Paheal.net). All pages fully redesigned. Highly customizable: choosing controls below thumbnail, fonts, colors etc.
-@author         Athari
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
 @preprocessor   default
 
 @var            select   ath-thumb-image-fit      "Thumbnail: fit image"            ["contain:Letterboxed", "cover:Clip to square", "fill:Stretch to square"]
