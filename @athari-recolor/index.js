@@ -1,9 +1,11 @@
 import { promises as fs } from 'fs';
-import postCss from 'postcss';
+import postCss, { Comment, Declaration, Rule } from 'postcss';
 import safeParser from 'postcss-safe-parser';
 import enquirer from 'enquirer';
 import JSON5 from 'json5';
 import { format as prettifyCode } from 'prettier';
+import { initializeLinq } from 'linq-to-typescript'
+import cssColorsNames from 'color-name';
 import monkeyutils from '@athari/monkeyutils';
 import {
   Command,
@@ -11,6 +13,11 @@ import {
 } from 'commander';
 import {
   color as parseCssColor,
+  serializeRGB as serializeRgb,
+  serializeOKLCH as serializeOkLch,
+  serializeP3,
+  colorDataFitsRGB_Gamut as colorDataFitsRgbGamut,
+  ColorNotation,
 } from '@csstools/css-color-parser';
 import {
   isFunctionNode, isTokenNode,
@@ -22,8 +29,11 @@ import {
 import {
   isTokenHash, isTokenIdent,
   tokenize as tokenizeCssValue,
+  stringify as stringifyCssValue,
 } from '@csstools/css-tokenizer';
+
 const { assignDeep, throwError } = monkeyutils;
+initializeLinq();
 
 const reColorFunction = /^rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color$/i;
 const reColorPropSimple = /^(-moz-|-webkit-|-ms-|)(color|fill|stroke|(background|outline|text-decoration|text-emphasis|text-outline|tap-highlight|accent|column-rule|caret|stop|flood|lighting)-color|border(-top|-right|-left|-bottom|(-block|-inline)(-start|-end)|)-color|scrollbar(-3dlight|-arrow|-base|-darkshadow|-face|-highlight|-shadow|-track|)-color|(box|text)-shadow|background-image)$/i;
@@ -35,7 +45,28 @@ const reAtRuleMediaNameAllowed = /container|media|scope|starting-style|supports/
 const recolorPlugin = (opts = {}) => ({
   postcssPlugin: 'recolor',
   Once(css) {
-    opts = Object.assign({ colorFormula: 'dark' }, opts);
+    // TODO: Disable palette gen by default
+    opts = Object.assign({ colorFormula: 'dark', palette: true }, opts);
+
+    const palette = {
+      uniqueColors: {},
+      colors: [],
+    };
+    const paletteVarPrefix = 'c';
+
+    const stringifyNode = node => stringifyCssValue(...node.tokens());
+    const parseCssCompStr = css => parseCssComp(tokenizeCssValue({ css }));
+    const roundStrNumbers = s => s.replace(/\d+\.\d+/g, d => (+d).toFixed(2));
+
+    const identifiableColorNotations = new Set([ ColorNotation.HEX, ColorNotation.RGB, ColorNotation.HSL, ColorNotation.HWB ]);
+    const cssColorMap = Object.fromEntries(Object.entries(cssColorsNames).map(([ name, [ r, g, b ] ]) => [ `${r}|${g}|${b}`, name ]));
+    const getIdentColorName = color => {
+      if (color.alpha !== 1 || !identifiableColorNotations.has(color.colorNotation))
+        return false;
+      const [ r, g, b ] = color.channels;
+      return cssColorMap[`${255 * r}|${255 * g}|${255 * b}`] ?? null;
+    };
+
     css.walkAtRules(rule => {
       //console.log(`rule: ${rule.name} = ${rule.params}`);
       // TODO: Support animating colors with @keyframes
@@ -46,6 +77,7 @@ const recolorPlugin = (opts = {}) => ({
         rule.remove();
       }
     });
+
     css.walkDecls(decl => {
       let newDeclProp = '-';
       let newDeclValue = null;
@@ -56,15 +88,44 @@ const recolorPlugin = (opts = {}) => ({
           isFunctionNode(node) && reColorFunction.test(node.getName()) ||
           isTokenNode(node) && (isTokenHash(node.value) || isTokenIdent(node.value))
         ) {
+          // TODO: Deal with color parser producing component value in color alpha property, plus other SyntaxFlag values
           const colorData = parseCssColor(node);
-          if (!colorData)
+          if (!colorData) {
+            isComplexValue = true;
             return;
+          }
+
+          let strNode = stringifyNode(node);
+          const [ colorRgbStr, colorOkLchStr ] = [ serializeRgb(colorData), serializeP3(colorData) ];
+          let colorUniqueKey = `${colorRgbStr}/${colorOkLchStr}`;
+          const colorIdent = getIdentColorName(colorData);
+          if (isTokenNode(node))
+            strNode = strNode.toLowerCase();
+          let paletteColor = palette.uniqueColors[colorUniqueKey];
+          if (paletteColor === undefined) {
+            const paletteVarName = colorIdent ?? roundStrNumbers(strNode)
+              .replace(/[^\w\d-]/ig, "_").replace(/_+/g, "-").replace(/^-/, "")
+              .toLowerCase();
+            paletteColor = {
+              colorData,
+              colorRgb: roundStrNumbers(stringifyNode(colorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
+              colorOkLch: roundStrNumbers(stringifyNode(serializeOkLch(colorData))),
+              colorStr: colorIdent ?? strNode,
+              expr: "",
+              count: 0,
+              name: `--${paletteVarPrefix}-${paletteVarName}`,
+            };
+            palette.colors.push(paletteColor);
+            palette.uniqueColors[colorUniqueKey] = paletteColor;
+          }
+          paletteColor.count++;
+          const paletteResult = `var(${paletteColor.name})`;
+
           const colorVarPrefix = '';
           const colorVar = (s, i) => `var(--${colorVarPrefix}${String.fromCharCode(s.charCodeAt(0) + i)})`;
           const colorComp = (c, b) => typeof b == 'string' ? b : b ? `calc(${colorVar(c, 0)} + ${colorVar(c, 1)} * ${c})` : c;
           const colorOkLch = (orig, l, c, h) => `oklch(from ${orig.toString()} ${colorComp('l', l)} ${colorComp('c', c)} ${colorComp('h', h)})`;
           const colorAutoTheme = (orig, expr) => `light-dark(${orig.toString()}, ${expr})`;
-          //const colorDark = colorOkLch(node, 1, 0, 'calc(180 - h)');
           const colorDark = colorOkLch(node, 1, 0, 0);
           const colorDarkAuto = colorAutoTheme(node, colorDark);
           const colorDarkFull = colorOkLch(node, 1, 1, 1);
@@ -75,29 +136,33 @@ const recolorPlugin = (opts = {}) => ({
             'dark-auto': colorDarkAuto,
             'dark-full-auto': colorDarkFullAuto,
           }[opts.colorFormula] ?? colorDark;
+          paletteColor.expr = colorResult;
+          const cssResult = opts.palette ? paletteResult : colorResult;
+
           if (reColorPropSimple.test(decl.prop) || decl.variable || isComplexValue) {
             //console.log(`simple: ${decl.prop} = ${node.toString()}`);
             newDeclProp = decl.prop;
-            return parseCssComp(tokenizeCssValue({ css: colorResult }));
+            return parseCssCompStr(cssResult);
           } else if (reColorPropSplit.test(decl.prop)) {
             //console.log(`split: ${decl.prop} = ... ${node.toString()} ...`);
             newDeclProp = `${decl.prop}-color`;
-            newDeclValue = colorResult;
+            newDeclValue = cssResult;
           } else if (reColorPropComplexSplit.test(decl.prop)) {
-            // TODO: Split complex values
+            // TODO: Split complex values like border(-width|-style|-color)
             newDeclProp = decl.prop;
-            return parseCssComp(tokenizeCssValue({ css: colorResult }));
+            return parseCssCompStr(cssResult);
           } else {
             console.log(`unknown: ${decl.prop} = ${decl.value}`);
           }
-        }/* else if (isFunctionNode(node)) {
-          console.log(`unknown function: ${decl.prop} = ${decl.value}`);
-        }*/
+        }
       });
       if (newDeclProp != '-')
         decl.cloneBefore({ prop: newDeclProp, value: newDeclValue ?? stringifyCssComps(newTokens), important: decl.important });
       decl.remove();
     });
+
+    css.cleanRaws();
+
     const removeEmptyNodes = (node) => {
       if (!node.nodes)
         return;
@@ -107,13 +172,28 @@ const recolorPlugin = (opts = {}) => ({
       });
     };
     removeEmptyNodes(css);
-    css.cleanRaws();
+
+    if (opts.palette) {
+      css.prepend(
+        new Rule({
+          selector: ':root',
+          nodes: palette.colors
+            .orderBy(c => c.count, (a, b) => b - a)
+            .thenBy(c => c.colorRgb, (a, b) => a.localeCompare(b))
+            .selectMany(c => [
+              new Comment({ text: `color ${c.colorStr} n=${c.count} ${c.colorRgb} ${c.colorOkLch}` }),
+              new Declaration({ prop: c.name, value: c.expr }),
+            ])
+            .toArray(),
+        })
+      );
+    }
   }
 });
 recolorPlugin.postcss = true;
 
 const prettifyCss = async (filepath, css) => (await prettifyCode(css, {
-  filepath, printWidth: 999, tabWidth: 2, endOfLine: 'cr',
+  filepath, printWidth: 999, tabWidth: 2, endOfLine: 'cr', trailingComma: 'all', bracketSpacing: true, semi: true,
 })).trimEnd();
 
 const recolorCss = async (inputPath, outputPath, opts) => {
@@ -128,11 +208,10 @@ const recolorCss = async (inputPath, outputPath, opts) => {
 };
 
 const recolorSiteCss = async (siteName, site, opts) => {
-  for (const [ cssName, cssUrl ] of Object.entries(site)) {
-    const siteDir = `./sites/${siteName}`;
-    fs.mkdir(siteDir, { recursive: true });
+  const siteDir = `./sites/${siteName}`;
+  fs.mkdir(siteDir, { recursive: true });
+  const downloadOneSiteCss = async (cssName, cssUrl) => {
     const inputPath = `${siteDir}/${cssName}`;
-    const outputPath = inputPath.replace(/\.css$/i, ".out.css");
     console.log(`Downloading CSS ${cssUrl}`);
     const inputCss = await (await fetch(cssUrl, { signal: AbortSignal.timeout(10000) })).text();
     await fs.writeFile(inputPath, inputCss, 'utf-8');
@@ -141,16 +220,41 @@ const recolorSiteCss = async (siteName, site, opts) => {
     const inputCssPretty = await prettifyCss(inputPath, inputCss);
     await fs.writeFile(inputPathPretty, inputCssPretty, 'utf-8');
     console.log(`Prettier CSS written to ${inputPath}`);
+    return { css: inputCssPretty, path: inputPath };
+  };
+  const recolorOneSiteCss = async (inputPath, extraHeaderLines) => {
+    const outputPath = inputPath.replace(/\.css$/i, ".out.css");
     const headerLines = [
       "generated",
       `formula: ${opts.colorFormula ?? 'dark'}`,
       `site-name: ${siteName}`,
-      `file-name: ${cssName}`,
-      `url: ${cssUrl}`,
+      ...extraHeaderLines,
     ].map(s => ` * ${s}\n`).join("");
     await recolorCss(inputPath, outputPath, Object.assign(opts, {
       header: `/*\n${headerLines} */\n`,
     }));
+  };
+  if (opts.combine) {
+    const allCss = [];
+    for (const [ cssName, cssUrl ] of Object.entries(site))
+      allCss.push({ cssName, cssUrl, ...await downloadOneSiteCss(cssName, cssUrl) });
+    const allCssStr = allCss.map(c => c.css).join("\n");
+    const allInputPath = `${siteDir}/_.css`;
+    await fs.writeFile(allInputPath, allCssStr, 'utf-8');
+    console.log(`Combined prettier CSS written to ${allInputPath}`);
+    await recolorOneSiteCss(allInputPath, allCss.flatMap(c => [
+      `file-name: ${c.cssName}`,
+      `url: ${c.cssUrl}`,
+    ]));
+  }
+  else {
+    for (const [ cssName, cssUrl ] of Object.entries(site)) {
+      const { path } = await downloadOneSiteCss(cssName, cssUrl);
+      await recolorOneSiteCss(path, [
+        `file-name: ${cssName}`,
+        `url: ${cssUrl}`,
+      ]);
+    }
   }
 };
 
@@ -223,7 +327,10 @@ program
     const site = assignDeep(
       { options: {}, html: {}, css: {} },
       jsonSites[a.siteName] ?? throwError(`Site ${a.siteName} not found`));
-    if (!(site.options.colorFormula ??= o.colorFormula)) {
+    site.options.colorFormula ??= o.colorFormula;
+    site.options.palette ??= o.palette;
+    site.options.combine ??= o.combine;
+    if (!site.options.colorFormula) {
       await enquirer.prompt([
         questionSelect(site.options, optionColorFormula.attributeName(), optionColorFormula.description, {
           choices: optionColorFormula.argChoices,

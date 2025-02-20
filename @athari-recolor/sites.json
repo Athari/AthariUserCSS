@@ -1,0 +1,31 @@
+{
+  "none": {},
+  "meta.stackexchange.com": {
+    options: {
+      colorFormula: 'dark',
+      //palette: true,
+      combine: true,
+    },
+    css: {
+      "primary.css": "https://meta.stackexchange.com/Content/Sites/stackexchangemeta/primary.css",
+      "stacks.css": "https://meta.stackexchange.com/Content/Shared/stacks.css",
+      //"channels.css": "https://meta.stackexchange.com/Content/Shared/Channels/channels.css", // unused??
+    },
+  },
+  "rule34.paheal.net": {
+    options: {
+      colorFormula: 'dark-full',
+      palette: true,
+      combine: true,
+    },
+    // TODO: Get dynamic CSS URL from HTML
+    // TODO: Find all elements styled in HTML: [...document.querySelectorAll('[style]')].map(e => e.getAttribute('style'))
+    html: {
+      "index.html": "https://rule34.paheal.net/",
+    },
+    css: {
+      "rule34v2.css": "https://rule34.paheal.net/data/cache/style/rule34v2.1739310587.b3d6ca90457f42ae26e6de657c233f7f.css",
+      "menuh.css": "https://rule34.paheal.net/themes/rule34v2/menuh.css",
+    },
+  }
+}

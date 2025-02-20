@@ -71,17 +71,17 @@ Various small tweaks in usability and style, all toggled through options. It is 
 * Round corners with soft shadows for blocks
 * Search and browse forms on top the page (longer search input, no sidebar)
 * Static Prev/Next buttons overlayed on top of an image submission in static position
-* Image submission height constrained to the screen size (ads are assummed to be hidden with an ad blocking extension)
+* Image submission height constrained to the screen size (ads are assumed to be hidden with an ad blocking extension)
 * Changing "rating" border thickness
 * Hiding fat "modern" header on top
-* Hiding FA+, virtue signalling, scraping warning
+* Hiding FA+, virtue signaling, scraping warning
 * Hiding redundant controls on the submission page
 
 ## <a id="inkbunny"/> ![](https://icons.duckduckgo.com/ip3/inkbunny.net.ico) InkBunny.net
 
-### InkBunny.net - Compact Dark [![Install InkBunny.net Compact Dark Style][Install Style]](InkBunny/InkBunny-CompactDark.user.css?raw=1)
+### InkBunny.net – Compact Dark [![Install InkBunny.net Compact Dark Style][Install Style]](InkBunny/InkBunny-CompactDark.user.css?raw=1)
 
-![InkBunny.net - Compact Dark Screenshot](InkBunny/InkBunny-CompactDark.jpg?raw=1)
+![InkBunny.net – Compact Dark Screenshot](InkBunny/InkBunny-CompactDark.jpg?raw=1)
 
 Primarily a dark theme, but includes several optional usability improvements.
 
@@ -100,7 +100,7 @@ Primarily a dark theme, but includes several optional usability improvements.
 
 Various usability enhancements, with options to toggle some of them:
 
-* Side menus always displayed on wide monitors
+* Side menus on wide monitors
 * More compact layout without lots of wasted space
 * Displaying both IMDB and Kinopoisk ratings at the same time
 * Displaying related movies of all kinds at the same time
