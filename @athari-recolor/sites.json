@@ -27,5 +27,17 @@
       "rule34v2.css": "https://rule34.paheal.net/data/cache/style/rule34v2.1739310587.b3d6ca90457f42ae26e6de657c233f7f.css",
       "menuh.css": "https://rule34.paheal.net/themes/rule34v2/menuh.css",
     },
-  }
+  },
+  "boxofficemojo.com": {
+    options: {
+      colorFormula: 'dark-full',
+      palette: true,
+      combine: true,
+    },
+    html: {
+      "index.html": "https://www.boxofficemojo.com/",
+    },
+    css: {
+    },
+  },
 }

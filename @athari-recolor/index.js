@@ -31,8 +31,25 @@ import {
   tokenize as tokenizeCssValue,
   stringify as stringifyCssValue,
 } from '@csstools/css-tokenizer';
+import {
+  parseDocument as parseHtmlDocument,
+} from 'htmlparser2';
+import {
+  Document as HtmlDocument,
+  Node as HtmlNode,
+  Element as HtmlElement,
+  Text as HtmlText,
+  isTag as isHtmlElement,
+  isText as isHtmlText,
+  hasChildren as hasHtmlChildren,
+} from 'domhandler';
+import {
+  selectOne as htmlSelectOne,
+  selectAll as htmlSelectAll,
+} from 'css-select';
+import cssNano from 'cssnano';
 
-const { assignDeep, throwError } = monkeyutils;
+const { assignDeep, throwError, download, withTimeout } = monkeyutils;
 initializeLinq();
 
 const reColorFunction = /^rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color$/i;
@@ -56,14 +73,17 @@ const recolorPlugin = (opts = {}) => ({
 
     const stringifyNode = node => stringifyCssValue(...node.tokens());
     const parseCssCompStr = css => parseCssComp(tokenizeCssValue({ css }));
-    const roundStrNumbers = s => s.replace(/\d+\.\d+/g, d => (+d).toFixed(2));
+    const roundStrNumbers = s => s.replace(/(\d+\.\d+|\d+\.|\.\d+)/g,
+      (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
 
     const identifiableColorNotations = new Set([ ColorNotation.HEX, ColorNotation.RGB, ColorNotation.HSL, ColorNotation.HWB ]);
     const cssColorMap = Object.fromEntries(Object.entries(cssColorsNames).map(([ name, [ r, g, b ] ]) => [ `${r}|${g}|${b}`, name ]));
     const getIdentColorName = color => {
-      if (color.alpha !== 1 || !identifiableColorNotations.has(color.colorNotation))
-        return false;
       const [ r, g, b ] = color.channels;
+      if (r == 0 && g == 0 && b == 0 && color.alpha == 0)
+        return 'transparent';
+      if (color.alpha !== 1 || !identifiableColorNotations.has(color.colorNotation))
+        return null;
       return cssColorMap[`${255 * r}|${255 * g}|${255 * b}`] ?? null;
     };
 
@@ -104,7 +124,7 @@ const recolorPlugin = (opts = {}) => ({
           let paletteColor = palette.uniqueColors[colorUniqueKey];
           if (paletteColor === undefined) {
             const paletteVarName = colorIdent ?? roundStrNumbers(strNode)
-              .replace(/[^\w\d-]/ig, "_").replace(/_+/g, "-").replace(/^-/, "")
+              .replace(/\./ig, "_").replace(/[^\w\d-]/ig, "-").replace(/-+/g, "-").replace(/^-?(.*?)-?$/, "$1")
               .toLowerCase();
             paletteColor = {
               colorData,
@@ -192,63 +212,115 @@ const recolorPlugin = (opts = {}) => ({
 });
 recolorPlugin.postcss = true;
 
-const prettifyCss = async (filepath, css) => (await prettifyCode(css, {
-  filepath, printWidth: 999, tabWidth: 2, endOfLine: 'cr', trailingComma: 'all', bracketSpacing: true, semi: true,
-})).trimEnd();
+const basePrettierOptions = {
+  tabWidth: 2, endOfLine: 'cr',
+  htmlWhitespaceSensitivity: 'ignore',
+  trailingComma: 'all', bracketSpacing: true, semi: true,
+};
+
+const prettifyCss = async (filepath, css) => (await prettifyCode(css,
+  Object.assign(basePrettierOptions, { filepath, printWidth: 999 }))
+).trimEnd();
+
+const prettifyHtml = async (filepath, css) => (await prettifyCode(css,
+  Object.assign(basePrettierOptions, { filepath, printWidth: 160 }))
+).trimEnd();
+
+const downloadSiteHtml = async (siteName, site) => {
+  const siteDir = `./sites/${siteName}`;
+  site.css ??= {};
+  fs.mkdir(siteDir, { recursive: true });
+
+  for (const [ htmlName, htmlUrl ] of Object.entries(site.html)) {
+    const htmlPath = `${siteDir}/${htmlName}`;
+    console.log(`Downloading HTML ${htmlUrl}`);
+
+    const htmlText = await download(htmlUrl, 'text');
+    await fs.writeFile(htmlPath, htmlText);
+    console.log(`HTML written to ${siteDir}`);
+
+    const htmlPathPretty = htmlPath.replace(/\.html$/i, ".pretty.html");
+    const htmlTextPretty = await prettifyHtml(htmlPath, htmlText);
+    await fs.writeFile(htmlPathPretty, htmlTextPretty);
+    console.log(`Prettier HTML written to ${htmlPathPretty}`);
+
+    const doc = parseHtmlDocument(htmlText);
+    for (const linkCss of htmlSelectAll('link[rel="stylesheet"]', doc)) {
+      if (!isHtmlElement(linkCss))
+        continue;
+      const cssUrl = linkCss.attribs.href;
+      let cssName = cssUrl.match(/.*\/([^#]+)/)?.[1];
+      cssName = cssName.replace(/[^\w\d\._-]/ig, "");
+      if (!cssName.match(/\.css$/i))
+        cssName += ".css";
+      console.log(`Found CSS link '${cssName}' ${cssUrl}`);
+      site.css[cssName] = cssUrl;
+    }
+  }
+};
 
 const recolorCss = async (inputPath, outputPath, opts) => {
-  const inputCss = await fs.readFile(inputPath, 'utf-8');
+  const inputCss = await fs.readFile(inputPath);
   const result = await postCss([
     recolorPlugin(opts),
   ]).process(inputCss, { from: inputPath, parser: safeParser });
+
   const outputCssPretty = await prettifyCss(outputPath, result.css);
   const outputCssUserstyle = (opts.header + outputCssPretty).replace(/^/mg, "  ");
-  await fs.writeFile(outputPath, outputCssUserstyle, 'utf-8');
+  await fs.writeFile(outputPath, outputCssUserstyle);
   console.log(`Transformed CSS written to ${outputPath}`);
 };
 
-const recolorSiteCss = async (siteName, site, opts) => {
+const recolorSiteCss = async (siteName, { css, options }) => {
   const siteDir = `./sites/${siteName}`;
   fs.mkdir(siteDir, { recursive: true });
+
   const downloadOneSiteCss = async (cssName, cssUrl) => {
     const inputPath = `${siteDir}/${cssName}`;
     console.log(`Downloading CSS ${cssUrl}`);
-    const inputCss = await (await fetch(cssUrl, { signal: AbortSignal.timeout(10000) })).text();
-    await fs.writeFile(inputPath, inputCss, 'utf-8');
+
+    const inputCss = await withTimeout(download(cssUrl, 'text'), 10000);
+    await fs.writeFile(inputPath, inputCss);
     console.log(`Original CSS written to ${inputPath}`);
+
     const inputPathPretty = inputPath.replace(/\.css$/i, ".pretty.css");
     const inputCssPretty = await prettifyCss(inputPath, inputCss);
-    await fs.writeFile(inputPathPretty, inputCssPretty, 'utf-8');
-    console.log(`Prettier CSS written to ${inputPath}`);
+    await fs.writeFile(inputPathPretty, inputCssPretty);
+    console.log(`Prettier CSS written to ${inputPathPretty}`);
+
     return { css: inputCssPretty, path: inputPath };
   };
+
   const recolorOneSiteCss = async (inputPath, extraHeaderLines) => {
     const outputPath = inputPath.replace(/\.css$/i, ".out.css");
     const headerLines = [
       "generated",
-      `formula: ${opts.colorFormula ?? 'dark'}`,
+      `formula: ${options.colorFormula ?? 'dark'}`,
       `site-name: ${siteName}`,
       ...extraHeaderLines,
     ].map(s => ` * ${s}\n`).join("");
-    await recolorCss(inputPath, outputPath, Object.assign(opts, {
+    await recolorCss(inputPath, outputPath, Object.assign(options, {
       header: `/*\n${headerLines} */\n`,
     }));
   };
-  if (opts.combine) {
+
+  if (options.combine) {
     const allCss = [];
-    for (const [ cssName, cssUrl ] of Object.entries(site))
+    for (const [ cssName, cssUrl ] of Object.entries(css))
       allCss.push({ cssName, cssUrl, ...await downloadOneSiteCss(cssName, cssUrl) });
+
     const allCssStr = allCss.map(c => c.css).join("\n");
     const allInputPath = `${siteDir}/_.css`;
-    await fs.writeFile(allInputPath, allCssStr, 'utf-8');
+    await fs.writeFile(allInputPath, allCssStr);
     console.log(`Combined prettier CSS written to ${allInputPath}`);
+
     await recolorOneSiteCss(allInputPath, allCss.flatMap(c => [
       `file-name: ${c.cssName}`,
       `url: ${c.cssUrl}`,
     ]));
   }
   else {
-    for (const [ cssName, cssUrl ] of Object.entries(site)) {
+    for (const [ cssName, cssUrl ] of Object.entries(css)) {
       const { path } = await downloadOneSiteCss(cssName, cssUrl);
       await recolorOneSiteCss(path, [
         `file-name: ${cssName}`,
@@ -277,7 +349,7 @@ const questionSelect = (a, name, message, opts) =>
     choices: opts.choices,
   });
 
-const loadJson = async (path) => JSON5.parse(await fs.readFile(path, 'utf-8'));
+const loadJson = async (path) => JSON5.parse(await fs.readFile(path));
 
 const jsonPackage = await loadJson("./package.json");
 const jsonSites = await loadJson("./sites.json");
@@ -302,7 +374,7 @@ program
         questionInput(a, 'inputPath', "Path to input CSS file:"),
         questionInput(a, 'outputPath', "Path to output CSS file:", {
           initial() {
-            const autoOutputPath = a.inputPath.replace(/\.css$/, '.out.css');
+            const autoOutputPath = a.inputPath.replace(/\.css$/i, '.out.css');
             return a.inputPath != autoOutputPath ? autoOutputPath : undefined;
           }
         }),
@@ -338,7 +410,8 @@ program
       ]);
     }
     console.log("Site config: ", a.siteName, site);
-    await recolorSiteCss(a.siteName, site.css, site.options);
+    await downloadSiteHtml(a.siteName, site);
+    await recolorSiteCss(a.siteName, site);
   });
 
 program
