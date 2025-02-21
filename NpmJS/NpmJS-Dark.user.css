@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           NpmJS.com – Dark [Ath]
 @namespace      athari
-@version        1.1.0
+@version        1.2.0
 @description    Dark theme for NPM (NpmJS.com). Includes styling of documentation.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -264,6 +264,31 @@
         }
       }
     }
+    .editor-colors {
+      .keyword,
+      .storage,
+      .storage.type {
+        color: oklch(from #222 0.7 c h);
+      }
+      .meta.structure.dictionary.json > .string.quoted.double.json,
+      .meta.structure.dictionary.json > .string.quoted.double.json .punctuation.string {
+        color: oklch(from #000080 0.6 c h);
+      }
+      .css.support.property-name {
+        color: oklch(from #333 0.8 c h);
+      }
+      .support.constant,
+      .support.function,
+      .support.type {
+        color: oklch(from #458 0.7 c h);
+      }
+      .variable {
+        color: oklch(from #008080 0.7 c h);
+      }
+      .constant.language {
+        color: oklch(from #606aa1 0.7 c h);
+      }
+    }
     code, pre {
       background: var(--code-bg);
       font-size: var(--code-font-size);
@@ -294,6 +319,13 @@
       code {
         font-size: 13px;
       }
+    }
+  }
+
+  #tabpanel-dependents,
+  #tabpanel-dependencies {
+    h2.b--black-10 {
+      color: #eee;
     }
   }
 
