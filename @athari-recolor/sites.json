@@ -3,14 +3,14 @@
   "meta.stackexchange.com": {
     options: {
       colorFormula: 'dark',
-      //palette: true,
+      palette: false,
       combine: true,
     },
-    css: {
-      "primary.css": "https://meta.stackexchange.com/Content/Sites/stackexchangemeta/primary.css",
-      "stacks.css": "https://meta.stackexchange.com/Content/Shared/stacks.css",
-      //"channels.css": "https://meta.stackexchange.com/Content/Shared/Channels/channels.css", // unused??
-    },
+    css: [
+      { name: "primary.css", url: "https://meta.stackexchange.com/Content/Sites/stackexchangemeta/primary.css" },
+      { name: "stacks.css", url: "https://meta.stackexchange.com/Content/Shared/stacks.css" },
+      //{ name: "channels.css", url: "https://meta.stackexchange.com/Content/Shared/Channels/channels.css" }, // unused??
+    ],
   },
   "rule34.paheal.net": {
     options: {
@@ -20,13 +20,13 @@
     },
     // TODO: Get dynamic CSS URL from HTML
     // TODO: Find all elements styled in HTML: [...document.querySelectorAll('[style]')].map(e => e.getAttribute('style'))
-    html: {
-      "index.html": "https://rule34.paheal.net/",
-    },
-    css: {
-      "rule34v2.css": "https://rule34.paheal.net/data/cache/style/rule34v2.1739310587.b3d6ca90457f42ae26e6de657c233f7f.css",
-      "menuh.css": "https://rule34.paheal.net/themes/rule34v2/menuh.css",
-    },
+    html: [
+      //{ name: "index.html", url: "https://rule34.paheal.net/" },
+    ],
+    css: [
+      { name: "rule34v2.css", url: "https://rule34.paheal.net/data/cache/style/rule34v2.1739310587.b3d6ca90457f42ae26e6de657c233f7f.css" },
+      { name: "menuh.css", url: "https://rule34.paheal.net/themes/rule34v2/menuh.css" },
+    ],
   },
   "boxofficemojo.com": {
     options: {
@@ -34,10 +34,11 @@
       palette: true,
       combine: true,
     },
-    html: {
-      "index.html": "https://www.boxofficemojo.com/",
-    },
-    css: {
-    },
+    html: [
+      { name: "index.html", url: "https://www.boxofficemojo.com/" },
+      { name: "intl.html", url: "https://www.boxofficemojo.com/intl/" },
+    ],
+    css: [
+    ],
   },
 }

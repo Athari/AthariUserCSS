@@ -17,6 +17,7 @@
     "@csstools/css-color-parser": "^3.0.7",
     "@csstools/css-parser-algorithms": "^3.0.4",
     "@csstools/css-tokenizer": "^3.0.3",
+    "autoprefixer": "^10.4.20",
     "color-name": "^1.1.4",
     "commander": "^13.1.0",
     "css-select": "^5.1.0",
