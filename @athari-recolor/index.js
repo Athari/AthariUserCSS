@@ -1,5 +1,6 @@
-import fs from 'fs/promises';
-import { basename } from 'path';
+import fs from 'node:fs/promises';
+import { basename } from 'node:path';
+import vm from 'node:vm';
 import postCss, { Comment, Declaration, Rule } from 'postcss';
 import safeParser from 'postcss-safe-parser';
 import enquirer from 'enquirer';
@@ -60,7 +61,7 @@ import makeFetchCookie from 'fetch-cookie';
 import { CookieJar, MemoryCookieStore } from 'tough-cookie';
 import NetscapeCookieStore from './tough-cookie-netscape.js';
 
-const { assignDeep, throwError, withTimeout } = monkeyutils;
+const { isString, assignDeep, throwError, withTimeout } = monkeyutils;
 initializeLinq();
 
 const downloadTimeout = 30000;
@@ -74,7 +75,7 @@ netscapeCookies.export(memoryCookies);
 const fetchCookie = makeFetchCookie(fetch, new CookieJar(memoryCookies));
 
 const downloadText = async (url, init = {}) => {
-  const response =  await withTimeout(fetchCookie(url, {
+  const response =  await withTimeout(fetchCookie(url, Object.assign(init, {
     headers: {
       'accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
       // TODO: Accept gzip encoding
@@ -82,7 +83,11 @@ const downloadText = async (url, init = {}) => {
       'accept-language': "en-US,en",
       'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
     },
-  }), downloadTimeout);
+  })), downloadTimeout);
+  if (!response.ok) {
+    console.error(`WARNING: Failed to download ${url}`);
+    return null;
+  }
   return await response.text();
 };
 
@@ -149,6 +154,7 @@ const derandomSelectorPlugin = (opts = {}) => ({
         ${r.alphaDigit} | ${r.escape}
       )*
     )`;
+    // TODO: Support declarative derandom replacements
     //console.log(regex('i')`^${identToken}$`);
     opts = Object.assign({
       // gradients--sunnyDay-bottom--tRq3J
@@ -161,6 +167,8 @@ const derandomSelectorPlugin = (opts = {}) => ({
     }, opts);
 
     css.walkRules(rule => {
+      let didDerandom = false;
+
       // derandom classes
       let prevNode = null;
       let newComps = replaceCssComps(parseCssCompCommaList(tokenizeCss({ css: rule.selector })), (node) => {
@@ -169,27 +177,38 @@ const derandomSelectorPlugin = (opts = {}) => ({
           isTokenNode(node) && isTokenIdent(node.value)
         ) {
           const className = node.value[4].value;
-          return parseCssCompStr(`${className.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[class*="$1--$2--"]')}`);
+          const newSelector = className.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[class*="$1--$2--"]');
+          if (newSelector != className) {
+            didDerandom = true;
+            return parseCssCompStr(newSelector);
+          }
         }
         prevNode = node;
       });
 
       let newTokens = tokenizeCss({ css: stringifyCssComps(newComps) });
-      newTokens = newTokens.filter((token, i) => {
-        const nextToken = newTokens[i + 1];
-        return !(isTokenDelim(token) && token[4].value == "." && isTokenOpenSquare(nextToken));
-      });
+      if (didDerandom) {
+        newTokens = newTokens.filter((token, i) => {
+          const nextToken = newTokens[i + 1];
+          return !(isTokenDelim(token) && token[4].value == "." && isTokenOpenSquare(nextToken));
+        });
+      }
 
       // derandom ids
       newComps = replaceCssComps(parseCssCompCommaList(newTokens), (node) => {
         if (isTokenNode(node) && isTokenHash(node.value) && node.value[4].type == CssHashType.ID) {
           const idName = node.value[4].value;
-          return parseCssCompStr(`${idName.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[id^="$1--$2--"]')}`);
+          const newSelector = idName.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[id^="$1--$2--"]');
+          if (newSelector != idName) {
+            didDerandom = true;
+            return parseCssCompStr(newSelector);
+          }
         }
         prevNode = node;
       });
 
-      rule.selector = stringifyCssComps(newComps);
+      if (didDerandom)
+        rule.selector = stringifyCssComps(newComps);
     });
   }
 });
@@ -356,13 +375,20 @@ const basePrettierOptions = {
   trailingComma: 'all', bracketSpacing: true, semi: true,
 };
 
-const prettifyCss = async (filepath, css) => (await prettifyCode(css,
-  Object.assign(basePrettierOptions, { filepath, printWidth: 999 }))
-).trimEnd();
+const prettifyCodeSafe = async (filepath, source, options) => {
+  try {
+    const pretty = await prettifyCode(source, { filepath, ...basePrettierOptions, ...options });
+    return pretty.trimEnd();
+  } catch (ex) {
+    console.log(`Failed to prettify ${filepath}, keeping formatting`);
+    console.log(`${ex.message}\n${ex.stack}`);
+    return source.trimEnd();
+  }
+};
 
-const prettifyHtml = async (filepath, css) => (await prettifyCode(css,
-  Object.assign(basePrettierOptions, { filepath, printWidth: 160 }))
-).trimEnd();
+const prettifyCss = async (filepath, css) => (await prettifyCodeSafe(filepath, css, { printWidth: 999 }));
+
+const prettifyHtml = async (filepath, html) => (await prettifyCodeSafe(filepath, html, { printWidth: 160 }));
 
 const getSiteDir = async (siteName) => {
   const siteDir = `./sites/${siteName}`;
@@ -372,7 +398,15 @@ const getSiteDir = async (siteName) => {
 
 const downloadSiteHtml = async (siteName, site) => {
   const siteDir = await getSiteDir(siteName);
-  site.css ??= [];
+
+  const addSiteCss = (css) => {
+    site.css ??= [];
+    // TODO: > Deduplicate CSS URLs
+    if (css.url && site.css.some(c => c.url == css.url))
+      return false;
+    site.css.push(css);
+    return true;
+  };
 
   const prettifyOneSiteHtml = async (html) => {
     const pathPretty = html.path.replace(/\.html$/i, ".pretty.html");
@@ -385,6 +419,10 @@ const downloadSiteHtml = async (siteName, site) => {
     html.path = `${siteDir}/${html.name}`;
     console.log(`Downloading HTML ${html.url}`);
     html.text = await downloadText(html.url);
+    if (!html.text) {
+      delete html.path;
+      return;
+    }
     await fs.writeFile(html.path, html.text);
     console.log(`HTML written to ${html.path}`);
     await prettifyOneSiteHtml(html);
@@ -396,27 +434,21 @@ const downloadSiteHtml = async (siteName, site) => {
     await prettifyOneSiteHtml(html);
   };
 
-  for (const html of site.html.filter(c => c.url && !c.path && !c.text))
-    await downloadOneSiteHtml(html);
-  for (const html of site.html.filter(c => c.path && !c.text))
-    await readOneSiteHtml(html);
-
-  for (const html of site.html) {
-    const doc = parseHtmlDocument(html.text);
+  const parseLinkedCss = async (doc, html) => {
     for (const elLinkCss of htmlSelectAll('link[rel="stylesheet"]', doc)) {
       if (!isHtmlElement(elLinkCss))
         continue;
-      const cssUrl = elLinkCss.attribs.href;
-      if (site.css.some(c => c.url == cssUrl))
-        continue;
+      const cssUrl = new URL(elLinkCss.attribs.href, html.url).toString();
       let cssName = cssUrl.match(/.*\/([^#]+)/)?.[1];
       cssName = cssName.replace(/[^\w\d\._-]/ig, "");
       if (!cssName.match(/\.css$/i))
         cssName += ".css";
-      console.log(`Found CSS link '${cssName}' ${cssUrl}`);
-      site.css.push({ name: cssName, url: cssUrl });
+      if (addSiteCss({ name: cssName, url: cssUrl }))
+        console.log(`Found CSS link '${cssName}' ${cssUrl}`);
     }
+  };
 
+  const parseEmbeddedCss = async (doc, html) => {
     let iEmbedStyle = 1;
     for (const elStyle of htmlSelectAll('style:is([type="text/css"], [type=""], :not([type]))', doc)) {
       if (!isHtmlElement(elStyle))
@@ -425,10 +457,118 @@ const downloadSiteHtml = async (siteName, site) => {
       const cssName = html.name.replace(/\.html$/i, `.embed${iEmbedStyle}.css`);
       const cssPath = `${siteDir}/${cssName}`;
       await fs.writeFile(cssPath, cssText);
-      console.log(`Found embedded CSS '${cssName}'`);
-      site.css.push({ name: cssName, path: cssPath, text: cssText });
+      if (addSiteCss({ name: cssName, path: cssPath, text: cssText }))
+        console.log(`Found embedded CSS '${cssName}'`);
       iEmbedStyle++;
     }
+  };
+
+  const parseNextJSBuildManifest = async (doc, html) => {
+    let elBuildManifest = htmlSelectOne('script[src$="buildManifest.js" i]', doc);
+    if (!elBuildManifest || !isHtmlElement(elBuildManifest))
+      return;
+
+    const manifestUrl = new URL(elBuildManifest.attribs.src, html.url).toString();
+    console.log(`Found Next.js build manifest ${manifestUrl}`);
+
+    const manifestCode = await downloadText(manifestUrl);
+    if (!manifestCode)
+      return;
+    const manifestPath = `${siteDir}/buildManifest.js`;
+    await fs.writeFile(manifestPath, manifestCode);
+
+    const manifestCtx = { };
+    const initCode = `var self = globalThis;`;
+    vm.runInNewContext(`${initCode}\n\n${manifestCode}`, manifestCtx, {
+      filename: manifestUrl,
+      timeout: 10000,
+    });
+    const manifest = manifestCtx.__BUILD_MANIFEST;
+    if (!manifest)
+      return;
+
+    const nextJSRouteToPath = (path) => path.substring(1)
+      .replace(/\.+/g, '.').replace(/-+/g, '-')
+      .replace(/[^a-z0-9\[\]\/#_+-]/ig, '').replace(/\//g, '--');
+
+    console.log(manifestCtx);
+    const csss = Object.entries(manifest)
+      .flatMap(([ route, chunkUrls ]) =>
+        route.startsWith("/")
+          ? chunkUrls
+            .filter(u => u.match(/\.css$/i))
+            .map((url, index) => ({
+              name: `${nextJSRouteToPath(route)}-${index}.css`,
+              url: new URL(`../../${url}`, manifestUrl).toString(),
+            }))
+          : [])
+      .groupBy(c => c.url, c => c.name, (url, names) => ({
+        url,
+        name: names.orderBy(n => n.length, (a, b) => a - b).first(),
+      }))
+      .selectMany(c => c)
+      .toArray();
+    for (const css of csss)
+      if (addSiteCss(css))
+        console.log(`Found Next.js CSS chunk '${css.name}' ${css.url}`);
+  };
+
+  const parseWebpackMiniCssChunks = async (doc, html) => {
+    const elWebpack = htmlSelectOne('script[src*="webpack" i][src$=".js" i]', doc);
+    if (!elWebpack || !isHtmlElement(elWebpack))
+      return;
+
+    const webpackUrl = new URL(elWebpack.attribs.src, html.url).toString();
+    console.log(`Found WebPack script ${webpackUrl}`);
+
+    let webpackCode = await downloadText(webpackUrl);
+    if (!webpackCode)
+      return;
+    // TODO: Find a proper pattern for webpack miniCss hook
+    webpackCode = webpackCode.replace("h.nc=void 0", "self.webpack = h;");
+    const webpackPath = `${siteDir}/webpack.js`;
+    await fs.writeFile(webpackPath, webpackCode);
+
+    const initCode = `var self = globalThis;`;
+    const webpackCtx = { };
+    vm.runInNewContext(`${initCode}\n\n${webpackCode}`, webpackCtx, {
+      filename: webpackUrl,
+      timeout: 10000,
+    });
+    const webpack = webpackCtx.webpack;
+    if (!webpack)
+      return;
+
+    console.log("webpack", webpack);
+    const urlPrefix = Object.values(webpack).filter(v => isString(v) && v.startsWith("https://"))[0];
+    let emptyUrlCount = 0;
+    for (let iChunk = 0; iChunk < 1_000_000; iChunk++) {
+      const cssUrl = urlPrefix + webpack.miniCssF(iChunk);
+      if (cssUrl.includes('undefined')) {
+        emptyUrlCount++;
+        if (emptyUrlCount > 100_000)
+          return;
+        continue;
+      }
+      emptyUrlCount = 0;
+      const cssName = basename(cssUrl);
+      if (addSiteCss({ name: cssName, url: cssUrl }))
+        console.log(`Found Next.js CSS chunk #${iChunk} '${cssName}' ${cssUrl}`);
+    }
+  };
+
+  for (const html of site.html.filter(h => h.url && !h.path && !h.text))
+    await downloadOneSiteHtml(html);
+  for (const html of site.html.filter(h => h.path && !h.text))
+    await readOneSiteHtml(html);
+  site.html = site.html.filter(c => c.text);
+
+  for (const html of site.html) {
+    const doc = parseHtmlDocument(html.text);
+    await parseNextJSBuildManifest(doc, html);
+    await parseWebpackMiniCssChunks(doc, html);
+    await parseLinkedCss(doc, html);
+    await parseEmbeddedCss(doc, html);
   }
 };
 
@@ -477,6 +617,10 @@ const recolorSiteCss = async (siteName, site) => {
     css.path = `${siteDir}/${css.name}`;
     console.log(`Downloading CSS ${css.url}`);
     css.text = await downloadText(css.url, 'text');
+    if (!css.text) {
+      delete css.path;
+      return;
+    }
     await fs.writeFile(css.path, css.text);
     console.log(`Original CSS written to ${css.path}`);
     await prettifyOneSiteCss(css);
@@ -509,8 +653,9 @@ const recolorSiteCss = async (siteName, site) => {
 
   for (const css of site.css.filter(c => c.url && !c.path && !c.text))
     await downloadOneSiteCss(css);
-  for (const css of site.css.filter(c => c.path /*&& !c.text*/))
+  for (const css of site.css.filter(c => c.path && !c.text))
     await readOneSiteCss(css);
+  site.css = site.css.filter(c => c.text);
 
   if (options.combine) {
     const combinedCss = {

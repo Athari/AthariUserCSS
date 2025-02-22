@@ -3,7 +3,14 @@
   "test": {
     options: { colorFormula: 'dark-full', palette: true, combine: true },
     css: [
-      { name: "test.css", text: "tag, #something--id--234 .foo > .foo--bar--baz { color: #fff }" },
+      { name: "test.css", text: ".\\[background-image\\:linear-gradient\\(110deg\\2c \\#ececec_8\\%\\2c \\#f5f5f5_18\\%\\2c \\#ececec_33\\%\\)\\] { background-image: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); }" },
+    ],
+  },
+  "archive.org": {
+    options: { colorFormula: 'dark-full', palette: true, combine: true },
+    html: [
+      { name: "index.html", url: "https://archive.org/" },
+      { name: "msdos.html", url: "https://archive.org/details/softwarelibrary_msdos" },
     ],
   },
   "boxofficemojo.com": {
@@ -11,6 +18,39 @@
     html: [
       { name: "index.html", url: "https://www.boxofficemojo.com/" },
       { name: "intl.html", url: "https://www.boxofficemojo.com/intl/" },
+    ],
+  },
+  "freepik.com": {
+    options: { colorFormula: 'dark-full', palette: true, combine: true },
+    html: [
+      { name: "lynx-icon.html", url: "https://www.freepik.com/search?query=lynx&type=icon&ai=excluded" },
+      { name: "lynx-illustration.html", url: "https://www.freepik.com/search?query=lynx&type=illustration&ai=excluded" },
+      { name: "lynx-mockup.html", url: "https://www.freepik.com/search?query=lynx&type=mockup&ai=excluded" },
+      { name: "lynx-photo.html", url: "https://www.freepik.com/search?query=lynx&type=photo&ai=excluded" },
+      { name: "lynx-psd.html", url: "https://www.freepik.com/search?query=lynx&type=psd&ai=excluded" },
+      { name: "lynx-template.html", url: "https://www.freepik.com/search?query=lynx&type=template&ai=excluded" },
+      { name: "lynx-vector.html", url: "https://www.freepik.com/search?query=lynx&type=vector&ai=excluded" },
+      { name: "lynx-video.html", url: "https://www.freepik.com/search?query=lynx&type=video&ai=excluded" },
+      { name: "content-3d.html", url: "https://www.freepik.com/3d-models" },
+      { name: "content-collection.html", url: "https://www.freepik.com/collections" },
+      { name: "content-fonts.html", url: "https://www.freepik.com/fonts/comic?type=color-font" },
+      { name: "content-tunes.html", url: "https://tunes.freepik.com/" },
+      { name: "tool-ai-background.html", url: "https://www.freepik.com/ai/background-remover" },
+      { name: "tool-ai-icon.html", url: "https://www.freepik.com/ai/icon-generator/tool" },
+      { name: "tool-ai-image.html", url: "https://www.freepik.com/pikaso/ai-image-generator" },
+      { name: "tool-ai-video.html", url: "https://www.freepik.com/pikaso/ai-video-generator" },
+      { name: "tool-ai-voice.html", url: "https://tunes.freepik.com/ai-voice-generator" },
+      { name: "tool-designer.html", url: "https://www.freepik.com/designer/edit?template=new-artboard" },
+      { name: "tool-mockup.html", url: "https://www.freepik.com/mockup-editor/search" },
+      { name: "tool-upscale.html", url: "https://www.freepik.com/pikaso/upscaler" },
+      { name: "me.html", url: "https://www.freepik.com/user/me" },
+      { name: "projects.html", url: "https://www.freepik.com/user/projects" },
+      { name: "downloads.html", url: "https://www.freepik.com/user/downloads" },
+      { name: "bookmarks.html", url: "https://www.freepik.com/user/bookmarks" },
+      { name: "following.html", url: "https://www.freepik.com/user/following" },
+      { name: "collections.html", url: "https://www.freepik.com/user/collections" },
+      { name: "devices.html", url: "https://www.freepik.com/user/device-manager" },
+      { name: "api.html", url: "https://www.freepik.com/api" },
     ],
   },
   "meta.stackexchange.com": {
