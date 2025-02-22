@@ -9,8 +9,9 @@ import cssNanoPlugin from 'cssnano';
 import cssNanoPresetDeault from 'cssnano-preset-default';
 import autoPrefixerPlugin from 'autoprefixer';
 import { initializeLinq } from 'linq-to-typescript'
+import { regex, pattern as re } from 'regex'
 import cssColorsNames from 'color-name';
-import monkeyutils from '@athari/monkeyutils';
+import monkeyutils from '@athari/monkeyutils'
 import {
   Command,
   Option as CommandOption,
@@ -31,9 +32,10 @@ import {
   stringify as stringifyCssComps,
 } from '@csstools/css-parser-algorithms';
 import {
-  isTokenHash, isTokenIdent,
-  tokenize as tokenizeCssValue,
-  stringify as stringifyCssValue,
+  isTokenHash, isTokenIdent, isTokenDelim, isTokenOpenSquare,
+  tokenize as tokenizeCss,
+  stringify as stringifyCss,
+  HashType as CssHashType,
 } from '@csstools/css-tokenizer';
 import {
   parseDocument as parseHtmlDocument,
@@ -54,11 +56,144 @@ import {
 import {
   textContent as htmlInnerText,
 } from 'domutils';
+import makeFetchCookie from 'fetch-cookie';
+import { CookieJar, MemoryCookieStore } from 'tough-cookie';
+import NetscapeCookieStore from './tough-cookie-netscape.js';
 
-const { assignDeep, throwError, download, withTimeout } = monkeyutils;
+const { assignDeep, throwError, withTimeout } = monkeyutils;
 initializeLinq();
 
+const downloadTimeout = 30000;
+
 const readTextFile = (path) => fs.readFile(path, 'utf-8');
+
+console.log(`Loading cookies...`);
+const netscapeCookies = new NetscapeCookieStore('./cookies.txt', { alwaysWrite: false });
+const memoryCookies = new MemoryCookieStore();
+netscapeCookies.export(memoryCookies);
+const fetchCookie = makeFetchCookie(fetch, new CookieJar(memoryCookies));
+
+const downloadText = async (url, init = {}) => {
+  const response =  await withTimeout(fetchCookie(url, {
+    headers: {
+      'accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      // TODO: Accept gzip encoding
+      //'accept-encoding': "gzip, deflate, br, zstd",
+      'accept-language': "en-US,en",
+      'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+    },
+  }), downloadTimeout);
+  return await response.text();
+};
+
+const stringifyNode = node => stringifyCss(...node.tokens());
+const parseCssCompStr = css => parseCssComp(tokenizeCss({ css }));
+const roundStrNumbers = s => s.replace(/(\d+\.\d+|\d+\.|\.\d+)/g,
+  (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
+
+const derandomSelectorPlugin = (opts = {}) => ({
+  postcssPlugin: 'derandom-selector',
+  Once(css) {
+    // https://www.w3.org/TR/2021/CRD-css-syntax-3-20211224/#token-diagrams
+    const r = {};
+    r.newLine = re`(
+      \n | \r\n | \r | \f
+    )`;
+    r.whiteSpace = re`(
+      \ | \t | ${r.newLine}
+    )`;
+    r.hexDigit = re`(
+      [ 0-9 a-f ]
+    )`;
+    r.escape = re`(
+      \\ (
+        ${r.hexDigit}{1,6} ${r.whiteSpace}? |
+        ( (?! ${r.newLine} | ${r.hexDigit} ) . )
+      )
+    )`;
+    r.whiteSpaceStar = re`(
+      ${r.whiteSpace}*
+    )`;
+    r.alpha = re`(
+      [ a-z _ ]
+    )`;
+    r.alphaDigit = re`(
+      [ a-z 0-9 _ ]
+    )`;
+    r.alphaDigitDash = re`(
+      [ a-z 0-9 _ - ]
+    )`;
+    r.identToken = re`(
+      (
+        -- |
+        -? ( ${r.alpha} | ${r.escape} )
+      )
+      (
+        ${r.alphaDigitDash} | ${r.escape}
+      )*
+    )`;
+    r.identSingleDash = re`(
+      (
+        ${r.alpha} | ${r.escape}
+      )
+      (
+        (?! -- )
+        ${r.alphaDigitDash} | ${r.escape}
+      )*
+    )`;
+    r.identNoDash = re`(
+      (
+        ${r.alpha} | ${r.escape}
+      )
+      (
+        ${r.alphaDigit} | ${r.escape}
+      )*
+    )`;
+    //console.log(regex('i')`^${identToken}$`);
+    opts = Object.assign({
+      // gradients--sunnyDay-bottom--tRq3J
+      classTransforms: [
+        {
+          find: [ 'main=identSingleDash', '--', 'sub=identSingleDash', '--', 'hash=identSingleDash' ],
+          replace: '[class*="{main}--{sub}--"]',
+        },
+      ],
+    }, opts);
+
+    css.walkRules(rule => {
+      // derandom classes
+      let prevNode = null;
+      let newComps = replaceCssComps(parseCssCompCommaList(tokenizeCss({ css: rule.selector })), (node) => {
+        if (
+          isTokenNode(prevNode) && isTokenDelim(prevNode?.value) && prevNode.value[4].value == "." &&
+          isTokenNode(node) && isTokenIdent(node.value)
+        ) {
+          const className = node.value[4].value;
+          return parseCssCompStr(`${className.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[class*="$1--$2--"]')}`);
+        }
+        prevNode = node;
+      });
+
+      let newTokens = tokenizeCss({ css: stringifyCssComps(newComps) });
+      newTokens = newTokens.filter((token, i) => {
+        const nextToken = newTokens[i + 1];
+        return !(isTokenDelim(token) && token[4].value == "." && isTokenOpenSquare(nextToken));
+      });
+
+      // derandom ids
+      newComps = replaceCssComps(parseCssCompCommaList(newTokens), (node) => {
+        if (isTokenNode(node) && isTokenHash(node.value) && node.value[4].type == CssHashType.ID) {
+          const idName = node.value[4].value;
+          return parseCssCompStr(`${idName.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[id^="$1--$2--"]')}`);
+        }
+        prevNode = node;
+      });
+
+      rule.selector = stringifyCssComps(newComps);
+    });
+  }
+});
+derandomSelectorPlugin.postcss = true;
 
 const reColorFunction = /^rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color$/i;
 const reColorPropSimple = /^(-moz-|-webkit-|-ms-|)(color|fill|stroke|(background|outline|text-decoration|text-emphasis|text-outline|tap-highlight|accent|column-rule|caret|stop|flood|lighting)-color|border(-top|-right|-left|-bottom|(-block|-inline)(-start|-end)|)-color|scrollbar(-3dlight|-arrow|-base|-darkshadow|-face|-highlight|-shadow|-track|)-color|(box|text)-shadow|background-image)$/i;
@@ -78,11 +213,6 @@ const recolorPlugin = (opts = {}) => ({
       colors: [],
     };
     const paletteVarPrefix = 'c';
-
-    const stringifyNode = node => stringifyCssValue(...node.tokens());
-    const parseCssCompStr = css => parseCssComp(tokenizeCssValue({ css }));
-    const roundStrNumbers = s => s.replace(/(\d+\.\d+|\d+\.|\.\d+)/g,
-      (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
 
     const identifiableColorNotations = new Set([ ColorNotation.HEX, ColorNotation.RGB, ColorNotation.HSL, ColorNotation.HWB ]);
     const cssColorMap = Object.fromEntries(Object.entries(cssColorsNames).map(([ name, [ r, g, b ] ]) => [ `${r}|${g}|${b}`, name ]));
@@ -110,7 +240,7 @@ const recolorPlugin = (opts = {}) => ({
       let newDeclProp = '-';
       let newDeclValue = null;
       let isComplexValue = false;
-      const newTokens = replaceCssComps(parseCssCompCommaList(tokenizeCssValue({ css: decl.value })), (node) => {
+      const newComps = replaceCssComps(parseCssCompCommaList(tokenizeCss({ css: decl.value })), (node) => {
         isComplexValue ||= isFunctionNode(node) && !reColorFunction.test(node.getName());
         if (
           isFunctionNode(node) && reColorFunction.test(node.getName()) ||
@@ -185,7 +315,7 @@ const recolorPlugin = (opts = {}) => ({
         }
       });
       if (newDeclProp != '-')
-        decl.cloneBefore({ prop: newDeclProp, value: newDeclValue ?? stringifyCssComps(newTokens), important: decl.important });
+        decl.cloneBefore({ prop: newDeclProp, value: newDeclValue ?? stringifyCssComps(newComps), important: decl.important });
       decl.remove();
     });
 
@@ -235,9 +365,9 @@ const prettifyHtml = async (filepath, css) => (await prettifyCode(css,
 ).trimEnd();
 
 const getSiteDir = async (siteName) => {
-  const siteDir = await fs.realpath(`./sites/${siteName}`);
+  const siteDir = `./sites/${siteName}`;
   fs.mkdir(siteDir, { recursive: true });
-  return siteDir;
+  return await fs.realpath(siteDir);
 }
 
 const downloadSiteHtml = async (siteName, site) => {
@@ -254,9 +384,9 @@ const downloadSiteHtml = async (siteName, site) => {
   const downloadOneSiteHtml = async (html) => {
     html.path = `${siteDir}/${html.name}`;
     console.log(`Downloading HTML ${html.url}`);
-    html.text = await download(html.url, 'text');
+    html.text = await downloadText(html.url);
     await fs.writeFile(html.path, html.text);
-    console.log(`HTML written to ${siteDir}`);
+    console.log(`HTML written to ${html.path}`);
     await prettifyOneSiteHtml(html);
   };
 
@@ -321,6 +451,7 @@ const recolorCss = async (inputPath, outputPath, opts) => {
     }),
   ]);
   result = await runPostCss(result.css, [
+    derandomSelectorPlugin(opts),
     recolorPlugin(opts),
   ]);
 
@@ -345,7 +476,7 @@ const recolorSiteCss = async (siteName, site) => {
   const downloadOneSiteCss = async (css) => {
     css.path = `${siteDir}/${css.name}`;
     console.log(`Downloading CSS ${css.url}`);
-    css.text = await withTimeout(download(css.url, 'text'), 10000);
+    css.text = await downloadText(css.url, 'text');
     await fs.writeFile(css.path, css.text);
     console.log(`Original CSS written to ${css.path}`);
     await prettifyOneSiteCss(css);
@@ -388,7 +519,6 @@ const recolorSiteCss = async (siteName, site) => {
     };
     await fs.writeFile(combinedCss.path, combinedCss.text);
     console.log(`Combined prettier CSS written to ${combinedCss.path}`);
-
     await recolorOneSiteCss(combinedCss, site.css.flatMap(getCssHeader));
   }
   else {
@@ -464,7 +594,7 @@ program
       ]);
     }
     const site = assignDeep(
-      { options: {}, html: {}, css: {} },
+      { options: {}, html: [], css: [] },
       jsonSites[a.siteName] ?? throwError(`Site ${a.siteName} not found`));
     site.options.colorFormula ??= o.colorFormula;
     site.options.palette ??= o.palette;

@@ -1,11 +1,20 @@
 {
   "none": {},
+  "test": {
+    options: { colorFormula: 'dark-full', palette: true, combine: true },
+    css: [
+      { name: "test.css", text: "tag, #something--id--234 .foo > .foo--bar--baz { color: #fff }" },
+    ],
+  },
+  "boxofficemojo.com": {
+    options: { colorFormula: 'dark-full', palette: true, combine: true },
+    html: [
+      { name: "index.html", url: "https://www.boxofficemojo.com/" },
+      { name: "intl.html", url: "https://www.boxofficemojo.com/intl/" },
+    ],
+  },
   "meta.stackexchange.com": {
-    options: {
-      colorFormula: 'dark',
-      palette: false,
-      combine: true,
-    },
+    options: { colorFormula: 'dark-full', palette: false, combine: true },
     css: [
       { name: "primary.css", url: "https://meta.stackexchange.com/Content/Sites/stackexchangemeta/primary.css" },
       { name: "stacks.css", url: "https://meta.stackexchange.com/Content/Shared/stacks.css" },
@@ -13,11 +22,7 @@
     ],
   },
   "rule34.paheal.net": {
-    options: {
-      colorFormula: 'dark-full',
-      palette: true,
-      combine: true,
-    },
+    options: { colorFormula: 'dark-full', palette: true, combine: true },
     // TODO: Get dynamic CSS URL from HTML
     // TODO: Find all elements styled in HTML: [...document.querySelectorAll('[style]')].map(e => e.getAttribute('style'))
     html: [
@@ -28,17 +33,17 @@
       { name: "menuh.css", url: "https://rule34.paheal.net/themes/rule34v2/menuh.css" },
     ],
   },
-  "boxofficemojo.com": {
-    options: {
-      colorFormula: 'dark-full',
-      palette: true,
-      combine: true,
-    },
+  "weather.com": {
+    options: { colorFormula: 'dark-full', palette: true, combine: true },
     html: [
-      { name: "index.html", url: "https://www.boxofficemojo.com/" },
-      { name: "intl.html", url: "https://www.boxofficemojo.com/intl/" },
-    ],
-    css: [
+      { name: "uk.html", url: "https://weather.com/en-GB/weather/today/l/UKXX0085:1:UK" },
+      { name: "uk-hourly.html", url: "https://weather.com/en-GB/weather/hourbyhour/l/UKXX0085:1:UK" },
+      { name: "uk-monthly.html", url: "https://weather.com/en-GB/weather/monthly/l/UKXX0085:1:UK" },
+      { name: "uk-radar.html", url: "https://weather.com/en-GB/weather/radar/interactive/l/UKXX0085:1:UK" },
+      { name: "dashboard.html", url: "https://weather.com/en-GB/mydashboard" },
+      { name: "privacy.html", url: "https://weather.com/en-GB/privacy-settings" },
+      { name: "data.html", url: "https://weather.com/en-GB/data-rights" },
+      { name: "policy.html", url: "https://weather.com/en-GB/intl-privacy" },
     ],
   },
 }
