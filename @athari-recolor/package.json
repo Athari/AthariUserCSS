@@ -17,6 +17,7 @@
     "@csstools/css-color-parser": "^3.0.7",
     "@csstools/css-parser-algorithms": "^3.0.4",
     "@csstools/css-tokenizer": "^3.0.3",
+    "@csstools/selector-specificity": "^5.0.0",
     "autoprefixer": "^10.4.20",
     "color-name": "^1.1.4",
     "commander": "^13.1.0",
@@ -31,9 +32,11 @@
     "linq-to-typescript": "^11.1.0",
     "postcss": "^8.5.2",
     "postcss-safe-parser": "^7.0.1",
+    "postcss-selector-parser": "^7.1.0",
     "postcss-value-parser": "^4.2.0",
     "prettier": "^3.5.1",
     "regex": "^6.0.1",
+    "string": "^3.3.3",
     "tough-cookie": "^5.1.1"
   }
 }

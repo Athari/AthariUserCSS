@@ -29,6 +29,16 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Recolor CSS: test site",
+      "cwd": "${workspaceFolder}/@athari-recolor",
+      "program": "${workspaceFolder}/@athari-recolor/index.js",
+      "args": ["recolor-site-css", "test"],
+      "runtimeArgs": ["--preserve-symlinks"],
+      "console": "integratedTerminal",
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Recolor CSS: test path",
       "cwd": "${workspaceFolder}/@athari-recolor",
       "program": "${workspaceFolder}/@athari-recolor/index.js",

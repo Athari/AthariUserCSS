@@ -3,7 +3,9 @@
   "test": {
     options: { colorFormula: 'dark-full', palette: true, combine: true },
     css: [
-      { name: "test.css", text: ".\\[background-image\\:linear-gradient\\(110deg\\2c \\#ececec_8\\%\\2c \\#f5f5f5_18\\%\\2c \\#ececec_33\\%\\)\\] { background-image: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); }" },
+      //{ name: "test.css", text: ".\\[background-image\\:linear-gradient\\(110deg\\2c \\#ececec_8\\%\\2c \\#f5f5f5_18\\%\\2c \\#ececec_33\\%\\)\\] { background-image: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); }" },
+      //{ name: "test.css", url: "https://freepik.cdnpk.net/css/freepik.c129cfa853043d169d83.css" },
+      { name: "test.css", path: "./test.css" },
     ],
   },
   "archive.org": {
