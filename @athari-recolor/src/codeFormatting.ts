@@ -1,26 +1,33 @@
-import { format as prettifyCode } from 'prettier';
+import {
+  format as prettifyCode,
+  Options as PrettierOptions,
+} from 'prettier';
+import { errorDetail } from './utils.js';
 
-const basePrettierOptions = {
-  tabWidth: 2, endOfLine: 'cr',
+const basePrettierOptions: PrettierOptions = {
+  tabWidth: 2,
+  endOfLine: 'cr',
   htmlWhitespaceSensitivity: 'ignore',
-  trailingComma: 'all', bracketSpacing: true, semi: true,
+  trailingComma: 'all',
+  bracketSpacing: true,
+  semi: true,
 };
 
-export async function prettifyCodeSafe(filepath, source, options) {
+export async function prettifyCodeSafe(filepath: string, source: string, options: Partial<PrettierOptions>): Promise<string> {
   try {
     const pretty = await prettifyCode(source, { filepath, ...basePrettierOptions, ...options });
     return pretty.trimEnd();
-  } catch (ex) {
+  } catch (ex: any) {
     console.log(`Failed to prettify ${filepath}, keeping formatting`);
-    console.log(`${ex.message}\n${ex.stack}`);
+    console.log(errorDetail(ex));
     return source.trimEnd();
   }
 }
 
-export async function prettifyCss(filepath, css) {
+export async function prettifyCss(filepath: string, css: string): Promise<string> {
   return await prettifyCodeSafe(filepath, css, { printWidth: 999 });
 }
 
-export async function prettifyHtml(filepath, html) {
+export async function prettifyHtml(filepath: string, html: string): Promise<string> {
   return await prettifyCodeSafe(filepath, html, { printWidth: 160 });
 }

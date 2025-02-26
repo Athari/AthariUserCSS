@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import { Cookie, Store, canonicalDomain, permuteDomain, permutePath } from 'tough-cookie';
+import { PickByValue, Primitive } from 'utility-types';
 
 // Based on https://www.npmjs.com/package/@root/file-cookie-store (MIT)
 
@@ -9,75 +10,84 @@ const NetscapeHeader = `# Netscape HTTP Cookie File
 
 `;
 
+type NetscapeCookieStoreInit = Partial<Omit<
+  PickByValue<NetscapeCookieStore, Primitive>,
+  keyof Store | 'path'
+>>;
+
 class NetscapeCookieStore extends Store {
-  path
-  writeMode = 0o666
-  forceParse = false
-  supportHttpOnly = true
-  alwaysRead = false
-  alwaysWrite = true
+  path: string;
+  writeMode: number = 0o666;
+  forceParse: boolean = false;
+  supportHttpOnly: boolean = true;
+  alwaysRead: boolean = false;
+  alwaysWrite: boolean = true;
 
-  #cookies = {}
-  #isFileRead = false
+  #cookies: Record<string, Record<string, Record<string, Cookie>>> = {};
+  #isFileRead: boolean = false;
 
-  constructor(path, init = {}) {
+  constructor(path: string, init: NetscapeCookieStoreInit = {}) {
     super();
     this.path = path;
-    for (const prop of Object.getOwnPropertyNames(this))
-      if (init[prop] !== undefined)
-        this[prop] = init[prop];
+    Object.assign(this, init);
   }
 
-  inspect() {
+  inspect(): string {
     return `{ idx: ${JSON.stringify(this.#cookies, null, 2)} }`;
   }
 
-  async readFile() {
+  async readFile(): Promise<void> {
     try {
       this.deserialize(await fs.readFile(this.path, 'utf8'));
-      this.#isFileRead = true
-    } catch (ex) {
+      this.#isFileRead = true;
+    } catch (ex: any) {
       if (ex.code === 'ENOENT') {
         await fs.writeFile(this.path, NetscapeHeader);
         return;
       }
-      throw ex;
+      throw new Error("Failed to read Nestscape cookie store", { cause: ex });
     }
   }
 
-  async #readFileIfNeeded() {
+  async #readFileIfNeeded(): Promise<void> {
     if (this.#isFileRead && !this.alwaysRead)
       return;
     await this.readFile();
   }
 
-  async writeFile() {
+  async writeFile(): Promise<void> {
     await fs.writeFile(this.path, this.serialize(), { mode: this.writeMode });
   }
 
-  async #writeFileIfNeeded() {
+  async #writeFileIfNeeded(): Promise<void> {
     if (!this.alwaysWrite)
       return;
     await this.writeFile();
   }
 
-  async #update(updateFn) {
+  async #update(updateFn: () => void): Promise<void> {
     await this.#readFileIfNeeded();
     updateFn();
     await this.#writeFileIfNeeded();
   }
 
-  serialize() {
-    const boolStr = b => b ? 'TRUE' : 'FALSE';
+  serialize(): string {
+    const boolStr = (b: boolean): string => b ? 'TRUE' : 'FALSE';
     let lines = [ NetscapeHeader ];
-    for (const paths of this.#cookies) {
-      for (const keys of paths) {
-        for (const cookie of keys) {
+    for (const paths of Object.values(this.#cookies)) {
+      for (const keys of Object.values(paths)) {
+        for (const cookie of Object.values(keys)) {
           if (cookie) {
-            const { domain, path, secure, expires, key, value, httpOnly } = cookie;
-            const domainLine = this.supportHttpOnly && httpOnly ? `#HttpOnly_${domain}` : domain;
-            const expiresLine = expires && expires !== 'Infinity' ? Math.round(expires.getTime() / 1000) : 0;
-            const line = [ domainLine, boolStr(/^\./.test(domain)), path, boolStr(secure), expiresLine, key, value ].join("\t");
+            const { domain, path, expires, secure, key, value, httpOnly } = cookie;
+            const line = [
+              (this.supportHttpOnly && httpOnly ? `#HttpOnly_${domain}` : domain) ?? "",
+              boolStr(domain != null && /^\./.test(domain)),
+              path ?? "",
+              boolStr(secure),
+              expires && expires !== 'Infinity' ? Math.round(expires.getTime() / 1000) : 0,
+              key,
+              value,
+            ].join("\t");
             lines.push(line);
           }
         }
@@ -86,7 +96,7 @@ class NetscapeCookieStore extends Store {
     return lines.join("\n");
   }
 
-  deserialize(text) {
+  deserialize(text: string): void {
     const lines = text.split(/\r\n|\n/);
     const [ magic ] = lines;
 
@@ -108,13 +118,13 @@ class NetscapeCookieStore extends Store {
       if (parsedLineParts.length != 7 && !this.forceParse)
         throw new Error(`Invalid cookie line: ${line}`);
 
-      const [ domain, , path, secure, expires, key, value ] = parsedLineParts;
+      const [domain, , path, secure, expires, key, value] = parsedLineParts;
       const canDomain = canonicalDomain(domain);
       this.#addCookie(new Cookie({
         domain: canDomain,
         path,
         secure: secure === 'TRUE',
-        expires: parseInt(expires) ? new Date(expires * 1000) : 'Infinity',
+        expires: parseInt(expires) ? new Date(parseInt(expires) * 1000) : 'Infinity',
         key,
         value,
         httpOnly,
@@ -123,22 +133,22 @@ class NetscapeCookieStore extends Store {
     }
   }
 
-  async findCookie(domain, path, key) {
+  async findCookie(domain?: string, path?: string, key?: string): Promise<Cookie | undefined> {
     await this.#readFileIfNeeded();
-    return this.#cookies[canonicalDomain(domain)]?.[path]?.[key] ?? null;
+    return this.#cookies[canonicalDomain(domain) ?? domain ?? ""]?.[path ?? ""]?.[key ?? ""] ?? null;
   }
 
-  async findCookies(domain, path) {
+  async findCookies(domain?: string, path?: string): Promise<Cookie[]> {
     if (!domain)
       return [];
 
     const v = Object.values;
 
     await this.#readFileIfNeeded();
-    const canDomain = canonicalDomain(domain);
+    const canDomain = canonicalDomain(domain) ?? domain;
     const matchedDomains = permuteDomain(canDomain) || [ canDomain ];
 
-    const results = [];
+    const results: Cookie[] = [];
     for (const matchedDomain of matchedDomains) {
       const domainCookies = this.#cookies[matchedDomain];
       if (!domainCookies)
@@ -151,7 +161,7 @@ class NetscapeCookieStore extends Store {
         if (pathCookies)
           results.push(...v(pathCookies).flatMap(v));
       } else {
-        const matchedPaths = permutePath(path) || [ path ];
+        const matchedPaths = permutePath(path) || [path];
         for (const matchedPath of matchedPaths) {
           const pathCookies = domainCookies[matchedPath];
           if (pathCookies)
@@ -162,49 +172,50 @@ class NetscapeCookieStore extends Store {
     return results;
   }
 
-  #addCookie(cookie) {
-    const domain = cookie.canonicalizedDomain();
+  #addCookie(cookie: Cookie): void {
+    const [ domain, { path, key } ] = [ cookie.canonicalizedDomain() ?? "", cookie ];
     this.#cookies[domain] ??= {};
-    this.#cookies[domain][cookie.path] ??= {};
-    this.#cookies[domain][cookie.path][cookie.key] = cookie;
+    this.#cookies[domain][path ?? ""] ??= {};
+    this.#cookies[domain][path ?? ""][key] = cookie;
   }
 
-  async putCookie(cookie) {
+  async putCookie(cookie: Cookie): Promise<void> {
     await this.#update(() =>
       this.#addCookie(cookie));
   }
 
-  async updateCookie(oldCookie, newCookie) {
+  async updateCookie(oldCookie: Cookie, newCookie: Cookie): Promise<void> {
     await this.putCookie(newCookie);
   }
 
-  async removeCookie(domain, path, key) {
+  async removeCookie(domain?: string, path?: string, key?: string): Promise<void> {
     await this.#update(() => {
-      delete this.#cookies[canonicalDomain(domain)]?.[path]?.[key];
+      delete this.#cookies[canonicalDomain(domain) ?? domain ?? ""]?.[path ?? ""]?.[key ?? ""];
     });
   }
 
-  async removeCookies(domain, path) {
+  async removeCookies(domain?: string, path?: string): Promise<void> {
     await this.#update(() => {
-      const canDomain = canonicalDomain(domain);
+      const canDomain = canonicalDomain(domain) ?? domain ?? "";
       // TODO: ?! WTF no cookie path permitations matching
       if (this.#cookies[canDomain]) {
-        if (path) {
+        if (path)
           delete this.#cookies[canDomain][path];
-        } else {
+        else
           delete this.#cookies[canDomain];
-        }
       }
     });
   }
 
-  async getAllCookies() {
+  async getAllCookies(): Promise<Cookie[]> {
     const cookies = await this.export();
     cookies.sort((a, b) => (a.creationIndex || 0) - (b.creationIndex || 0));
     return cookies;
   }
 
-  async export(cookieStore = []) {
+  async export(cookieStore: Store): Promise<Store>
+  async export(cookieStore?: Cookie[]): Promise<Cookie[]>
+  async export(cookieStore: Cookie[] | Store = []): Promise<Cookie[] | Store> {
     await this.#readFileIfNeeded();
     for (const paths of Object.values(this.#cookies)) {
       for (const cookies of Object.values(paths)) {

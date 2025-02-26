@@ -3,26 +3,31 @@ import {
   Comment as CssComment,
   Declaration as CssDecl,
   Rule as CssRule,
+  Root as CssRoot,
+  AtRule as CssAtRule,
+  Container as CssContainer,
 } from 'postcss';
 import {
   color as parseCssColor,
   serializeRGB as serializeRgb,
   serializeOKLCH as serializeOkLch,
-  serializeP3,
+  serializeP3 as serializeDisplayP3,
   colorDataFitsRGB_Gamut as colorDataFitsRgbGamut,
   ColorNotation,
+  ColorData,
 } from '@csstools/css-color-parser';
 import {
   isFunctionNode, isTokenNode,
   parseCommaSeparatedListOfComponentValues as parseCssCompCommaList,
   replaceComponentValues as replaceCssComps,
   stringify as stringifyCssComps,
+  ComponentValue,
 } from '@csstools/css-parser-algorithms';
 import {
   isTokenHash, isTokenIdent,
   tokenize as tokenizeCss,
 } from '@csstools/css-tokenizer';
-import { parseCssCompStr, stringifyNode } from './utils.js';
+import { ColorFormula, parseCssCompStr, stringifyCssComp } from './utils.js';
 
 const reColorFunction = /^rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color$/i;
 const reColorPropSimple = /^(-moz-|-webkit-|-ms-|)(color|fill|stroke|(background|outline|text-decoration|text-emphasis|text-outline|tap-highlight|accent|column-rule|caret|stop|flood|lighting)-color|border(-top|-right|-left|-bottom|(-block|-inline)(-start|-end)|)-color|scrollbar(-3dlight|-arrow|-base|-darkshadow|-face|-highlight|-shadow|-track|)-color|(box|text)-shadow|background-image)$/i;
@@ -31,50 +36,62 @@ const reColorPropComplexSplit = /^(-moz-|-webkit-|-ms-|)(border(-block|-inline|)
 const reAtRuleMediaDark = /prefers-color-scheme\s*:\s*dark/i;
 const reAtRuleMediaNameAllowed = /container|media|scope|starting-style|supports/i;
 
-function roundStrNumbers(s) {
+function roundStrNumbers(s: string): string {
   return s.replace(/(\d+\.\d+|\d+\.|\.\d+)/g,
     (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
 }
 
-export function recolorPlugin(opts = {}) {
-  // TODO: Disable palette gen by default
-  opts = Object.assign({ colorFormula: 'dark', palette: true }, opts);
+interface RecolorPluginOptions {
+  colorFormula: ColorFormula;
+  palette: boolean;
+}
+
+interface PaletteColor {
+  colorData: ColorData;
+  colorRgb: string;
+  colorOkLch: string;
+  colorStr: string;
+  expr: string;
+  count: number;
+  name: string;
+}
+
+function recolorPlugin(opts: Partial<RecolorPluginOptions> = {}): { postcssPlugin: string, Once: (css: CssRoot) => void } {
+  const opt = Object.assign({ colorFormula: ColorFormula.Dark, palette: true }, opts);
   return {
     postcssPlugin: 'recolor',
-    Once(css) {
-      const palette = {
-        uniqueColors: {},
-        colors: [],
-      };
-      const paletteVarPrefix = 'c';
+    Once(css: CssRoot) {
+      const paletteUniqueColors: Record<string, PaletteColor> = {};
+      const paletteColors: PaletteColor[] = [];
+      const paletteVarPrefix = 'c-';
 
-      const identifiableColorNotations = new Set([ ColorNotation.HEX, ColorNotation.RGB, ColorNotation.HSL, ColorNotation.HWB ]);
-      const cssColorMap = Object.fromEntries(Object.entries(cssColorsNames).map(([ name, [ r, g, b ] ]) => [ `${r}|${g}|${b}`, name ]));
-      const getIdentColorName = color => {
-        const [ r, g, b ] = color.channels;
-        if (r == 0 && g == 0 && b == 0 && color.alpha == 0)
+      const identifiableColorNotations = new Set([ColorNotation.HEX, ColorNotation.RGB, ColorNotation.HSL, ColorNotation.HWB]);
+      const cssColorMap = Object.fromEntries(Object.entries(cssColorsNames).map(([name, [r, g, b]]) => [`${r}|${g}|${b}`, name]));
+      const getIdentColorName = (color: ColorData): string | null => {
+        const [r, g, b] = color.channels;
+        if (r === 0 && g === 0 && b === 0 && color.alpha === 0)
           return 'transparent';
         if (color.alpha !== 1 || !identifiableColorNotations.has(color.colorNotation))
           return null;
         return cssColorMap[`${255 * r}|${255 * g}|${255 * b}`] ?? null;
       };
 
-      css.walkAtRules(rule => {
+      css.walkAtRules((rule: CssAtRule) => {
         //console.log(`rule: ${rule.name} = ${rule.params}`);
         // TODO: Support animating colors with @keyframes (parse at-rules with https://github.com/postcss/postcss-at-rule-parser)
         if (
-          rule.name == 'media' && reAtRuleMediaDark.test(rule.params) ||
+          rule.name === 'media' && reAtRuleMediaDark.test(rule.params) ||
           !reAtRuleMediaNameAllowed.test(rule.name)
         ) {
           rule.remove();
         }
       });
 
-      css.walkDecls(decl => {
+      css.walkDecls((decl: CssDecl) => {
         let newDeclProp = '-';
-        let newDeclValue = null;
+        let newDeclValue: string | null = null;
         let isComplexValue = false;
-        const newComps = replaceCssComps(parseCssCompCommaList(tokenizeCss({ css: decl.value })), (node) => {
+        const newComps = replaceCssComps(parseCssCompCommaList(tokenizeCss({ css: decl.value })), (node: ComponentValue) => {
           isComplexValue ||= isFunctionNode(node) && !reColorFunction.test(node.getName());
           if (
             isFunctionNode(node) && reColorFunction.test(node.getName()) ||
@@ -87,37 +104,42 @@ export function recolorPlugin(opts = {}) {
               return;
             }
 
-            let strNode = stringifyNode(node);
-            const [ colorRgbStr, colorOkLchStr ] = [ serializeRgb(colorData), serializeP3(colorData) ];
+            let strNode = stringifyCssComp(node);
+            const [colorRgbStr, colorOkLchStr] = [serializeRgb(colorData), serializeDisplayP3(colorData)];
             let colorUniqueKey = `${colorRgbStr}/${colorOkLchStr}`;
             const colorIdent = getIdentColorName(colorData);
             if (isTokenNode(node))
               strNode = strNode.toLowerCase();
-            let paletteColor = palette.uniqueColors[colorUniqueKey];
+            let paletteColor = paletteUniqueColors[colorUniqueKey];
             if (paletteColor === undefined) {
               const paletteVarName = colorIdent ?? roundStrNumbers(strNode)
                 .replace(/\./ig, "_").replace(/[^\w\d-]/ig, "-").replace(/-+/g, "-").replace(/^-?(.*?)-?$/, "$1")
                 .toLowerCase();
               paletteColor = {
                 colorData,
-                colorRgb: roundStrNumbers(stringifyNode(colorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
-                colorOkLch: roundStrNumbers(stringifyNode(serializeOkLch(colorData))),
+                colorRgb: roundStrNumbers(stringifyCssComp(colorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
+                colorOkLch: roundStrNumbers(stringifyCssComp(serializeOkLch(colorData))),
                 colorStr: colorIdent ?? strNode,
                 expr: "",
                 count: 0,
-                name: `--${paletteVarPrefix}-${paletteVarName}`,
+                name: `--${paletteVarPrefix}${paletteVarName}`,
               };
-              palette.colors.push(paletteColor);
-              palette.uniqueColors[colorUniqueKey] = paletteColor;
+              paletteColors.push(paletteColor);
+              paletteUniqueColors[colorUniqueKey] = paletteColor;
             }
             paletteColor.count++;
             const paletteResult = `var(${paletteColor.name})`;
 
+            type cmp = string | boolean | number;
             const colorVarPrefix = '';
-            const colorVar = (s, i) => `var(--${colorVarPrefix}${String.fromCharCode(s.charCodeAt(0) + i)})`;
-            const colorComp = (c, b) => typeof b == 'string' ? b : b ? `calc(${colorVar(c, 0)} + ${colorVar(c, 1)} * ${c})` : c;
-            const colorOkLch = (orig, l, c, h) => `oklch(from ${orig.toString()} ${colorComp('l', l)} ${colorComp('c', c)} ${colorComp('h', h)})`;
-            const colorAutoTheme = (orig, expr) => `light-dark(${orig.toString()}, ${expr})`;
+            const colorVar = (s: string, i: number) =>
+              `var(--${colorVarPrefix}${String.fromCharCode(s.charCodeAt(0) + i)})`;
+            const colorComp = (c: string, b: cmp) =>
+              typeof b === 'string' ? b : b ? `calc(${colorVar(c, 0)} + ${colorVar(c, 1)} * ${c})` : c;
+            const colorOkLch = (orig: ComponentValue, l: cmp, c: cmp, h: cmp) =>
+              `oklch(from ${orig.toString()} ${colorComp('l', l)} ${colorComp('c', c)} ${colorComp('h', h)})`;
+            const colorAutoTheme = (orig: ComponentValue, expr: cmp) =>
+              `light-dark(${orig.toString()}, ${expr})`;
             const colorDark = colorOkLch(node, 1, 0, 0);
             const colorDarkAuto = colorAutoTheme(node, colorDark);
             const colorDarkFull = colorOkLch(node, 1, 1, 1);
@@ -127,7 +149,7 @@ export function recolorPlugin(opts = {}) {
               'dark-full': colorDarkFull,
               'dark-auto': colorDarkAuto,
               'dark-full-auto': colorDarkFullAuto,
-            }[opts.colorFormula] ?? colorDark;
+            }[opt.colorFormula] ?? colorDark;
             paletteColor.expr = colorResult;
             const cssResult = opts.palette ? paletteResult : colorResult;
 
@@ -148,19 +170,21 @@ export function recolorPlugin(opts = {}) {
             }
           }
         });
-        if (newDeclProp != '-')
+        if (newDeclProp !== '-')
           decl.cloneBefore({ prop: newDeclProp, value: newDeclValue ?? stringifyCssComps(newComps), important: decl.important });
         decl.remove();
       });
 
       css.cleanRaws();
 
-      const removeEmptyNodes = (node) => {
+      const removeEmptyNodes = (node: CssContainer) => {
         if (!node.nodes)
           return;
         node.nodes = node.nodes.filter(child => {
-          removeEmptyNodes(child);
-          return child.nodes?.length > 0 || child.type === 'decl';
+          const isContainer = child.type == 'rule' || child.type == 'atrule';
+          if (isContainer)
+            removeEmptyNodes(child);
+          return isContainer && (child.nodes?.length ?? 0) > 0 || child.type === 'decl';
         });
       };
       removeEmptyNodes(css);
@@ -169,7 +193,7 @@ export function recolorPlugin(opts = {}) {
         css.prepend(
           new CssRule({
             selector: ':root',
-            nodes: palette.colors
+            nodes: paletteColors
               .orderBy(c => c.count, (a, b) => b - a)
               .thenBy(c => c.colorRgb, (a, b) => a.localeCompare(b))
               .selectMany(c => [
@@ -184,3 +208,5 @@ export function recolorPlugin(opts = {}) {
   };
 }
 recolorPlugin.postcss = true;
+
+export default recolorPlugin;

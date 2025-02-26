@@ -1,39 +1,33 @@
+import 'reflect-metadata';
+import './fuckUpPrototypes.js';
 import enquirer from 'enquirer';
-import { initializeLinq } from 'linq-to-typescript'
-import S from 'string';
-import monkeyutils from '@athari/monkeyutils'
-const { assignDeep, throwError } = monkeyutils;
-import {
-  Command,
-  Option as CommandOption,
-} from 'commander';
-import { loadJson } from './utils.js';
-import { downloadSiteHtml } from './siteDownloading.js';
-import { recolorSiteCss } from './siteRecoloring.js';
+import { Command, Option } from 'commander';
+import { SitesConfig, downloadSiteHtml } from './siteDownloading.js';
+import { recolorCss, recolorSiteCss } from './siteRecoloring.js';
+import { ColorFormula, errorDetail, loadJson, questionInput, questionSelect, throwError } from './utils.js';
 
-initializeLinq();
-S.extendPrototype();
-String.prototype.ellipsis = function (maxLength) {
-  return this.length > maxLength ? this.substring(0, maxLength - 3) + "..." : this;
-};
+class NpmPackage {
+  version: string = "";
+  description: string = "";
+}
 
-const jsonPackage = await loadJson("./package.json");
-const jsonSites = await loadJson("./sites.json");
+const npmPackage: NpmPackage = await loadJson(NpmPackage, "./package.json") ?? throwError("Missing JSON package metadata");
+const sites: SitesConfig = await loadJson(SitesConfig, "./sites.json") ?? throwError("Missing JSON site metadata");
 
 const program = new Command();
-const optionColorFormula = new CommandOption('-c, --color-formula', "Color transform formula")
-  .choices([ 'dark', 'dark-full', 'dark-auto', 'dark-full-auto' ]);
+const optionColorFormula = new Option('-c, --color-formula', "Color transform formula")
+  .choices(Object.values(ColorFormula));
 
 program
   .name('recolor')
-  .version(jsonPackage.version)
-  .description(jsonPackage.description);
+  .version(npmPackage.version)
+  .description(npmPackage.description);
 
 program
   .command('recolor-css [inputPath] [outputPath]')
   .description("Recolor CSS file")
   .addOption(optionColorFormula)
-  .action(async (inputPath, outputPath, o) => {
+  .action(async (inputPath: string, outputPath: string, o: Record<string, any>) => {
     const a = Object.assign(o, { inputPath, outputPath });
     if (!a.inputPath?.length) {
       await enquirer.prompt([
@@ -46,26 +40,27 @@ program
         }),
       ]);
     }
-    await recolorCss(a.inputPath, a.outputPath, { ...a });
+    // HACK: any
+    await recolorCss(a.inputPath, a.outputPath, { ...a } as any);
   });
 
 program
   .command('recolor-site-css [siteName]')
   .description("Recolor all CSS files of a site defined in sites.json")
   .addOption(optionColorFormula)
-  .action(async (siteName, o) => {
+  .action(async (siteName: string, o: Record<string, any>) => {
     const a = Object.assign(o, { siteName });
     if (!a.siteName?.length) {
       await enquirer.prompt([
         questionSelect(a, 'siteName', "Site to download CSS from:", {
-          choices: Object.keys(jsonSites),
+          choices: sites.sites.map(s => s.name),
         }),
       ]);
     }
-    const site = assignDeep(
+    const site = Object.assign(
       { options: {}, html: [], css: [] },
-      jsonSites[a.siteName] ?? throwError(`Site ${a.siteName} not found`));
-    site.options.colorFormula ??= o.colorFormula;
+      sites.sites.find(s => s.name == a.siteName) ?? throwError(`Site '${a.siteName}' not found`));
+    site.options.colorFormula ??= o.colorFormula as ColorFormula;
     site.options.palette ??= o.palette;
     site.options.combine ??= o.combine;
     if (!site.options.colorFormula) {
@@ -76,15 +71,15 @@ program
       ]);
     }
     console.log("Site config: ", a.siteName, site);
-    await downloadSiteHtml(a.siteName, site);
-    await recolorSiteCss(a.siteName, site);
+    await downloadSiteHtml(site);
+    await recolorSiteCss(site);
   });
 
 program
   .command('version')
   .description("Show version")
   .action(() => {
-    console.log(jsonPackage.version);
+    console.log(npmPackage.version);
   });
 
 try {
@@ -93,7 +88,7 @@ try {
     process.exit(1);
   }
   await program.parseAsync(process.argv);
-} catch (ex) {
-  console.error(`Error running command "${process.argv[2] ?? '<?>'}": ${ex.message}\n${ex.stack}`);
+} catch (ex: any) {
+  console.error(`Error running command "${process.argv[2] ?? '<?>'}": ${errorDetail(ex)}`);
   process.exit(1);
 }
