@@ -1,25 +1,16 @@
-import { AssertionError } from 'node:assert';
 import fs from 'node:fs/promises';
 import { basename } from 'node:path';
 import vm from 'node:vm';
 import { Exclude, Type } from 'class-transformer';
 import {
-  parseDocument as parseHtmlDocument,
-} from 'htmlparser2';
-import {
-  textContent as htmlInnerText,
-} from 'domutils';
-import {
-  Document as HtmlDocument,
-  Node as HtmlNode,
-  Element as HtmlElement,
-  Text as HtmlText,
-  isTag as isHtmlElement,
-  isText as isHtmlText,
-  hasChildren as hasHtmlChildren,
-} from 'domhandler';
-import { getSiteDir, readTextFile, downloadText, htmlQuerySelectorAll, htmlQuerySelector, ColorFormula, assertHasKeys, isString } from './utils.js';
+  ColorFormula,
+  assertHasKeys, downloadText, getSiteDir, isString, readTextFile,
+} from './utils.js';
 import { prettifyHtml } from './codeFormatting.js';
+import {
+  HtmlDocument,
+  parseHtmlDocument, htmlQuerySelectorAll, htmlQuerySelector, getHtmlAllInnerText,
+} from './domUtils.js';
 
 export class SiteOptions {
   colorFormula: ColorFormula = ColorFormula.Dark;
@@ -66,6 +57,7 @@ function addSiteCss(site: Site, css: SiteCss): boolean {
   site.css ??= [];
   if (css.url && site.css.some(c => c.url === css.url))
     return false;
+
   site.css.push(css);
   return true;
 }
@@ -76,6 +68,7 @@ async function downloadOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
   const htmlText = await downloadText(html.url);
   if (htmlText == null)
     return;
+
   html.text = htmlText;
   html.path = `${site.dir}/${html.name}`;
   await fs.writeFile(html.path, html.text);
@@ -88,6 +81,7 @@ async function readOneSiteHtml(_: Site, html: SiteHtml): Promise<void> {
   const htmlText = await readTextFile(html.path);
   if (htmlText == null)
     return;
+
   html.text = htmlText;
   console.log(`Original HTML read from ${html.path}`);
   await prettifyOneSiteHtml(html);
@@ -102,8 +96,8 @@ async function prettifyOneSiteHtml(html: SiteHtml): Promise<void> {
 }
 
 async function parseLinkedCss(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
-  for (const elLinkCss of htmlQuerySelectorAll(doc, 'link[rel="stylesheet"]')) {
-    const cssUrl = new URL(elLinkCss.attribs.href, html.url).toString();
+  for (const elLinkCss of htmlQuerySelectorAll(doc, 'link[rel="stylesheet"][href]')) {
+    const cssUrl = new URL(elLinkCss.attribs.href!, html.url).toString();
     let cssName = cssUrl.match(/.*\/([^#]+)/)?.[1] ?? '';
     cssName = cssName.replace(/[^\w\d\._-]/ig, "");
     if (!cssName.match(/\.css$/i))
@@ -116,7 +110,7 @@ async function parseLinkedCss(site: Site, doc: HtmlDocument, html: SiteHtml): Pr
 async function parseEmbeddedCss(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
   let iEmbedStyle = 1;
   for (const elStyle of htmlQuerySelectorAll(doc, 'style:is([type="text/css"], [type=""], :not([type]))')) {
-    const cssText = htmlInnerText(elStyle).trim();
+    const cssText = getHtmlAllInnerText(elStyle).trim();
     const cssName = html.name.replace(/\.html$/i, `.embed${iEmbedStyle}.css`);
     const cssPath = `${site.dir}/${cssName}`;
     await fs.writeFile(cssPath, cssText);
@@ -131,7 +125,7 @@ async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: Sit
   if (!elBuildManifest)
     return;
 
-  const manifestUrl = new URL(elBuildManifest.attribs.src, html.url).toString();
+  const manifestUrl = new URL(elBuildManifest.attribs.src!, html.url).toString();
   console.log(`Found Next.js build manifest ${manifestUrl}`);
 
   const manifestCode = await downloadText(manifestUrl);
@@ -185,7 +179,7 @@ async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: Si
   if (!elWebpack)
     return;
 
-  const webpackUrl = new URL(elWebpack.attribs.src, html.url).toString();
+  const webpackUrl = new URL(elWebpack.attribs.src!, html.url).toString();
   console.log(`Found WebPack script ${webpackUrl}`);
 
   let webpackCode = await downloadText(webpackUrl);

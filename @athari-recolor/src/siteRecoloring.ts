@@ -1,17 +1,16 @@
 import fs from 'node:fs/promises';
 import { basename } from 'node:path';
+import postCss from 'postcss';
+import cssSafeParser from 'postcss-safe-parser';
 import cssNanoPlugin from 'cssnano';
 import cssNanoPresetDefault from 'cssnano-preset-default';
-import postCss, {
-  Result as PostCssResult,
-} from 'postcss';
-import cssSafeParser from 'postcss-safe-parser';
 import autoPrefixerPlugin from 'autoprefixer';
 import mergeSimilarSelectorsPlugin from './mergeSimilarSelectorsPlugin.js';
 import derandomSelectorPlugin from './derandomSelectorPlugin.js';
 import recolorPlugin from './recolorPlugin.js';
 import { prettifyCss } from './codeFormatting.js';
-import { Site, SiteCss } from './siteDownloading.js';
+import type { Site, SiteCss } from './siteDownloading.js';
+import type { PostCssResult } from './domUtils.js';
 import { assertHasKeys, downloadText, getSiteDir, readTextFile, throwError } from './utils.js';
 
 interface RecolorOptions {
@@ -69,6 +68,7 @@ async function downloadOneSiteCss(site: Site, css: SiteCss): Promise<void> {
   const cssText = await downloadText(css.url);
   if (cssText == null)
     return;
+
   css.text = cssText;
   css.path = `${site.dir}/${css.name}`;
   await fs.writeFile(css.path, css.text);
@@ -81,6 +81,7 @@ async function readOneSiteCss(site: Site, css: SiteCss): Promise<void> {
   const cssText = await readTextFile(css.path);
   if (cssText == null)
     return;
+
   css.text = cssText;
   console.log(`Original CSS read from ${css.path}`);
   await prettifyOneSiteCss(site, css);

@@ -118,27 +118,26 @@ class NetscapeCookieStore extends Store {
       if (parsedLineParts.length != 7 && !this.forceParse)
         throw new Error(`Invalid cookie line: ${line}`);
 
-      const [domain, , path, secure, expires, key, value] = parsedLineParts;
-      const canDomain = canonicalDomain(domain);
+      const [ domain = null, , path = null, secure = "FALSE", expires = "", key = "", value = "" ] = parsedLineParts;
       this.#addCookie(new Cookie({
-        domain: canDomain,
+        domain: canonicalDomain(domain) ?? null,
         path,
         secure: secure === 'TRUE',
         expires: parseInt(expires) ? new Date(parseInt(expires) * 1000) : 'Infinity',
         key,
         value,
         httpOnly,
-        hostOnly: !/^\./.test(domain),
+        hostOnly: !/^\./.test(domain ?? ""),
       }));
     }
   }
 
-  async findCookie(domain?: string, path?: string, key?: string): Promise<Cookie | undefined> {
+  override async findCookie(domain?: string, path?: string, key?: string): Promise<Cookie | undefined> {
     await this.#readFileIfNeeded();
-    return this.#cookies[canonicalDomain(domain) ?? domain ?? ""]?.[path ?? ""]?.[key ?? ""] ?? null;
+    return this.#cookies[canonicalDomain(domain) ?? domain ?? ""]?.[path ?? ""]?.[key ?? ""];
   }
 
-  async findCookies(domain?: string, path?: string): Promise<Cookie[]> {
+  override async findCookies(domain?: string, path?: string): Promise<Cookie[]> {
     if (!domain)
       return [];
 
@@ -173,28 +172,30 @@ class NetscapeCookieStore extends Store {
   }
 
   #addCookie(cookie: Cookie): void {
-    const [ domain, { path, key } ] = [ cookie.canonicalizedDomain() ?? "", cookie ];
+    const domain = cookie.canonicalizedDomain() ?? "";
+    const path = cookie.path ?? "";
+    const key = cookie.key ?? "";
     this.#cookies[domain] ??= {};
-    this.#cookies[domain][path ?? ""] ??= {};
-    this.#cookies[domain][path ?? ""][key] = cookie;
+    this.#cookies[domain][path] ??= {};
+    this.#cookies[domain][path][key] = cookie;
   }
 
-  async putCookie(cookie: Cookie): Promise<void> {
+  override async putCookie(cookie: Cookie): Promise<void> {
     await this.#update(() =>
       this.#addCookie(cookie));
   }
 
-  async updateCookie(oldCookie: Cookie, newCookie: Cookie): Promise<void> {
+  override async updateCookie(oldCookie: Cookie, newCookie: Cookie): Promise<void> {
     await this.putCookie(newCookie);
   }
 
-  async removeCookie(domain?: string, path?: string, key?: string): Promise<void> {
+  override async removeCookie(domain?: string, path?: string, key?: string): Promise<void> {
     await this.#update(() => {
       delete this.#cookies[canonicalDomain(domain) ?? domain ?? ""]?.[path ?? ""]?.[key ?? ""];
     });
   }
 
-  async removeCookies(domain?: string, path?: string): Promise<void> {
+  override async removeCookies(domain?: string, path?: string): Promise<void> {
     await this.#update(() => {
       const canDomain = canonicalDomain(domain) ?? domain ?? "";
       // TODO: ?! WTF no cookie path permitations matching
@@ -207,7 +208,7 @@ class NetscapeCookieStore extends Store {
     });
   }
 
-  async getAllCookies(): Promise<Cookie[]> {
+  override async getAllCookies(): Promise<Cookie[]> {
     const cookies = await this.export();
     cookies.sort((a, b) => (a.creationIndex || 0) - (b.creationIndex || 0));
     return cookies;

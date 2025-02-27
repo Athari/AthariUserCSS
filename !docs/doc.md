@@ -24,3 +24,6 @@
 
     * string
         * https://www.npmjs.com/package/string
+
+    * utility-types
+        * https://github.com/piotrwitek/utility-types

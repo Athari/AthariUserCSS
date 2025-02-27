@@ -3,7 +3,7 @@
   "debug.javascript.terminalOptions": {
     "skipFiles": [
       "<node_internals>/**"
-    ],
+    ]
   },
   "configurations": [
     {
@@ -11,60 +11,66 @@
       "request": "launch",
       "name": "Recolor CSS: prompt path",
       "cwd": "${workspaceFolder}/@athari-recolor",
-      "program": "${workspaceFolder}/@athari-recolor/index.js",
+      "program": "${workspaceFolder}/@athari-recolor/dist/index.js",
       "args": ["recolor-css"],
       "runtimeArgs": ["--preserve-symlinks"],
       "console": "integratedTerminal",
+      "preLaunchTask": "tsc: build - tsconfig.json"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Recolor CSS: prompt site",
       "cwd": "${workspaceFolder}/@athari-recolor",
-      "program": "${workspaceFolder}/@athari-recolor/index.js",
+      "program": "${workspaceFolder}/@athari-recolor/dist/index.js",
       "args": ["recolor-site-css"],
       "runtimeArgs": ["--preserve-symlinks"],
       "console": "integratedTerminal",
+      "preLaunchTask": "tsc: build - tsconfig.json"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Recolor CSS: test site",
       "cwd": "${workspaceFolder}/@athari-recolor",
-      "program": "${workspaceFolder}/@athari-recolor/index.js",
+      "program": "${workspaceFolder}/@athari-recolor/dist/index.js",
       "args": ["recolor-site-css", "test"],
       "runtimeArgs": ["--preserve-symlinks"],
       "console": "integratedTerminal",
+      "preLaunchTask": "tsc: build - tsconfig.json"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Recolor CSS: test path",
       "cwd": "${workspaceFolder}/@athari-recolor",
-      "program": "${workspaceFolder}/@athari-recolor/index.js",
+      "program": "${workspaceFolder}/@athari-recolor/dist/index.js",
       "args": ["recolor-css", "C:/Docs/Projects/UserCSS/@athari-recolor/tmp/meta.stackexchange.com/stacks.css"],
       "runtimeArgs": ["--preserve-symlinks"],
       "console": "integratedTerminal",
+      "preLaunchTask": "tsc: build - tsconfig.json"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Show Version",
       "cwd": "${workspaceFolder}/@athari-recolor",
-      "program": "${workspaceFolder}/@athari-recolor/index.js",
+      "program": "${workspaceFolder}/@athari-recolor/dist/index.js",
       "args": ["version"],
       "runtimeArgs": ["--preserve-symlinks"],
       "console": "integratedTerminal",
+      "preLaunchTask": "tsc: build - tsconfig.json"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Show Help",
       "cwd": "${workspaceFolder}/@athari-recolor",
-      "program": "${workspaceFolder}/@athari-recolor/index.js",
+      "program": "${workspaceFolder}/@athari-recolor/dist/index.js",
       "args": ["help"],
       "runtimeArgs": ["--preserve-symlinks"],
       "console": "integratedTerminal",
-    },
+      "preLaunchTask": "tsc: build - tsconfig.json"
+    }
   ]
 }

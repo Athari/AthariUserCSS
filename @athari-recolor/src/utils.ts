@@ -1,32 +1,9 @@
 import fs from 'node:fs/promises';
 import { AssertionError } from 'node:assert';
-import { regex, pattern as re, pattern } from 'regex';
+import { pattern as regExpPattern } from 'regex';
 import JSON5 from 'json5';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import enquirer from 'enquirer';
-import {
-  Document as HtmlDocument,
-  Node as HtmlNode,
-  Element as HtmlElement,
-  Text as HtmlText,
-  isTag as isHtmlElement,
-  isText as isHtmlText,
-  hasChildren as hasHtmlChildren,
-} from 'domhandler';
-import {
-  selectOne as htmlSelectOne,
-  selectAll as htmlSelectAll,
-  is as htmlIs,
-  compile as htmlSelectCompile,
-} from 'css-select';
-import {
-  ComponentValue,
-  parseComponentValue as parseCssComp,
-} from '@csstools/css-parser-algorithms';
-import {
-  tokenize as tokenizeCss,
-  stringify as stringifyCss,
-} from '@csstools/css-tokenizer';
 import makeFetchCookie from 'fetch-cookie';
 import { CookieJar, MemoryCookieStore } from 'tough-cookie';
 import NetscapeCookieStore from './toughCookieNetscapeStore.js';
@@ -35,7 +12,7 @@ const downloadTimeout = 30000;
 
 export type RequiredKeys<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
 
-export type RegExpPattern = ReturnType<typeof pattern>;
+export type RegExpPattern = ReturnType<typeof regExpPattern>;
 
 //export type EnquirerPrompt = Parameters<enquirer['prompt']>[0];
 
@@ -51,7 +28,7 @@ export enum ColorFormula {
 
 export interface QuestionOptions {
   initial?: () => string | undefined;
-  choices?: string[];
+  choices?: string[] | undefined;
 }
 
 export function assertHasKeys<T, K extends keyof T>(o: T, ...keys: K[]): asserts o is T & { [P in K]-?: T[P] } {
@@ -128,30 +105,6 @@ export async function readTextFile(path: string): Promise<string | null> {
   }
 }
 
-export function htmlQuerySelector<T extends HtmlElement>(node: HtmlNode, selector: string): T | null {
-  return htmlSelectOne<HtmlNode, T>(selector, node);
-}
-
-export function htmlQuerySelectorAll<T extends HtmlElement>(node: HtmlNode, selector: string): T[] {
-  return htmlSelectAll<HtmlNode, T>(selector, node);
-}
-
-export function htmlMatches<T extends HtmlElement>(node: T, selector: string): boolean {
-  return htmlIs<HtmlNode, T>(node, selector);
-}
-
-export function htmlCompileQuery<T extends HtmlElement>(selector: string): ReturnType<typeof htmlSelectCompile<HtmlNode, T>> {
-  return htmlSelectCompile<HtmlNode, T>(selector);
-}
-
-export function stringifyCssComp(node: ComponentValue): string {
-  return stringifyCss(...node.tokens());
-}
-
-export function parseCssCompStr(css: string): ComponentValue {
-  return parseCssComp(tokenizeCss({ css })) ?? throwError("Failed to parse CSS comp");
-}
-
 export async function getSiteDir(siteName: string): Promise<string> {
   const siteDir = `./sites/${siteName}`;
   await fs.mkdir(siteDir, { recursive: true });
@@ -195,7 +148,7 @@ export function questionSelect(
   opts: QuestionOptions
 ): EnquirerPrompt {
   return question('select', a, name, message, opts ?? {}, {
-    choices: opts.choices,
+    choices: opts.choices ?? [],
   });
 }
 

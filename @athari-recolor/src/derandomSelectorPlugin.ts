@@ -1,26 +1,95 @@
-import { regex, pattern as re } from 'regex';
+import { regex } from 'regex';
+import { isTokenHash, isTokenIdent, isTokenDelim, isTokenOpenSquare } from '@csstools/css-tokenizer';
 import {
-  Comment as CssComment,
-  Declaration as CssDecl,
-  Rule as CssRule,
-  Root as CssRoot,
-  AtRule as CssAtRule,
-  Container as CssContainer,
-} from 'postcss';
-import {
-  ComponentValue as CssCompValue,
-  isTokenNode,
-  parseCommaSeparatedListOfComponentValues as parseCssCompCommaList,
-  replaceComponentValues as replaceCssComps,
-  stringify as stringifyCssComps,
-} from '@csstools/css-parser-algorithms';
-import {
-  isTokenHash, isTokenIdent, isTokenDelim, isTokenOpenSquare,
-  tokenize as tokenizeCss,
-  stringify as stringifyCss,
-  HashType as CssHashType,
-} from '@csstools/css-tokenizer';
-import { parseCssCompStr, RegExpPattern } from './utils.js';
+  CssRoot, CssRule,
+  CssToken, Comp, CssHashType,
+  tokenizeCss, parseCssCompStr, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
+  isCompTokenTypeValue,
+  isCompTokenType,
+  isCompTokenTypeType,
+} from './domUtils.js';
+
+// https://www.w3.org/TR/2021/CRD-css-syntax-3-20211224/#token-diagrams
+const r = new class {
+  newLine = regex('i')`
+    \n | \r\n | \r | \f
+  `;
+  whiteSpace = regex('i')`
+    \ | \t | ${this.newLine}
+  `;
+  digit = regex('i')`
+    [ 0-9 ]
+  `;
+  hexDigit = regex('i')`
+    [ 0-9 a-f ]
+  `;
+  escape = regex('i')`
+    \\ (
+      ${this.hexDigit}{1,6} ${this.whiteSpace}? |
+      ( (?! ${this.newLine} | ${this.hexDigit} ) . )
+    )
+  `;
+  whiteSpaceStar = regex('i')`
+    ${this.whiteSpace}*
+  `;
+  alpha = regex('i')`
+    [ a-z _ ]
+  `;
+  alphaNum = regex('i')`
+    [ a-z 0-9 _ ]
+  `;
+  alphaNumDash = regex('i')`
+    [ a-z 0-9 _ \- ]
+  `;
+  sign = regex('i')`
+    [ \+ \- ]
+  `;
+  identToken = regex('i')`
+    (
+      -- |
+      -? ( ${this.alpha} | ${this.escape} )
+    )
+    (
+      ${this.alphaNumDash} | ${this.escape}
+    )*
+  `;
+  xIdentSingleDash = regex('i')`
+    (
+      ${this.alpha} | ${this.escape}
+    )
+    (
+      (?! -- )
+      ${this.alphaNumDash} | ${this.escape}
+    )*
+  `;
+  xIdentNoDash = regex('i')`
+    (
+      ${this.alpha} | ${this.escape}
+    )
+    (
+      ${this.alphaNum} | ${this.escape}
+    )*
+  `;
+  numberToken = regex('i')`
+    ${this.sign}?
+    (
+      ( ${this.digit}+ \. ${this.digit}+ ) |
+      ( \. ${this.digit}+ ) |
+      ${this.digit}+
+    )+
+    (
+      e
+      ${this.sign}?
+      ${this.digit}+
+    )?
+  `;
+  dimToken = regex('i')`
+    ${this.numberToken} ${this.identToken}
+  `;
+  percentToken = regex('i')`
+    ${this.numberToken} %
+  `;
+}();
 
 interface DerandomSelectorPluginOptions {
   classTransforms?: {
@@ -42,84 +111,28 @@ function derandomSelectorPlugin(opts: DerandomSelectorPluginOptions = {}): { pos
         ],
       }, opts);
 
-      // https://www.w3.org/TR/2021/CRD-css-syntax-3-20211224/#token-diagrams
-      const r: Record<string, RegExpPattern | RegExp> = {};
-      r.newLine = re`(
-        \n | \r\n | \r | \f
-      )`;
-      r.whiteSpace = regex`(
-        \ | \t | ${r.newLine}
-      )`;
-      r.hexDigit = re`(
-        [0-9a-f]
-      )`;
-      r.escape = regex`(
-        \\ (
-          ${r.hexDigit}{1,6} ${r.whiteSpace}? |
-          ( (?! ${r.newLine} | ${r.hexDigit} ) . )
-        )
-      )`;
-      r.whiteSpaceStar = regex`(
-        ${r.whiteSpace}*
-      )`;
-      r.alpha = re`(
-        [a-z_]
-      )`;
-      r.alphaDigit = re`(
-        [a-z0-9_]
-      )`;
-      r.alphaDigitDash = re`(
-        [a-z0-9_-]
-      )`;
-      r.identToken = regex`(
-        (
-          -- |
-          -? ( ${r.alpha} | ${r.escape} )
-        )
-        (
-          ${r.alphaDigitDash} | ${r.escape}
-        )*
-      )`;
-      r.identSingleDash = regex`(
-        (
-          ${r.alpha} | ${r.escape}
-        )
-        (
-          (?! -- )
-          ${r.alphaDigitDash} | ${r.escape}
-        )*
-      )`;
-      r.identNoDash = regex`(
-        (
-          ${r.alpha} | ${r.escape}
-        )
-        (
-          ${r.alphaDigit} | ${r.escape}
-        )*
-      )`;
+      console.log(regex('i')` ${r.newLine}+ `);
       // TODO: Support declarative derandom replacements
       //console.log(regex('i')`^${identToken}$`);
       css.walkRules((rule: CssRule) => {
         let didDerandom = false;
 
         // derandom classes
-        let prevNode: CssCompValue;
-        let newComps = replaceCssComps(parseCssCompCommaList(tokenizeCss({ css: rule.selector })), (node) => {
-          if (
-            isTokenNode(prevNode) && isTokenDelim(prevNode.value) && prevNode.value[4].value === "." &&
-            isTokenNode(node) && isTokenIdent(node.value)
-          ) {
-            const className = node.value[4].value;
+        let prevComp: Comp;
+        let newComps: Comp[][] = replaceCssComps(parseCssCompCommaList(tokenizeCss(rule.selector)), (comp: Comp) => {
+          if (isCompTokenTypeValue(prevComp, isTokenDelim, ".") && isCompTokenType(comp, isTokenIdent)) {
+            const className = comp.value[4].value;
             const newSelector = className.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[class*="$1--$2--"]');
             if (newSelector !== className) {
               didDerandom = true;
               return parseCssCompStr(newSelector);
             }
           }
-          prevNode = node;
+          prevComp = comp;
+          return;
         });
 
-        let newTokens = tokenizeCss({ css: stringifyCssComps(newComps) });
+        let newTokens: CssToken[] = tokenizeCss(stringifyCssComps(newComps));
         if (didDerandom) {
           newTokens = newTokens.filter((token, i) => {
             const nextToken = newTokens[i + 1];
@@ -128,16 +141,17 @@ function derandomSelectorPlugin(opts: DerandomSelectorPluginOptions = {}): { pos
         }
 
         // derandom ids
-        newComps = replaceCssComps(parseCssCompCommaList(newTokens), (node) => {
-          if (isTokenNode(node) && isTokenHash(node.value) && node.value[4].type === CssHashType.ID) {
-            const idName = node.value[4].value;
+        newComps = replaceCssComps(parseCssCompCommaList(newTokens), (comp: Comp) => {
+          if (isCompTokenTypeType(comp, isTokenHash, CssHashType.ID)) {
+            const idName = comp.value[4].value;
             const newSelector = idName.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[id^="$1--$2--"]');
             if (newSelector !== idName) {
               didDerandom = true;
               return parseCssCompStr(newSelector);
             }
           }
-          prevNode = node;
+          prevComp = comp;
+          return;
         });
 
         if (didDerandom)

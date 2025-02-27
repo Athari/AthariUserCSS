@@ -2,5 +2,6 @@
 /@athari-recolor/cookies.txt
 /!tmp/
 node_modules/
+dist/
 tmp/
 *.pretty.*
