@@ -65,6 +65,12 @@ export {
 
 import cssSelectorParser from 'postcss-selector-parser';
 
+import type {
+  Pseudo as SelPseudo,
+  Root as SelRoot,
+  Selector as SelSelector,
+} from 'postcss-selector-parser';
+
 const {
   isAttribute: isSelAttribute,
   isClassName: isSelClassName,
@@ -112,10 +118,11 @@ export type {
   ClassName as SelClassName,
   Combinator as SelCombinator,
   Comment as SelComment,
-  Container as SelContainer,
+  //Container as SelContainer,
   Identifier as SelIdentifier,
   Nesting as SelNesting,
   Node as SelNode,
+  NodeTypes as SelNodeTypes,
   Pseudo as SelPseudo,
   QuoteMark as SelQuoteMark,
   Root as SelRoot,
@@ -220,6 +227,8 @@ export function htmlCompileQuery<T extends HtmlElement>(selector: HtmlSimpleSele
 }
 
 // CSS: Functions
+
+export type SelContainer = SelRoot | SelSelector | SelPseudo;
 
 export function tokenizeCss(css: string): CssToken[] {
   return tokenizeCssProc({ css });

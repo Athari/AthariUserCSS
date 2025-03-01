@@ -10,11 +10,7 @@ import NetscapeCookieStore from './toughCookieNetscapeStore.js';
 
 const downloadTimeout = 30000;
 
-export type RequiredKeys<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
-
 export type RegExpPattern = ReturnType<typeof regExpPattern>;
-
-//export type EnquirerPrompt = Parameters<enquirer['prompt']>[0];
 
 type ExtractNoArraysNoFunctions<T> = T extends (infer U)[] ? ExtractNoArraysNoFunctions<U> : T extends (...args: any[]) => any ? never : T;
 export type EnquirerPrompt = ExtractNoArraysNoFunctions<Parameters<enquirer['prompt']>[0]>;

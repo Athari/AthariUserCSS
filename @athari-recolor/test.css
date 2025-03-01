@@ -1,4 +1,4 @@
-/*h3:has(:is([a=b], :where(.c, .d))),*/
+h3:has(:is([a=b], :where(.c, .d), :is(.e, .f))):active,
 .checkbox.active .checkbox__indicator,
 .checkbox.active .radio__indicator,
 .radio.active .checkbox__indicator,
@@ -13,7 +13,9 @@
 .radio input[type="radio"]:checked ~ .radio__indicator,
 .radio.active:has(label.a),
 .radio.active:has(label.b),
-.radio.active:hover
+.radio.active:hover,
+a:has(.label.a.a),
+b:has(.label.b.b)
 {
   box-shadow: inset 0 0 0 64px #336aea;
 }
