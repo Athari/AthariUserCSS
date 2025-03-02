@@ -66,9 +66,24 @@ export {
 import cssSelectorParser from 'postcss-selector-parser';
 
 import type {
+  Attribute as SelAttribute,
+  AttributeOperator as SelAttributeOperator,
+  ClassName as SelClassName,
+  Combinator as SelCombinator,
+  Comment as SelComment,
+  ContainerOptions as SelContainerOptions,
+  //Container as SelContainer,
+  Identifier as SelIdentifier,
+  Nesting as SelNesting,
+  Node as SelNode,
+  NodeTypes as SelNodeTypes,
   Pseudo as SelPseudo,
+  QuoteMark as SelQuoteMark,
   Root as SelRoot,
   Selector as SelSelector,
+  String as SelString,
+  Tag as SelTag,
+  Universal as SelUniversal,
 } from 'postcss-selector-parser';
 
 const {
@@ -263,4 +278,71 @@ export function isCompTokenTypeType<TToken extends TokenWithType, TType extends 
   comp: Comp, isTokenType: (x: CssToken) => x is TToken, type: TType)
   : comp is CompToken & { value: TToken & { [4]: { type: TType } } } {
   return isCompToken(comp) && isTokenType(comp.value) && comp.value[4].type === type;
+}
+
+export namespace Sel {
+  export function attribute(attribute: string, operator: SelAttributeOperator, value: string, insensitive: boolean = false): SelAttribute {
+    return cssSelectorParser.attribute({
+      attribute, operator, value, insensitive,
+      quoteMark: value.includes("'") ? '"' : value.includes('"') || !/^\w[\w\d]+$/.test(value) ? "'" : null,
+      raws: {},
+    });
+  }
+
+  export function className(className: string): SelClassName {
+    return cssSelectorParser.className({ value: className });
+  }
+
+  export function combinator(combinator: string): SelCombinator {
+    return cssSelectorParser.combinator({ value: combinator });
+  }
+
+  export function comment(comment: string): SelComment {
+    return cssSelectorParser.comment({ value: `/*${comment}*/` });
+  }
+
+  export function id(id: string): SelIdentifier {
+    return cssSelectorParser.id({ value: id });
+  }
+
+  export function nesting(): SelNesting {
+    return cssSelectorParser.nesting();
+  }
+
+  export function pseudoClass(pseudoClass: string, nodes?: SelSelector[]): SelPseudo {
+    const opts: SelContainerOptions = { value: pseudoClass.startsWith(':') ? pseudoClass : `:${pseudoClass}` };
+    if (nodes)
+      opts.nodes = nodes;
+    return cssSelectorParser.pseudo(opts);
+  }
+
+  export function pseudoElement(pseudoElement: string): SelPseudo {
+    return cssSelectorParser.pseudo({ value: pseudoElement.startsWith(':') ? pseudoElement : `::${pseudoElement}` });
+  }
+
+  export function root(nodes?: SelSelector[]): SelRoot {
+    const opts: SelContainerOptions = { value: "" };
+    if (nodes)
+      opts.nodes = nodes;
+    return cssSelectorParser.root(opts);
+  }
+
+  export function selector(nodes?: SelNode[]): SelSelector {
+    const opts: SelContainerOptions = { value: "" };
+    if (nodes)
+      opts.nodes = nodes;
+    return cssSelectorParser.selector(opts);
+  }
+
+  export function string(str: string): SelString {
+    return cssSelectorParser.string({ value: str });
+  }
+
+  export function tag(tag: string): SelTag {
+    return cssSelectorParser.tag({ value: tag });
+  }
+
+  export function universal(): SelUniversal {
+    return cssSelectorParser.universal();
+  }
 }

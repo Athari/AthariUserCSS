@@ -3,8 +3,8 @@ import JSON5 from 'json5';
 import { regex } from 'regex';
 import {
   CssRule,
-  SelNodeTypes, SelNode, SelContainer, SelRoot, SelSelector, SelPseudo, SelSpecificity,
-  isSelAttribute, isSelCombinator, isSelContainer, isSelNode, isSelPseudo, isSelRoot, isSelSelector, isSelPseudoClass,
+  Sel, SelNodeTypes, SelNode, SelContainer, SelRoot, SelSelector, SelPseudo, SelSpecificity,
+  isSelAttribute, isSelCombinator, isSelContainer, isSelNode, isSelPseudo, isSelPseudoClass, isSelPseudoElement, isSelRoot, isSelSelector,
   cssSelectorParser, getSelSpecificity, compareSelSpecificity,
 } from './domUtils.js';
 import { isArray, throwError } from './utils.js';
@@ -116,7 +116,7 @@ const selNodeCompat: Record<keyof SelNodeTypes, SelNodeCompatTypes> = {
 };
 
 function areNodesCompatible(a: SelNode, b: SelNode): boolean {
-  const cmp = (() => {
+  //const cmp = (() => {
     const [ aCompat, bCompat ] = [ selNodeCompat[a.type], selNodeCompat[b.type] ];
     if (aCompat === 'never' || bCompat === 'never')
       assert(false, `Unexpected selector node compat check: ${a} | ${b}`);
@@ -125,20 +125,22 @@ function areNodesCompatible(a: SelNode, b: SelNode): boolean {
     if (!areSpecEqual)
       return false;
     if (aCompat === 'value' || bCompat === 'value')
-      return aCompat === 'value' && bCompat === 'value' && a.type === b.type && a.value === b.value;
+      return aCompat === 'value' && bCompat === 'value' &&
+        a.type === b.type &&
+        (a.value === b.value || isSelPseudoElement(a) == isSelPseudoElement(b));
     if (aCompat.length === 1 && bCompat.length === 1)
       return areSpecEqual;
     assert(false, `Unexpected selector node compat type: ${aCompat} | ${bCompat}`);
-  })();
+  /*})();
   const formatSelSpecificity = (spec: SelSpecificity) => `(${spec.a}:${spec.b}:${spec.c})`;
   const formatCmp = (a: SelNode) => `${formatSelSpecificity(getSelSpecificity(a))} ${printNodeHead(a).ellipsis(30)}`.padEnd(40);
-  return console.debug(`cmp: ${formatCmp(a)} ${cmp ? "==" : "!="} ${formatCmp(b)}`), cmp;
+  return console.debug(`cmp: ${formatCmp(a)} ${cmp ? "==" : "!="} ${formatCmp(b)}`), cmp;*/
 }
 
 function printTrie(trie: TrieNode | TrieVariant): string {
   //const tryFormatVariant = (v: unknown) => v instanceof TrieVariant ? printNodeHead(v.node) : "?";
   const tryFormatVariant = (v: unknown) => v instanceof TrieVariant ? `${v.node}` : "?";
-  const tryFormatNode = (n: unknown) => n instanceof TrieNode ? n.tries.map(t => t.variants.map(tryFormatVariant).join(" | ")).join(" || ") : "?";
+  //const tryFormatNode = (n: unknown) => n instanceof TrieNode ? n.tries.map(t => t.variants.map(tryFormatVariant).join(" | ")).join(" || ") : "?";
   const tryFormatNodeVariants = (n: unknown) => n instanceof TrieNode ? n.variants.map(tryFormatVariant).join(" | ") : "?";
   return JSON5.stringify(trie, {
     quote: null,
@@ -206,20 +208,41 @@ function mergeByPrefix(node: SelNode, trie: TrieNode) {
 
   } else if (isSelPseudo(node)) {
     // Pseudo with children: put into sub
-    if (node.length > 0) {
-      console.debug("sub", node.toString());
+    if (node.length > 0)
       mergeChildrenByPrefix(node, trie.sub ??= new TrieNode());
-    }
 
   } else {
     assert(false, `Container expected, got ${node.type}`);
   }
 }
 
-function mergeSimilarSelectors(root: SelRoot) {
-  const trieRoot = new TrieNode();
-  mergeByPrefix(root, trieRoot);
-  console.log(printTrie(trieRoot));
+function cloneSelNodeHeader<T extends SelNode>(node: T): T {
+  if (isSelRoot(node))
+    return Sel.root() as T;
+  if (isSelSelector(node))
+    return Sel.selector() as T;
+  if (isSelPseudoClass(node))
+    return Sel.pseudoClass(node.value) as T;
+  return node.clone() as T;
+}
+
+function buildMergedNode(trieNode: TrieNode): Exclude<SelNode, SelSelector> {
+  const nodes: SelNode[] = trieNode.variants.map(v => cloneSelNodeHeader(v.node));
+  if (nodes.length > 1)
+    return Sel.pseudoClass('is', nodes.map(node => Sel.selector([ node ])));
+  assert(nodes[0] && !isSelSelector(nodes[0]));
+  return nodes[0];
+}
+
+function buildMergedSelectors(trieNode: TrieNode): SelSelector[] {
+  const mergedNode = buildMergedNode(trieNode);
+  if (trieNode.tries.length == 0)
+    return [ Sel.selector([ mergedNode ]) ];
+
+  const mergedSels = trieNode.tries.flatMap(trie => buildMergedSelectors(trie));
+  for (const mergedSel of mergedSels)
+    mergedSel.nodes.splice(0, 0, mergedNode.clone());
+  return mergedSels;
 }
 
 function mergeSimilarSelectorsPlugin(opts: MergeSimilarSelectorsPluginOptions = {}) {
@@ -233,11 +256,18 @@ function mergeSimilarSelectorsPlugin(opts: MergeSimilarSelectorsPluginOptions = 
     Rule(rule: CssRule) {
       if (rule.selectors.length <= 1)
         return;
-      cssSelectorParser((root: SelRoot) => {
-        removeSelectorComments(root);
-        console.log(printNode(root));
-        mergeSimilarSelectors(root);
-      }).processSync(rule, { lossless: false });
+
+      const root: SelRoot = cssSelectorParser().astSync(rule, { lossless: false });
+      removeSelectorComments(root);
+      //console.log(printNode(root));
+      const trieRoot = new TrieNode();
+      mergeByPrefix(root, trieRoot);
+
+      //console.log(printTrie(trieRoot));
+      root.removeAll();
+      for (const sel of buildMergedSelectors(trieRoot))
+        root.append(sel);
+      rule.selector = root.toString();
     }
   };
 }
