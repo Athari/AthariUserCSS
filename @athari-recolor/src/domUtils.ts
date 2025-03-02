@@ -66,6 +66,7 @@ export {
 import cssSelectorParser from 'postcss-selector-parser';
 
 import type {
+  AttributeOptions as SelAttributeOptions,
   Attribute as SelAttribute,
   AttributeOperator as SelAttributeOperator,
   ClassName as SelClassName,
@@ -280,13 +281,39 @@ export function isCompTokenTypeType<TToken extends TokenWithType, TType extends 
   return isCompToken(comp) && isTokenType(comp.value) && comp.value[4].type === type;
 }
 
+export function areSelNodesEqual(a: SelNode, b: SelNode): boolean {
+  return a.toString() === b.toString();
+}
+
+export function areSelNodeHeadersEqual(a: SelNode, b: SelNode): boolean {
+  return cloneSelNodeHeader(a).toString() === cloneSelNodeHeader(b).toString();
+}
+
+export function cloneSelNode<T extends SelNode>(node: T): T {
+  return node.clone() as T;
+}
+
+export function cloneSelNodeHeader<T extends SelNode>(node: T): T {
+  if (isSelRoot(node))
+    return Sel.root() as T;
+  if (isSelSelector(node))
+    return Sel.selector() as T;
+  if (isSelPseudoClass(node))
+    return Sel.pseudoClass(node.value) as T;
+  return cloneSelNode(node);
+}
+
 export namespace Sel {
-  export function attribute(attribute: string, operator: SelAttributeOperator, value: string, insensitive: boolean = false): SelAttribute {
-    return cssSelectorParser.attribute({
-      attribute, operator, value, insensitive,
-      quoteMark: value.includes("'") ? '"' : value.includes('"') || !/^\w[\w\d]+$/.test(value) ? "'" : null,
+  export function attribute(attribute: string, operator?: SelAttributeOperator, value?: string, insensitive?: boolean): SelAttribute {
+    const opts: SelAttributeOptions = {
+      attribute, value,
+      insensitive: insensitive ?? false,
+      quoteMark: value === undefined ? null : value.includes("'") ? '"' : value.includes('"') || !/^\w[\w\d]+$/.test(value) ? "'" : null,
       raws: {},
-    });
+    };
+    if (operator !== undefined)
+      opts.operator = operator;
+    return cssSelectorParser.attribute(opts);
   }
 
   export function className(className: string): SelClassName {

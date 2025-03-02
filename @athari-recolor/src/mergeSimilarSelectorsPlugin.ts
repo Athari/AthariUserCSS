@@ -5,7 +5,7 @@ import {
   CssRule,
   Sel, SelNodeTypes, SelNode, SelContainer, SelRoot, SelSelector, SelPseudo, SelSpecificity,
   isSelAttribute, isSelCombinator, isSelContainer, isSelNode, isSelPseudo, isSelPseudoClass, isSelPseudoElement, isSelRoot, isSelSelector,
-  cssSelectorParser, getSelSpecificity, compareSelSpecificity,
+  cssSelectorParser, getSelSpecificity, compareSelSpecificity, areSelNodeHeadersEqual, cloneSelNode, cloneSelNodeHeader,
 } from './domUtils.js';
 import { isArray, throwError } from './utils.js';
 import { Brand } from 'utility-types';
@@ -45,9 +45,11 @@ class TrieVariant {
   }
 }
 
+type MergeSelectorsMode = 'safe' | 'expansive' | 'unsafe';
+
 interface MergeSimilarSelectorsPluginOptions {
   pseudo?: string;
-  unsafe?: boolean;
+  mergeMode?: MergeSelectorsMode;
 }
 
 const reIsValue = regex('i')`
@@ -71,7 +73,7 @@ function removeSelectorComments(root: SelRoot) {
   });
 }
 
-function printNodeHead(node: SelNode): string {
+function formatNodeHead(node: SelNode): string {
   if (node.value === undefined)
     return node.type;
   if (isSelCombinator(node))
@@ -81,24 +83,20 @@ function printNodeHead(node: SelNode): string {
   return `${node.type} "${node.value}"`;
 }
 
-function printNodeHeadFull(node: SelNode, headWidth = defaultPrintHeadWidth, cssWidth = defaultPrintCssWidth): string {
-  return printNodeHead(node).padEnd(headWidth) + ` -> ${node.toString().ellipsis(cssWidth)}`;
+function formatNodeHeadFull(node: SelNode, headWidth = defaultPrintHeadWidth, cssWidth = defaultPrintCssWidth): string {
+  return formatNodeHead(node).padEnd(headWidth) + ` -> ${node.toString().ellipsis(cssWidth)}`;
 }
 
-function printNode(root: SelRoot, headWidth = defaultPrintHeadWidth, cssWidth = defaultPrintCssWidth): string {
+function formatNode(root: SelNode, headWidth = defaultPrintHeadWidth, cssWidth = defaultPrintCssWidth): string {
   const indentStr = "  ";
   const printNodeProc = (node: SelNode, indent = ""): string => [
-    `${indent}${printNodeHeadFull(node, headWidth, cssWidth)}`,
+    `${indent}${formatNodeHeadFull(node, headWidth, cssWidth)}`,
     ...isSelContainer(node) ? node.nodes.map(n => printNodeProc(n, indent + indentStr)) : [],
   ].join("\n");
   return printNodeProc(root);
 }
 
-function areNodesEqual(a: SelNode, b: SelNode): boolean {
-  return a.toString() === b.toString();
-}
-
-type SelNodeCompatTypes = 'a' | 'b' | 'c' | 'value' | 'never';
+type SelNodeCompatTypes = 'spec' | 'value' | 'never';
 
 const selNodeCompat: Record<keyof SelNodeTypes, SelNodeCompatTypes> = {
   string: 'never',
@@ -108,11 +106,11 @@ const selNodeCompat: Record<keyof SelNodeTypes, SelNodeCompatTypes> = {
   comment: 'never',
   combinator: 'value',
   pseudo: 'value',
-  id: 'a',
-  class: 'b',
-  attribute: 'b',
-  tag: 'c',
-  universal: 'c',
+  id: 'spec',
+  class: 'spec',
+  attribute: 'spec',
+  tag: 'spec',
+  universal: 'spec',
 };
 
 function areNodesCompatible(a: SelNode, b: SelNode): boolean {
@@ -128,7 +126,7 @@ function areNodesCompatible(a: SelNode, b: SelNode): boolean {
       return aCompat === 'value' && bCompat === 'value' &&
         a.type === b.type &&
         (a.value === b.value || isSelPseudoElement(a) == isSelPseudoElement(b));
-    if (aCompat.length === 1 && bCompat.length === 1)
+    if (aCompat === 'spec' && bCompat === 'spec')
       return areSpecEqual;
     assert(false, `Unexpected selector node compat type: ${aCompat} | ${bCompat}`);
   /*})();
@@ -137,7 +135,7 @@ function areNodesCompatible(a: SelNode, b: SelNode): boolean {
   return console.debug(`cmp: ${formatCmp(a)} ${cmp ? "==" : "!="} ${formatCmp(b)}`), cmp;*/
 }
 
-function printTrie(trie: TrieNode | TrieVariant): string {
+function formatTrie(trie: TrieNode | TrieVariant): string {
   //const tryFormatVariant = (v: unknown) => v instanceof TrieVariant ? printNodeHead(v.node) : "?";
   const tryFormatVariant = (v: unknown) => v instanceof TrieVariant ? `${v.node}` : "?";
   //const tryFormatNode = (n: unknown) => n instanceof TrieNode ? n.tries.map(t => t.variants.map(tryFormatVariant).join(" | ")).join(" || ") : "?";
@@ -149,9 +147,9 @@ function printTrie(trie: TrieNode | TrieVariant): string {
       if (value == null || isArray(value) && value.length == 0 || value instanceof Set && value.size == 0)
         return undefined;
       if (isSelNode(value))
-        return key !== 'selector' ? printNodeHeadFull(value) : undefined;
+        return key !== 'selector' ? formatNodeHeadFull(value) : undefined;
       if (value instanceof TrieVariant && value.nextTries.size == 0 && value.nextVariants.size == 0)
-        return printNodeHeadFull(value.node);
+        return formatNodeHeadFull(value.node);
       if (this instanceof TrieVariant) {
         if (key == 'nextTries')
           return [...value as Set<TrieNode>].map(tryFormatNodeVariants).join(" || ");
@@ -189,7 +187,7 @@ function mergeByPrefix(node: SelNode, trie: TrieNode) {
         prevVariant?.nextTries.add(compatTrie);
         currentTrie = compatTrie;
 
-        let equalVariant = compatTrie.variants.find(v => areNodesEqual(v.node, part))
+        let equalVariant = compatTrie.variants.find(v => areSelNodeHeadersEqual(v.node, part))
         if (!equalVariant)
           compatTrie.variants.push(equalVariant = new TrieVariant(part, node));
         prevVariant?.nextVariants.add(equalVariant);
@@ -216,18 +214,15 @@ function mergeByPrefix(node: SelNode, trie: TrieNode) {
   }
 }
 
-function cloneSelNodeHeader<T extends SelNode>(node: T): T {
-  if (isSelRoot(node))
-    return Sel.root() as T;
-  if (isSelSelector(node))
-    return Sel.selector() as T;
-  if (isSelPseudoClass(node))
-    return Sel.pseudoClass(node.value) as T;
-  return node.clone() as T;
-}
-
 function buildMergedNode(trieNode: TrieNode): Exclude<SelNode, SelSelector> {
   const nodes: SelNode[] = trieNode.variants.map(v => cloneSelNodeHeader(v.node));
+  if (trieNode.sub) {
+    const mergedSubSels = buildMergedSelectors(trieNode.sub);
+    for (const node of nodes)
+      if (isSelContainer(node))
+        for (const sel of mergedSubSels)
+          node.append(sel as any);
+  }
   if (nodes.length > 1)
     return Sel.pseudoClass('is', nodes.map(node => Sel.selector([ node ])));
   assert(nodes[0] && !isSelSelector(nodes[0]));
@@ -235,13 +230,16 @@ function buildMergedNode(trieNode: TrieNode): Exclude<SelNode, SelSelector> {
 }
 
 function buildMergedSelectors(trieNode: TrieNode): SelSelector[] {
+  if (trieNode.variants.length == 0)
+    return trieNode.tries.flatMap(buildMergedSelectors);
+
   const mergedNode = buildMergedNode(trieNode);
   if (trieNode.tries.length == 0)
     return [ Sel.selector([ mergedNode ]) ];
 
   const mergedSels = trieNode.tries.flatMap(trie => buildMergedSelectors(trie));
   for (const mergedSel of mergedSels)
-    mergedSel.nodes.splice(0, 0, mergedNode.clone());
+    mergedSel.prepend(cloneSelNode(mergedNode));
   return mergedSels;
 }
 
@@ -259,11 +257,12 @@ function mergeSimilarSelectorsPlugin(opts: MergeSimilarSelectorsPluginOptions = 
 
       const root: SelRoot = cssSelectorParser().astSync(rule, { lossless: false });
       removeSelectorComments(root);
-      //console.log(printNode(root));
+      //console.log(formatNode(root));
+
       const trieRoot = new TrieNode();
       mergeByPrefix(root, trieRoot);
+      //console.log(formatTrie(trieRoot));
 
-      //console.log(printTrie(trieRoot));
       root.removeAll();
       for (const sel of buildMergedSelectors(trieRoot))
         root.append(sel);
