@@ -89,7 +89,7 @@ function recolorPlugin(opts: Partial<RecolorPluginOptions> = {}): { postcssPlugi
     colorFormula: ColorFormula.Dark,
     palette: true,
     paletteVarPrefix: "c-",
-  }, opts);
+  } as RecolorPluginOptions, opts);
   return {
     postcssPlugin: 'recolor',
     Once(css: CssRoot) {

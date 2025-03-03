@@ -5,8 +5,8 @@ import cssSafeParser from 'postcss-safe-parser';
 import cssNanoPlugin from 'cssnano';
 import cssNanoPresetDefault from 'cssnano-preset-default';
 import autoPrefixerPlugin from 'autoprefixer';
-import mergeSimilarSelectorsPlugin from './mergeSimilarSelectorsPlugin.js';
-import derandomSelectorPlugin from './derandomSelectorPlugin.js';
+import mergeSelectorsPlugin from './mergeSelectorsPlugin.ts';
+import derandomSelectorPlugin from './derandomSelectorsPlugin.ts';
 import recolorPlugin from './recolorPlugin.js';
 import { prettifyCss } from './codeFormatting.js';
 import type { Site, SiteCss } from './siteDownloading.js';
@@ -42,7 +42,7 @@ export async function recolorCss(inputPath: string, outputPath: string, opts: Re
   // TODO: Split plugin options
   result = await runPostCss(inputPath, result.css, [
     // HACK: any
-    mergeSimilarSelectorsPlugin(opts as any),
+    mergeSelectorsPlugin(opts as any),
     derandomSelectorPlugin(opts as any),
     recolorPlugin(opts as any),
   ]);

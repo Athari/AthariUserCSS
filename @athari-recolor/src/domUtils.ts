@@ -56,11 +56,18 @@ export {
   Declaration as CssDecl,
   Document as CssDocument,
   Node as CssNode,
+  Plugin as PostCssPlugin,
+  PluginCreator as PostCssPluginCreator,
   Processor as PostCssProcessor,
   Result as PostCssResult,
   Root as CssRoot,
   Rule as CssRule,
   Warning as PostCssWarning,
+} from 'postcss';
+
+import postCss, {
+  Plugin as PostCssPlugin,
+  PluginCreator as PostCssPluginCreator,
 } from 'postcss';
 
 import cssSelectorParser from 'postcss-selector-parser';
@@ -215,6 +222,11 @@ export type {
 } from '@csstools/css-tokenizer';
 
 import {
+  NonUndefined,
+} from 'utility-types';
+
+import {
+  ObjectEntries,
   throwError,
 } from './utils.js';
 
@@ -243,6 +255,31 @@ export function htmlCompileQuery<T extends HtmlElement>(selector: HtmlSimpleSele
 }
 
 // CSS: Functions
+
+type PostCssProcessors = ReturnType<NonUndefined<PostCssPlugin['prepare']>>;
+
+export function declarePostCssPlugin<TOptions>(
+  name: string,
+  defaultOptions: TOptions,
+  processors: (opts: TOptions) => PostCssProcessors,
+): PostCssPluginCreator<Partial<TOptions>> {
+  return Object.assign(
+    (opts?: Partial<TOptions>): PostCssPlugin => ({
+      postcssPlugin: name,
+      prepare() {
+        let actualOptions: TOptions = { ...defaultOptions };
+        if (opts)
+          for (const [key, value] of Object.entries(opts) as ObjectEntries<TOptions>)
+            if (value !== undefined)
+              actualOptions[key] = value;
+        return processors(actualOptions);
+      },
+    }),
+    {
+      postcss: true as true,
+    },
+  );
+}
 
 export type SelContainer = SelRoot | SelSelector | SelPseudo;
 

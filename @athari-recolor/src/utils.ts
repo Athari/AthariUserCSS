@@ -10,6 +10,10 @@ import NetscapeCookieStore from './toughCookieNetscapeStore.js';
 
 const downloadTimeout = 30000;
 
+export type ObjectEntries<T> = {
+  [K in keyof T]-?: [K, T[K]];
+}[keyof T][];
+
 export type RegExpPattern = ReturnType<typeof regExpPattern>;
 
 type ExtractNoArraysNoFunctions<T> = T extends (infer U)[] ? ExtractNoArraysNoFunctions<U> : T extends (...args: any[]) => any ? never : T;

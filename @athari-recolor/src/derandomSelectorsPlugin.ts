@@ -4,10 +4,18 @@ import {
   CssRoot, CssRule,
   CssToken, Comp, CssHashType,
   tokenizeCss, parseCssCompStr, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
-  isCompTokenTypeValue,
-  isCompTokenType,
-  isCompTokenTypeType,
-} from './domUtils.js';
+  isCompTokenType, isCompTokenTypeType, isCompTokenTypeValue,
+} from './domUtils.ts';
+
+interface DerandomTransform {
+  find: string[];
+  replace: string;
+};
+
+interface DerandomSelectorsPluginOptions {
+  className: DerandomTransform[];
+  id: DerandomTransform[];
+}
 
 // https://www.w3.org/TR/2021/CRD-css-syntax-3-20211224/#token-diagrams
 const r = new class {
@@ -91,14 +99,7 @@ const r = new class {
   `;
 }();
 
-interface DerandomSelectorPluginOptions {
-  classTransforms?: {
-    find: string[];
-    replace: string;
-  }[];
-}
-
-function derandomSelectorPlugin(opts: DerandomSelectorPluginOptions = {}): { postcssPlugin: string; Once: (css: CssRoot) => void } {
+function derandomSelectorPlugin(opts?: DerandomSelectorsPluginOptions): { postcssPlugin: string; Once: (css: CssRoot) => void } {
   return {
     postcssPlugin: 'derandom-selector',
     Once(css: CssRoot) {
