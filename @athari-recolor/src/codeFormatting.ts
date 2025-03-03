@@ -25,7 +25,7 @@ export async function prettifyCodeSafe(filepath: string, source: string, options
 }
 
 export async function prettifyCss(filepath: string, css: string): Promise<string> {
-  return await prettifyCodeSafe(filepath, css, { printWidth: 999 });
+  return await prettifyCodeSafe(filepath, css, { printWidth: 300 });
 }
 
 export async function prettifyHtml(filepath: string, html: string): Promise<string> {

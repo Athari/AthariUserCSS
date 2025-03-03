@@ -5,11 +5,11 @@ import { Brand } from 'utility-types';
 import {
   CssRoot, CssRule,
   Sel, SelNodeTypes, SelNode, SelContainer, SelRoot, SelSelector, SelPseudo,
-  isSelAttribute, isSelCombinator, isSelContainer, isSelNode, isSelPseudo, isSelPseudoClass, isSelPseudoElement, isSelRoot, isSelSelector,
+  isSelAttribute, isSelCombinator, isSelContainer, isSelNode, isSelPseudo, isSelPseudoClass, isSelRoot, isSelSelector,
   cssSelectorParser, getSelSpecificity, compareSelSpecificity, areSelNodesEqual, areSelNodeHeadersEqual, cloneSelNode, cloneSelNodeHeader,
   declarePostCssPlugin,
 } from './domUtils.ts';
-import { isArray } from './utils.ts';
+import { isArray, isSome } from './utils.ts';
 
 const defaultPrintHeadWidth = 40;
 const defaultPrintCssWidth = 80;
@@ -99,9 +99,9 @@ function formatNode(root: SelNode, headWidth = defaultPrintHeadWidth, cssWidth =
   return printNodeProc(root);
 }
 
-type SelNodeCompatTypes = 'spec' | 'value' | 'never';
+type SelNodeCompatType = 'spec' | 'value' | 'never';
 
-const selNodeCompat: Record<keyof SelNodeTypes, SelNodeCompatTypes> = {
+const selNodeCompat: Record<keyof SelNodeTypes, SelNodeCompatType> = {
   string: 'never',
   selector: 'never',
   root: 'never',
@@ -121,17 +121,19 @@ function areNodesCompatible(a: SelNode, b: SelNode, mergeMode: MergeSelectorsMod
     const [ aCompat, bCompat ] = [ selNodeCompat[a.type], selNodeCompat[b.type] ];
     if (aCompat === 'never' || bCompat === 'never')
       assert(false, `Unexpected selector node compat check: ${a} | ${b}`);
+
     const isMergeModeUnsafe = mergeMode === 'unsafe' || mergeMode === 'unsafe-linear';
     const [ aSpec, bSpec ] = [ getSelSpecificity(a), getSelSpecificity(b) ];
     const areSpecEqual = compareSelSpecificity(aSpec, bSpec) == 0;
     if (!areSpecEqual && !isMergeModeUnsafe)
       return false;
+
     if (aCompat === 'value' || bCompat === 'value')
-      return aCompat === 'value' && bCompat === 'value' &&
-        a.type === b.type &&
-        (a.value === b.value || isSelPseudoElement(a) == isSelPseudoElement(b));
+      return aCompat === 'value' && bCompat === 'value' && a.type === b.type && a.value === b.value;
+
     if (aCompat === 'spec' && bCompat === 'spec')
       return areSpecEqual || isMergeModeUnsafe;
+
     assert(false, `Unexpected selector node compat type: ${aCompat} | ${bCompat}`);
   /*})();
   const formatSelSpecificity = (spec: SelSpecificity) => `(${spec.a}:${spec.b}:${spec.c})`;
@@ -143,29 +145,36 @@ function formatTrie(trie: TrieNode | TrieVariant, fields: FormatTrieFields = [ '
   const hasNextTries = fields.includes('nextTries');
   const hasNextVariants = fields.includes('nextVariants');
 
-  //const tryFormatVariant = (v: unknown) => v instanceof TrieVariant ? printNodeHead(v.node) : "?";
-  const tryFormatVariant = (v: unknown) => v instanceof TrieVariant ? `${v.node}` : "?";
-  //const tryFormatNode = (n: unknown) => n instanceof TrieNode ? n.tries.map(t => t.variants.map(tryFormatVariant).join(" | ")).join(" || ") : "?";
-  const tryFormatNodeVariants = (n: unknown) => n instanceof TrieNode ? n.variants.map(tryFormatVariant).join(" | ") : "?";
+  const formatVariant = (v: TrieVariant) => `${v.node}`;
+  const formatNodeVariants = (n: TrieNode) => n.variants.map(formatVariant).join(" | ");
+
   return JSON5.stringify(trie, {
     quote: null,
     space: "  ",
     replacer: function(key: string, value: unknown): unknown | undefined {
       if (value == null || isArray(value) && value.length == 0 || value instanceof Set && value.size == 0)
         return undefined;
+
       if (isSelNode(value))
         return key !== 'selector' ? formatNodeHeadFull(value) : undefined;
-      if (value instanceof TrieVariant && value.nextTries.size == 0 && value.nextVariants.size == 0)
+
+      if (value instanceof TrieVariant &&
+        (value.nextTries.size == 0 || !hasNextTries) && 
+        (value.nextVariants.size == 0 || !hasNextVariants)
+      )
         return formatNodeHeadFull(value.node);
+
       if (this instanceof TrieVariant) {
         if (key == 'nextTries' && hasNextTries)
-          return [...value as Set<TrieNode>].map(tryFormatNodeVariants).join(" || ");
+          return [...value as Set<TrieNode>].map(formatNodeVariants).join(" || ");
         if (key == 'nextVariants' && hasNextVariants)
-          return [...value as Set<TrieVariant>].map(tryFormatVariant).join(" | ");
+          return [...value as Set<TrieVariant>].map(formatVariant).join(" | ");
         return undefined;
       }
+
       if (key === 'type' || isArray(value) && value.length === 0)
         return undefined;
+
       return value;
     },
   });
@@ -176,7 +185,7 @@ function buildTrie(node: SelNode, trie: TrieNode, mergeMode: MergeSelectorsModeI
   const areSelNodesEqualFn = isLinear ? areSelNodesEqual : areSelNodeHeadersEqual;
 
   const buildTrieChildren = (node: SelContainer, trie: TrieNode) =>
-    node.each(child => buildTrie(child, trie, mergeMode));
+    node.nodes.forEach(child => buildTrie(child, trie, mergeMode));
 
   if (isSelRoot(node) || isSelPseudoClassIs(node) && !isLinear) {
     // Root/pseudo :is: merge selectors
@@ -190,15 +199,17 @@ function buildTrie(node: SelNode, trie: TrieNode, mergeMode: MergeSelectorsModeI
       if (isSelPseudoClassIs(part) && !isLinear)
         buildTrie(part, currentTrie, mergeMode);
       else {
+        // Find compatible trie to merge with
         let compatTrie = currentTrie.tries.find(t => t.variants.some(v => areNodesCompatible(v.node, part, mergeMode)));
         if (!compatTrie) {
-          compatTrie = new TrieNode()
+          compatTrie = new TrieNode();
           currentTrie.tries.push(compatTrie);
         }
         prevVariant?.nextTries.add(compatTrie);
         currentTrie = compatTrie;
 
-        let equalVariant = compatTrie.variants.find(v => areSelNodesEqualFn(v.node, part))
+        // Find equal variant to merge with
+        let equalVariant = compatTrie.variants.find(v => areSelNodesEqualFn(v.node, part));
         if (!equalVariant) {
           equalVariant = new TrieVariant(part, node);
           compatTrie.variants.push(equalVariant);
@@ -228,11 +239,8 @@ function buildTrie(node: SelNode, trie: TrieNode, mergeMode: MergeSelectorsModeI
 function buildMergedNode(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): Exclude<SelNode, SelSelector> {
   const nodes: SelNode[] = trieNode.variants.map(v => cloneSelNodeHeader(v.node));
   if (trieNode.sub) {
-    const mergedSubSels = buildMergedSelectors(trieNode.sub, pseudo);
-    for (const node of nodes)
-      if (isSelContainer(node))
-        for (const sel of mergedSubSels)
-          node.append(sel as any);
+    const mergedSubSels: SelSelector[] = buildMergedSelectors(trieNode.sub, pseudo);
+    nodes.filter(isSome(isSelRoot, isSelPseudo)).forEach(n => n.nodes.push(...mergedSubSels));
   }
   if (nodes.length > 1)
     return Sel.pseudoClass(pseudo, nodes.map(node => Sel.selector([ node ])));
@@ -241,6 +249,7 @@ function buildMergedNode(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): Excl
 }
 
 function buildMergedSelectors(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): SelSelector[] {
+  // TODO: Implement safe selectors merging mode which respects nextNodes & nextVariants
   if (trieNode.variants.length == 0)
     return trieNode.tries.flatMap(trie => buildMergedSelectors(trie, pseudo));
 
@@ -254,9 +263,32 @@ function buildMergedSelectors(trieNode: TrieNode, pseudo: MergeSelectorsPseudo):
   return mergedSels;
 }
 
-function mergeSelectors(root: SelRoot, trieRoot: TrieNode, pseudo: MergeSelectorsPseudo): void {
+function buildMergedSelectorsLinear(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): SelSelector[] {
+  const nextSelectors = trieNode.tries.flatMap(t => buildMergedSelectorsLinear(t, pseudo));
+  if (trieNode.variants.length == 0) // root
+    return nextSelectors;
+
+  const currentNode = trieNode.variants.single().node;
+  if (isSelCombinator(currentNode))
+    return nextSelectors.map(sel => sel.prepend(cloneSelNode(currentNode)));
+
+  if (trieNode.tries.length == 0)
+    return [ Sel.selector([ currentNode ]) ];
+
+  return nextSelectors
+    .groupBy(sel => selNodeCompat[sel.first.type])
+    .select(selsByCompat => Sel.selector([
+      currentNode,
+      selsByCompat.count() > 1
+        ? Sel.pseudoClass(pseudo, [...selsByCompat])
+        : selsByCompat.single()
+    ]))
+    .toArray();
+}
+
+function replaceSelContainerSelectors(buildFn: typeof buildMergedSelectors, root: SelRoot, ...args: Parameters<typeof buildMergedSelectors>) {
   root.removeAll();
-  for (const sel of buildMergedSelectors(trieRoot, pseudo))
+  for (const sel of buildFn(...args))
     root.append(sel);
 }
 
@@ -276,15 +308,15 @@ export default declarePostCssPlugin<MergeSelectorsPluginOptions>('merge-selector
       const trieRoot = new TrieNode();
       buildTrie(root, trieRoot, opts.mergeMode);
       //console.log("TRIE:", formatTrie(trieRoot));
-      mergeSelectors(root, trieRoot, opts.pseudo);
+      replaceSelContainerSelectors(buildMergedSelectors, root, trieRoot, opts.pseudo);
       //console.log("MERGED:", formatNode(root));
 
       if (opts.mergeMode === 'unsafe') {
         const trieRootLinear = new TrieNode();
         buildTrie(root, trieRootLinear, 'unsafe-linear');
-        console.log("TRIE-LINEAR:", formatTrie(trieRootLinear, []));
-        //mergeSelectors(root, trieRoot, opts.pseudo);
-        //console.log("MERGED-LINEAR:", formatTrie(trieRootLinear));
+        //console.log("TRIE-LINEAR:", formatTrie(trieRootLinear, []));
+        replaceSelContainerSelectors(buildMergedSelectorsLinear, root, trieRootLinear, opts.pseudo);
+        //console.log("MERGED:", formatNode(root));
       }
 
       rule.selector = root.toString();

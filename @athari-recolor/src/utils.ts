@@ -14,6 +14,14 @@ export type ObjectEntries<T> = {
   [K in keyof T]-?: [K, T[K]];
 }[keyof T][];
 
+export type Guard<T = unknown> = (x: unknown) => x is T;
+
+export type GuardReturnType<T extends Guard> = T extends Guard<infer U> ? U : never;
+
+export function isSome<TGuard extends Guard[]>(...guards: TGuard): (x: unknown) => x is GuardReturnType<TGuard[number]> {
+  return (x: unknown): x is GuardReturnType<TGuard[number]> => guards.some(g => g(x));
+}
+
 export type RegExpPattern = ReturnType<typeof regExpPattern>;
 
 type ExtractNoArraysNoFunctions<T> = T extends (infer U)[] ? ExtractNoArraysNoFunctions<U> : T extends (...args: any[]) => any ? never : T;
