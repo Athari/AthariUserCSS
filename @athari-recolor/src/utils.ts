@@ -6,7 +6,7 @@ import { ClassConstructor, plainToInstance } from 'class-transformer';
 import enquirer from 'enquirer';
 import makeFetchCookie from 'fetch-cookie';
 import { CookieJar, MemoryCookieStore } from 'tough-cookie';
-import NetscapeCookieStore from './toughCookieNetscapeStore.js';
+import NetscapeCookieStore from './toughCookieNetscapeStore.ts';
 
 const downloadTimeout = 30000;
 
@@ -98,7 +98,7 @@ export function throwError(error: Error | string) : never {
 export async function readTextFile(path: string): Promise<string | null> {
   try {
     return await fs.readFile(path, 'utf-8');
-  } catch (ex: any) {
+  } catch (ex: unknown) {
     console.log(`Failed to read file "${path}"`);
     console.log(errorDetail(ex));
     return null;
@@ -117,7 +117,7 @@ export function validateRequired(name: string): (input: string) => true | string
 
 export function question(
   type: string,
-  a: Record<string, string>,
+  a: Record<string, unknown>,
   name: string,
   message: string,
   opts: QuestionOptions,
@@ -133,7 +133,7 @@ export function question(
 }
 
 export function questionInput(
-  a: Record<string, any>,
+  a: Record<string, unknown>,
   name: string,
   message: string,
   opts?: QuestionOptions
@@ -142,7 +142,7 @@ export function questionInput(
 }
 
 export function questionSelect(
-  a: Record<string, any>,
+  a: Record<string, unknown>,
   name: string,
   message: string,
   opts: QuestionOptions

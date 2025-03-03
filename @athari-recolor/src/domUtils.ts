@@ -228,7 +228,7 @@ import {
 import {
   ObjectEntries,
   throwError,
-} from './utils.js';
+} from './utils.ts';
 
 // HTML: Functions
 

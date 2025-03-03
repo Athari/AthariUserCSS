@@ -2,7 +2,7 @@ import {
   format as prettifyCode,
   Options as PrettierOptions,
 } from 'prettier';
-import { errorDetail } from './utils.js';
+import { errorDetail } from './utils.ts';
 
 const basePrettierOptions: PrettierOptions = {
   tabWidth: 2,
@@ -17,7 +17,7 @@ export async function prettifyCodeSafe(filepath: string, source: string, options
   try {
     const pretty = await prettifyCode(source, { filepath, ...basePrettierOptions, ...options });
     return pretty.trimEnd();
-  } catch (ex: any) {
+  } catch (ex: unknown) {
     console.log(`Failed to prettify ${filepath}, keeping formatting`);
     console.log(errorDetail(ex));
     return source.trimEnd();

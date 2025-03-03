@@ -3,16 +3,17 @@ import { isTokenHash, isTokenIdent, isTokenDelim, isTokenOpenSquare } from '@css
 import {
   CssRoot, CssRule,
   CssToken, Comp, CssHashType,
-  tokenizeCss, parseCssCompStr, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
   isCompTokenType, isCompTokenTypeType, isCompTokenTypeValue,
+  tokenizeCss, parseCssCompStr, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
+  declarePostCssPlugin,
 } from './domUtils.ts';
 
-interface DerandomTransform {
+export interface DerandomTransform {
   find: string[];
   replace: string;
 };
 
-interface DerandomSelectorsPluginOptions {
+export interface DerandomSelectorsPluginOptions {
   className: DerandomTransform[];
   id: DerandomTransform[];
 }
@@ -99,68 +100,61 @@ const r = new class {
   `;
 }();
 
-function derandomSelectorPlugin(opts?: DerandomSelectorsPluginOptions): { postcssPlugin: string; Once: (css: CssRoot) => void } {
-  return {
-    postcssPlugin: 'derandom-selector',
-    Once(css: CssRoot) {
-      opts = Object.assign({
-        classTransforms: [
-          {
-            find: ['main=identSingleDash', '--', 'sub=identSingleDash', '--', 'hash=identSingleDash'],
-            replace: '[class*="{main}--{sub}--"]',
-          },
-        ],
-      }, opts);
+export default declarePostCssPlugin<DerandomSelectorsPluginOptions>('derandom-selectors', {
+  className: [
+    {
+      find: ['main=identSingleDash', '--', 'sub=identSingleDash', '--', 'hash=identSingleDash'],
+      replace: '[class*="{main}--{sub}--"]',
+    },
+  ],
+  id: [],
+}, (opts) => ({
+  OnceExit(css: CssRoot) {
+    console.log(regex('i')` ${r.newLine}+ `);
+    // TODO: Support declarative derandom replacements
+    //console.log(regex('i')`^${identToken}$`);
+    css.walkRules((rule: CssRule) => {
+      let didDerandom = false;
 
-      console.log(regex('i')` ${r.newLine}+ `);
-      // TODO: Support declarative derandom replacements
-      //console.log(regex('i')`^${identToken}$`);
-      css.walkRules((rule: CssRule) => {
-        let didDerandom = false;
-
-        // derandom classes
-        let prevComp: Comp;
-        let newComps: Comp[][] = replaceCssComps(parseCssCompCommaList(tokenizeCss(rule.selector)), (comp: Comp) => {
-          if (isCompTokenTypeValue(prevComp, isTokenDelim, ".") && isCompTokenType(comp, isTokenIdent)) {
-            const className = comp.value[4].value;
-            const newSelector = className.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[class*="$1--$2--"]');
-            if (newSelector !== className) {
-              didDerandom = true;
-              return parseCssCompStr(newSelector);
-            }
+      // derandom classes
+      let prevComp: Comp;
+      let newComps: Comp[][] = replaceCssComps(parseCssCompCommaList(tokenizeCss(rule.selector)), (comp: Comp) => {
+        if (isCompTokenTypeValue(prevComp, isTokenDelim, ".") && isCompTokenType(comp, isTokenIdent)) {
+          const className = comp.value[4].value;
+          const newSelector = className.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[class*="$1--$2--"]');
+          if (newSelector !== className) {
+            didDerandom = true;
+            return parseCssCompStr(newSelector);
           }
-          prevComp = comp;
-          return;
-        });
-
-        let newTokens: CssToken[] = tokenizeCss(stringifyCssComps(newComps));
-        if (didDerandom) {
-          newTokens = newTokens.filter((token, i) => {
-            const nextToken = newTokens[i + 1];
-            return !(isTokenDelim(token) && token[4].value === "." && isTokenOpenSquare(nextToken));
-          });
         }
-
-        // derandom ids
-        newComps = replaceCssComps(parseCssCompCommaList(newTokens), (comp: Comp) => {
-          if (isCompTokenTypeType(comp, isTokenHash, CssHashType.ID)) {
-            const idName = comp.value[4].value;
-            const newSelector = idName.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[id^="$1--$2--"]');
-            if (newSelector !== idName) {
-              didDerandom = true;
-              return parseCssCompStr(newSelector);
-            }
-          }
-          prevComp = comp;
-          return;
-        });
-
-        if (didDerandom)
-          rule.selector = stringifyCssComps(newComps);
+        prevComp = comp;
+        return;
       });
-    }
-  };
-}
-derandomSelectorPlugin.postcss = true;
 
-export default derandomSelectorPlugin;
+      let newTokens: CssToken[] = tokenizeCss(stringifyCssComps(newComps));
+      if (didDerandom) {
+        newTokens = newTokens.filter((token, i) => {
+          const nextToken = newTokens[i + 1];
+          return !(isTokenDelim(token) && token[4].value === "." && isTokenOpenSquare(nextToken));
+        });
+      }
+
+      // derandom ids
+      newComps = replaceCssComps(parseCssCompCommaList(newTokens), (comp: Comp) => {
+        if (isCompTokenTypeType(comp, isTokenHash, CssHashType.ID)) {
+          const idName = comp.value[4].value;
+          const newSelector = idName.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[id^="$1--$2--"]');
+          if (newSelector !== idName) {
+            didDerandom = true;
+            return parseCssCompStr(newSelector);
+          }
+        }
+        prevComp = comp;
+        return;
+      });
+
+      if (didDerandom)
+        rule.selector = stringifyCssComps(newComps);
+    });
+  }
+}));

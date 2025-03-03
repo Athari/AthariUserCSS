@@ -1,6 +1,5 @@
 import fs from 'fs/promises';
 import { Cookie, Store, canonicalDomain, permuteDomain, permutePath } from 'tough-cookie';
-import { PickByValue, Primitive } from 'utility-types';
 
 // Based on https://www.npmjs.com/package/@root/file-cookie-store (MIT)
 
@@ -10,8 +9,11 @@ const NetscapeHeader = `# Netscape HTTP Cookie File
 
 `;
 
+type PickByValue<T, V> = Pick<T, {
+  [K in keyof T]-?: T[K] extends V ? K : never;
+}[keyof T]>;
 type NetscapeCookieStoreInit = Partial<Omit<
-  PickByValue<NetscapeCookieStore, Primitive>,
+  PickByValue<NetscapeCookieStore, string | number | boolean>,
   keyof Store | 'path'
 >>;
 
@@ -40,8 +42,8 @@ class NetscapeCookieStore extends Store {
     try {
       this.deserialize(await fs.readFile(this.path, 'utf8'));
       this.#isFileRead = true;
-    } catch (ex: any) {
-      if (ex.code === 'ENOENT') {
+    } catch (ex: unknown) {
+      if (ex instanceof Error && 'code' in ex && ex.code === 'ENOENT') {
         await fs.writeFile(this.path, NetscapeHeader);
         return;
       }

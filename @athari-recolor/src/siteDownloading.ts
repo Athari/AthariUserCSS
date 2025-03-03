@@ -2,19 +2,22 @@ import fs from 'node:fs/promises';
 import { basename } from 'node:path';
 import vm from 'node:vm';
 import { Exclude, Type } from 'class-transformer';
-import {
-  ColorFormula,
-  assertHasKeys, downloadText, getSiteDir, isString, readTextFile,
-} from './utils.js';
-import { prettifyHtml } from './codeFormatting.js';
+import type { MergeSelectorsPluginOptions } from './mergeSelectorsPlugin.ts';
+import type { DerandomSelectorsPluginOptions } from './derandomSelectorsPlugin.ts';
+import type { RecolorPluginOptions } from './recolorPlugin.ts';
+import { prettifyHtml } from './codeFormatting.ts';
 import {
   HtmlDocument,
   parseHtmlDocument, htmlQuerySelectorAll, htmlQuerySelector, getHtmlAllInnerText,
-} from './domUtils.js';
+} from './domUtils.ts';
+import {
+  assertHasKeys, downloadText, getSiteDir, isString, readTextFile,
+} from './utils.ts';
 
 export class SiteOptions {
-  colorFormula: ColorFormula = ColorFormula.Dark;
-  palette: boolean = true;
+  recolor?: Partial<RecolorPluginOptions> | undefined;
+  derandomSelectors?: Partial<DerandomSelectorsPluginOptions> | undefined;
+  mergeSelectors?: Partial<MergeSelectorsPluginOptions> | undefined;
   combine: boolean = true;
 }
 
@@ -134,13 +137,13 @@ async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: Sit
   const manifestPath = `${site.dir}/buildManifest.js`;
   await fs.writeFile(manifestPath, manifestCode);
 
-  const manifestCtx: { [key: string]: any; } = {};
+  const manifestCtx: { [key: string]: unknown; } = {};
   const initCode = `var self = globalThis;`;
   vm.runInNewContext(`${initCode}\n\n${manifestCode}`, manifestCtx, {
     filename: manifestUrl,
     timeout: 10000,
   });
-  const manifest: Record<string, string[]> = manifestCtx.__BUILD_MANIFEST;
+  const manifest = manifestCtx.__BUILD_MANIFEST as Record<string, string[]>;
   if (!manifest)
     return;
 
@@ -170,7 +173,7 @@ async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: Sit
       console.log(`Found Next.js CSS chunk '${css.name}' ${css.url}`);
 }
 
-interface WebpackMinifyCss extends Record<string, any> {
+interface WebpackMinifyCss extends Record<string, unknown> {
   miniCssF(index: number): string;
 }
 
@@ -191,12 +194,12 @@ async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: Si
   await fs.writeFile(webpackPath, webpackCode);
 
   const initCode = `var self = globalThis;`;
-  const webpackCtx: Record<string, any> = {};
+  const webpackCtx: Record<string, unknown> = {};
   vm.runInNewContext(`${initCode}\n\n${webpackCode}`, webpackCtx, {
     filename: webpackUrl,
     timeout: 10000,
   });
-  const webpack: WebpackMinifyCss = webpackCtx.webpack;
+  const webpack = webpackCtx.webpack as WebpackMinifyCss;
   if (!webpack)
     return;
 

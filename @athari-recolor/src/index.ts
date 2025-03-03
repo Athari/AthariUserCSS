@@ -1,14 +1,25 @@
 import 'reflect-metadata';
-import './fuckUpPrototypes.js';
+import './fuckUpPrototypes.ts';
 import enquirer from 'enquirer';
 import { Command, Option } from 'commander';
-import { SitesConfig, downloadSiteHtml } from './siteDownloading.js';
-import { recolorCss, recolorSiteCss } from './siteRecoloring.js';
-import { ColorFormula, errorDetail, loadJson, questionInput, questionSelect, throwError } from './utils.js';
+import { SitesConfig, downloadSiteHtml } from './siteDownloading.ts';
+import { recolorCss, recolorSiteCss } from './siteRecoloring.ts';
+import { ColorFormula, errorDetail, loadJson, questionInput, questionSelect, throwError } from './utils.ts';
 
 class NpmPackage {
   version: string = "";
   description: string = "";
+}
+
+interface RecolorCssCommandOptions {
+  colorFormula: ColorFormula;
+  inputPath: string;
+  outputPath: string;
+}
+
+interface RecolorSiteCssCommandOptions {
+  colorFormula: ColorFormula;
+  siteName: string;
 }
 
 const npmPackage: NpmPackage = await loadJson(NpmPackage, "./package.json") ?? throwError("Missing JSON package metadata");
@@ -27,7 +38,7 @@ program
   .command('recolor-css [inputPath] [outputPath]')
   .description("Recolor CSS file")
   .addOption(optionColorFormula)
-  .action(async (inputPath: string, outputPath: string, o: Record<string, any>) => {
+  .action(async (inputPath: string, outputPath: string, o: Partial<RecolorCssCommandOptions>) => {
     const a = Object.assign(o, { inputPath, outputPath });
     if (!a.inputPath?.length) {
       await enquirer.prompt([
@@ -40,15 +51,16 @@ program
         }),
       ]);
     }
-    // HACK: any
-    await recolorCss(a.inputPath, a.outputPath, { ...a } as any);
+    await recolorCss(a.inputPath, a.outputPath, {
+      recolor: { colorFormula: a.colorFormula ?? ColorFormula.Dark },
+    });
   });
 
 program
   .command('recolor-site-css [siteName]')
   .description("Recolor all CSS files of a site defined in sites.json")
   .addOption(optionColorFormula)
-  .action(async (siteName: string, o: Record<string, any>) => {
+  .action(async (siteName: string, o: Partial<RecolorSiteCssCommandOptions>) => {
     const a = Object.assign(o, { siteName });
     if (!a.siteName?.length) {
       await enquirer.prompt([
@@ -60,12 +72,11 @@ program
     const site = Object.assign(
       { options: {}, html: [], css: [] },
       sites.sites.find(s => s.name == a.siteName) ?? throwError(`Site '${a.siteName}' not found`));
-    site.options.colorFormula ??= o.colorFormula as ColorFormula;
-    site.options.palette ??= o.palette;
-    site.options.combine ??= o.combine;
-    if (!site.options.colorFormula) {
+    site.options.recolor ??= {};
+    site.options.recolor.colorFormula ??= o.colorFormula as ColorFormula;
+    if (!site.options.recolor.colorFormula) {
       await enquirer.prompt([
-        questionSelect(site.options, optionColorFormula.attributeName(), optionColorFormula.description, {
+        questionSelect(site.options.recolor, optionColorFormula.attributeName(), optionColorFormula.description, {
           choices: optionColorFormula.argChoices,
         })
       ]);
@@ -88,7 +99,7 @@ try {
     process.exit(1);
   }
   await program.parseAsync(process.argv);
-} catch (ex: any) {
+} catch (ex: unknown) {
   console.error(`Error running command "${process.argv[2] ?? '<?>'}": ${errorDetail(ex)}`);
   process.exit(1);
 }

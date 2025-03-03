@@ -20,7 +20,7 @@ type MergeSelectorsModeInternal = MergeSelectorsMode | 'unsafe-linear';
 type FormatTrieField = 'nextTries' | 'nextVariants';
 type FormatTrieFields = FormatTrieField[];
 
-interface MergeSelectorsPluginOptions {
+export interface MergeSelectorsPluginOptions {
   pseudo: MergeSelectorsPseudo;
   mergeMode: MergeSelectorsMode;
 }
@@ -150,7 +150,7 @@ function formatTrie(trie: TrieNode | TrieVariant, fields: FormatTrieFields = [ '
   return JSON5.stringify(trie, {
     quote: null,
     space: "  ",
-    replacer: function(key: string, value: unknown): any | undefined {
+    replacer: function(key: string, value: unknown): unknown | undefined {
       if (value == null || isArray(value) && value.length == 0 || value instanceof Set && value.size == 0)
         return undefined;
       if (isSelNode(value))
@@ -173,7 +173,7 @@ function formatTrie(trie: TrieNode | TrieVariant, fields: FormatTrieFields = [ '
 
 function buildTrie(node: SelNode, trie: TrieNode, mergeMode: MergeSelectorsModeInternal): void {
   const isLinear = mergeMode === 'unsafe-linear';
-  const areNodesEqual = isLinear ? areSelNodesEqual : areSelNodeHeadersEqual;
+  const areSelNodesEqualFn = isLinear ? areSelNodesEqual : areSelNodeHeadersEqual;
 
   const buildTrieChildren = (node: SelContainer, trie: TrieNode) =>
     node.each(child => buildTrie(child, trie, mergeMode));
@@ -198,7 +198,7 @@ function buildTrie(node: SelNode, trie: TrieNode, mergeMode: MergeSelectorsModeI
         prevVariant?.nextTries.add(compatTrie);
         currentTrie = compatTrie;
 
-        let equalVariant = compatTrie.variants.find(v => areSelNodeHeadersEqual(v.node, part))
+        let equalVariant = compatTrie.variants.find(v => areSelNodesEqualFn(v.node, part))
         if (!equalVariant) {
           equalVariant = new TrieVariant(part, node);
           compatTrie.variants.push(equalVariant);

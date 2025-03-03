@@ -5,16 +5,23 @@
     },
     {
       name: "test",
-      options: { colorFormula: 'dark-full', palette: true, combine: true },
+      options: {
+        recolor: { colorFormula: 'dark-full' },
+        combine: true,
+      },
       css: [
         //{ name: "test.css", text: ".\\[background-image\\:linear-gradient\\(110deg\\2c \\#ececec_8\\%\\2c \\#f5f5f5_18\\%\\2c \\#ececec_33\\%\\)\\] { background-image: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); }" },
         //{ name: "test.css", url: "https://freepik.cdnpk.net/css/freepik.c129cfa853043d169d83.css" },
         { name: "test.css", path: "./test.css" },
+        //{ name: "test.css", path: "./test.freepik.css" },
       ],
     },
     {
       name: "archive.org",
-      options: { colorFormula: 'dark-full', palette: true, combine: true },
+      options: {
+        recolor: { colorFormula: 'dark-full' },
+        combine: true,
+      },
       html: [
         { name: "index.html", url: "https://archive.org/" },
         { name: "msdos.html", url: "https://archive.org/details/softwarelibrary_msdos" },
@@ -22,7 +29,10 @@
     },
     {
       name: "boxofficemojo.com",
-      options: { colorFormula: 'dark-full', palette: true, combine: true },
+      options: {
+        recolor: { colorFormula: 'dark-full' },
+        combine: true,
+      },
       html: [
         { name: "index.html", url: "https://www.boxofficemojo.com/" },
         { name: "intl.html", url: "https://www.boxofficemojo.com/intl/" },
@@ -30,7 +40,10 @@
     },
     {
       name: "freepik.com",
-      options: { colorFormula: 'dark-full', palette: true, combine: true },
+      options: {
+        recolor: { colorFormula: 'dark-full' },
+        combine: true,
+      },
       html: [
         { name: "lynx-icon.html", url: "https://www.freepik.com/search?query=lynx&type=icon&ai=excluded" },
         { name: "lynx-illustration.html", url: "https://www.freepik.com/search?query=lynx&type=illustration&ai=excluded" },
@@ -64,7 +77,10 @@
     },
     {
       name: "meta.stackexchange.com",
-      options: { colorFormula: 'dark-full', palette: false, combine: true },
+      options: {
+        recolor: { colorFormula: 'dark-full', palette: false },
+        combine: true,
+      },
       css: [
         { name: "primary.css", url: "https://meta.stackexchange.com/Content/Sites/stackexchangemeta/primary.css" },
         { name: "stacks.css", url: "https://meta.stackexchange.com/Content/Shared/stacks.css" },
@@ -73,8 +89,10 @@
     },
     {
       name: "rule34.paheal.net",
-      options: { colorFormula: 'dark-full', palette: true, combine: true },
-      // TODO: Get dynamic CSS URL from HTML
+      options: {
+        recolor: { colorFormula: 'dark-full' },
+        combine: true,
+      },
       // TODO: Find all elements styled in HTML: [...document.querySelectorAll('[style]')].map(e => e.getAttribute('style'))
       html: [
         //{ name: "index.html", url: "https://rule34.paheal.net/" },
@@ -86,7 +104,10 @@
     },
     {
       name: "weather.com",
-      options: { colorFormula: 'dark-full', palette: true, combine: true },
+      options: {
+        recolor: { colorFormula: 'dark-full' },
+        combine: true,
+      },
       html: [
         { name: "uk.html", url: "https://weather.com/en-GB/weather/today/l/UKXX0085:1:UK" },
         { name: "uk-hourly.html", url: "https://weather.com/en-GB/weather/hourbyhour/l/UKXX0085:1:UK" },

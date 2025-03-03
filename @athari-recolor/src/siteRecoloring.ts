@@ -7,15 +7,14 @@ import cssNanoPresetDefault from 'cssnano-preset-default';
 import autoPrefixerPlugin from 'autoprefixer';
 import mergeSelectorsPlugin from './mergeSelectorsPlugin.ts';
 import derandomSelectorPlugin from './derandomSelectorsPlugin.ts';
-import recolorPlugin from './recolorPlugin.js';
-import { prettifyCss } from './codeFormatting.js';
-import type { Site, SiteCss } from './siteDownloading.js';
-import type { PostCssResult } from './domUtils.js';
-import { assertHasKeys, downloadText, getSiteDir, readTextFile, throwError } from './utils.js';
+import recolorPlugin from './recolorPlugin.ts';
+import { prettifyCss } from './codeFormatting.ts';
+import type { Site, SiteCss, SiteOptions } from './siteDownloading.ts';
+import type { PostCssResult } from './domUtils.ts';
+import { assertHasKeys, downloadText, getSiteDir, readTextFile, throwError } from './utils.ts';
 
-interface RecolorOptions {
+interface RecolorOptions extends SiteOptions {
   header: string;
-  colorFormula: string;
   combine: boolean;
 }
 
@@ -26,7 +25,7 @@ async function runPostCss(inputPath: string, css: string, plugins: postCss.Accep
   return result;
 }
 
-export async function recolorCss(inputPath: string, outputPath: string, opts: RecolorOptions): Promise<void> {
+export async function recolorCss(inputPath: string, outputPath: string, opts: Partial<RecolorOptions> = {}): Promise<void> {
   const inputCss = await readTextFile(inputPath) ?? throwError(`File '${inputPath}' not found`);
   let result = await runPostCss(inputPath, inputCss, [
     autoPrefixerPlugin({ add: false }),
@@ -39,12 +38,10 @@ export async function recolorCss(inputPath: string, outputPath: string, opts: Re
     }),
   ]);
 
-  // TODO: Split plugin options
   result = await runPostCss(inputPath, result.css, [
-    // HACK: any
-    mergeSelectorsPlugin(opts as any),
-    derandomSelectorPlugin(opts as any),
-    recolorPlugin(opts as any),
+    mergeSelectorsPlugin(opts?.mergeSelectors),
+    derandomSelectorPlugin(opts?.derandomSelectors),
+    recolorPlugin(opts?.recolor),
   ]);
 
   const outputCssPretty = await prettifyCss(outputPath, result.css);
@@ -92,7 +89,7 @@ async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: str
   const outputPath = css.path.replace(/\.css$/i, ".out.css");
   const headerLines = [
     "generated",
-    `formula: ${site.options.colorFormula ?? 'dark'}`,
+    `formula: ${site.options.recolor?.colorFormula ?? 'dark'}`,
     `site: ${site.name}`,
     ...extraHeaderLines,
   ].map(s => ` * ${s}\n`).join("");

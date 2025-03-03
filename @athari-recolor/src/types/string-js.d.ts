@@ -3,10 +3,10 @@ declare module 'string' {
   }
 
   const S: {
-    (o: any): StringJS;
-    VERSION: string;
-    TMPL_OPEN: string;
-    TMPL_CLOSE: string;
+    //(o: unknown): StringJS;
+    //VERSION: string;
+    //TMPL_OPEN: string;
+    //TMPL_CLOSE: string;
     extendPrototype(): void;
   };
 
