@@ -5,6 +5,7 @@ import cssSafeParser from 'postcss-safe-parser';
 import cssNanoPlugin from 'cssnano';
 import cssNanoPresetDefault from 'cssnano-preset-default';
 import autoPrefixerPlugin from 'autoprefixer';
+import removerPlugin from './removerPlugin.ts';
 import mergeSelectorsPlugin from './mergeSelectorsPlugin.ts';
 import derandomSelectorPlugin from './derandomSelectorsPlugin.ts';
 import recolorPlugin from './recolorPlugin.ts';
@@ -29,6 +30,7 @@ export async function recolorCss(inputPath: string, outputPath: string, opts: Pa
   const inputCss = await readTextFile(inputPath) ?? throwError(`File '${inputPath}' not found`);
   let result = await runPostCss(inputPath, inputCss, [
     autoPrefixerPlugin({ add: false }),
+    removerPlugin(opts?.remove),
     cssNanoPlugin({
       preset: [
         cssNanoPresetDefault({

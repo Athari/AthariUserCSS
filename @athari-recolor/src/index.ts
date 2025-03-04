@@ -4,7 +4,7 @@ import enquirer from 'enquirer';
 import { Command, Option } from 'commander';
 import { SitesConfig, downloadSiteHtml } from './siteDownloading.ts';
 import { recolorCss, recolorSiteCss } from './siteRecoloring.ts';
-import { ColorFormula, errorDetail, loadJson, questionInput, questionSelect, throwError } from './utils.ts';
+import { ColorFormula, errorDetail, loadJson, questionInput, questionSelect, saveJson, throwError } from './utils.ts';
 
 class NpmPackage {
   version: string = "";
@@ -82,6 +82,7 @@ program
     console.log("Site config: ", a.siteName, site);
     await downloadSiteHtml(site);
     await recolorSiteCss(site);
+    await saveJson(site, `${site.dir}/site.json`);
   });
 
 program

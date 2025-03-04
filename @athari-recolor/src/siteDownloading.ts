@@ -6,6 +6,7 @@ import { WritableKeys } from 'utility-types';
 import type { MergeSelectorsPluginOptions } from './mergeSelectorsPlugin.ts';
 import type { DerandomSelectorsPluginOptions } from './derandomSelectorsPlugin.ts';
 import type { RecolorPluginOptions } from './recolorPlugin.ts';
+import type { RemoverPluginOptions } from './removerPlugin.ts';
 import { prettifyHtml } from './codeFormatting.ts';
 import {
   HtmlDocument,
@@ -19,6 +20,7 @@ export class SiteOptions {
   recolor?: Partial<RecolorPluginOptions> | undefined;
   derandomSelectors?: Partial<DerandomSelectorsPluginOptions> | undefined;
   mergeSelectors?: Partial<MergeSelectorsPluginOptions> | undefined;
+  remove?: Partial<RemoverPluginOptions> | undefined;
   combine: boolean = true;
   refs: boolean = false;
 }

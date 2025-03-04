@@ -61,6 +61,11 @@
             },
           ],
         },
+        remove: {
+          selector: {
+            class: [ { name: " ^ _ [\\w\\d]{6,9} $" } ],
+          },
+        },
         combine: true,
         refs: false,
       },
@@ -76,15 +81,9 @@
         //{ name: "content-3d.html", url: "https://www.freepik.com/3d-models" }, // garbage css
         { name: "content-collection.html", url: "https://www.freepik.com/collections" },
         //{ name: "content-fonts.html", url: "https://www.freepik.com/fonts/comic?type=color-font" }, // garbage css
-        { name: "content-tunes.html", url: "https://tunes.freepik.com/" },
         { name: "tool-ai-background.html", url: "https://www.freepik.com/ai/background-remover" },
         { name: "tool-ai-icon.html", url: "https://www.freepik.com/ai/icon-generator/tool" },
-        { name: "tool-ai-image.html", url: "https://www.freepik.com/pikaso/ai-image-generator" },
-        { name: "tool-ai-video.html", url: "https://www.freepik.com/pikaso/ai-video-generator" },
-        { name: "tool-ai-voice.html", url: "https://tunes.freepik.com/ai-voice-generator" },
-        { name: "tool-designer.html", url: "https://www.freepik.com/designer/edit?template=new-artboard" },
         { name: "tool-mockup.html", url: "https://www.freepik.com/mockup-editor/search" },
-        { name: "tool-upscale.html", url: "https://www.freepik.com/pikaso/upscaler" },
         { name: "me.html", url: "https://www.freepik.com/user/me" },
         { name: "projects.html", url: "https://www.freepik.com/user/projects" },
         { name: "downloads.html", url: "https://www.freepik.com/user/downloads" },
@@ -92,7 +91,6 @@
         { name: "following.html", url: "https://www.freepik.com/user/following" },
         { name: "collections.html", url: "https://www.freepik.com/user/collections" },
         //{ name: "devices.html", url: "https://www.freepik.com/user/device-manager" }, // garbage css
-        //{ name: "api.html", url: "https://www.freepik.com/api" }, // unstylable css
       ],
     },
     {

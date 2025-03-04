@@ -111,6 +111,7 @@ export default declarePostCssPlugin<DerandomSelectorsPluginOptions>('derandom-se
 }, (opts) => ({
   OnceExit(css: CssRoot) {
     // TODO: Support declarative derandom replacements
+    // TODO: Replace this shit with cssSelectorParser
     //console.log(regex('i')`^${identToken}$`);
     css.walkRules((rule: CssRule) => {
       let didDerandom = false;

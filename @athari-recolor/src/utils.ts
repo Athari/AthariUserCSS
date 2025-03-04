@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import { AssertionError } from 'node:assert';
 import { regex, pattern as re } from 'regex';
 import JSON5 from 'json5';
-import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
 import enquirer from 'enquirer';
 import makeFetchCookie from 'fetch-cookie';
 import { CookieJar, MemoryCookieStore } from 'tough-cookie';
@@ -45,6 +45,14 @@ export function assertHasKeys<T, K extends keyof T>(o: T, ...keys: K[]): asserts
 
 export function objectEntries<T>(o: Partial<T>): ObjectEntries<T> {
   return Object.entries(o) as ObjectEntries<T>;
+}
+
+export function objectKeys<T>(o: Partial<T>): (keyof T)[] {
+  return Object.keys(o) as (keyof T)[];
+}
+
+export function objectValues<T>(o: Partial<T>): T[keyof T][] {
+  return Object.values(o) as T[keyof T][];
 }
 
 export function isSome<TGuard extends Guard[]>(...guards: TGuard): Guard<GuardReturnType<TGuard[number]>> {
@@ -121,6 +129,19 @@ export async function readTextFile(path: string): Promise<string | null> {
   }
 }
 
+type WritableFileData = Parameters<typeof fs.writeFile>[1];
+
+export async function writeTextFile(path: string, data: WritableFileData): Promise<boolean> {
+  try {
+    await fs.writeFile(path, data, 'utf-8');
+    return true;
+  } catch (ex: unknown) {
+    console.log(`Failed to write file "${path}"`);
+    console.log(errorDetail(ex));
+    return false;
+  }
+}
+
 export async function getSiteDir(siteName: string): Promise<string> {
   const siteDir = `./sites/${siteName}`;
   await fs.mkdir(siteDir, { recursive: true });
@@ -175,6 +196,11 @@ export async function loadJson<T>(ctr: ClassConstructor<T>, path: string): Promi
   return plainToInstance<T, object>(ctr, pojo) as T;
 }
 
+export async function saveJson<T>(instance: T, path: string): Promise<boolean> {
+  const pojo = instanceToPlain<T>(instance);
+  return await writeTextFile(path, JSON5.stringify(pojo, { space: "  " }));
+}
+
 const netscapeCookies = new NetscapeCookieStore('./cookies.txt', { alwaysWrite: false });
 const memoryCookies = new MemoryCookieStore();
 netscapeCookies.export(memoryCookies);
@@ -183,10 +209,20 @@ const fetchCookie = makeFetchCookie(fetch, new CookieJar(memoryCookies));
 export async function downloadText(url: string, init: RequestInit = {}): Promise<string | null> {
   const response = await withTimeout(fetchCookie(url, Object.assign(init, {
     headers: {
-      'accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      'accept': "*/*",
       // TODO: Accept gzip encoding
       //'accept-encoding': "gzip, deflate, br, zstd",
       'accept-language': "en-US,en",
+      'cache-control': 'no-cache',
+      'dnt': '1',
+      'pragma': 'no-cache',
+      'referer': url,
+      'sec-ch-ua': '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
+      'sec-ch-ua-mobile': "?0",
+      'sec-ch-ua-platform': '"Windows"',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-origin',
       'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
     },
   })), downloadTimeout);
