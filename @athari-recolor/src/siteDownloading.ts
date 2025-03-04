@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import { basename } from 'node:path';
 import vm from 'node:vm';
 import { Exclude, Type } from 'class-transformer';
+import { WritableKeys } from 'utility-types';
 import type { MergeSelectorsPluginOptions } from './mergeSelectorsPlugin.ts';
 import type { DerandomSelectorsPluginOptions } from './derandomSelectorsPlugin.ts';
 import type { RecolorPluginOptions } from './recolorPlugin.ts';
@@ -11,7 +12,7 @@ import {
   parseHtmlDocument, htmlQuerySelectorAll, htmlQuerySelector, getHtmlAllInnerText,
 } from './domUtils.ts';
 import {
-  assertHasKeys, downloadText, getSiteDir, isString, readTextFile,
+  assertHasKeys, downloadText, getSiteDir, isArray, isString, readTextFile,
 } from './utils.ts';
 
 export class SiteOptions {
@@ -19,6 +20,7 @@ export class SiteOptions {
   derandomSelectors?: Partial<DerandomSelectorsPluginOptions> | undefined;
   mergeSelectors?: Partial<MergeSelectorsPluginOptions> | undefined;
   combine: boolean = true;
+  refs: boolean = false;
 }
 
 export class SiteHtml {
@@ -26,6 +28,22 @@ export class SiteHtml {
   url?: string;
   path?: string;
   text?: string;
+
+  readonly refs: Set<string> = new Set();
+
+  constructor(opts?: Pick<SiteHtml, WritableKeys<SiteHtml>>, refs?: string[] | string) {
+    Object.assign(this, opts);
+    if (refs)
+      for (const ref of isArray(refs) ? refs : [ refs ])
+        this.refs.add(ref);
+  }
+
+  get asRef(): string {
+    return `html (${[
+      `name: ${this.name}`,
+      this.url ? `url: ${this.url}` : null,
+    ].filter(s => !!s).join(", ")})`;
+  }
 }
 
 export class SiteCss {
@@ -33,6 +51,22 @@ export class SiteCss {
   url?: string;
   path?: string;
   text?: string;
+
+  readonly refs: Set<string> = new Set();
+
+  constructor(opts?: Pick<SiteCss, WritableKeys<SiteCss>>, refs?: string[] | string) {
+    Object.assign(this, opts);
+    if (refs)
+      for (const ref of isArray(refs) ? refs : [ refs ])
+        this.refs.add(ref);
+  }
+
+  get asRef(): string {
+    return `css (${[
+      `name: ${this.name}`,
+      this.url ? `url: ${this.url}` : null,
+    ].filter(s => !!s).join(", ")})`;
+  }
 }
 
 export class Site {
@@ -49,20 +83,27 @@ export class Site {
 
   @Exclude()
   dir: string = "";
+
+  addCss(css: SiteCss): boolean {
+    this.css ??= [];
+  
+    if (css.url) {
+      const existingCss = this.css.find(c => c.url === css.url);
+      if (existingCss) {
+        for (const ref of css.refs)
+          existingCss.refs.add(ref);
+        return false;
+      }
+    }
+  
+    this.css.push(css);
+    return true;
+  }
 }
 
 export class SitesConfig {
   @Type(() => Site)
   sites: Site[] = [];
-}
-
-function addSiteCss(site: Site, css: SiteCss): boolean {
-  site.css ??= [];
-  if (css.url && site.css.some(c => c.url === css.url))
-    return false;
-
-  site.css.push(css);
-  return true;
 }
 
 async function downloadOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
@@ -105,7 +146,7 @@ async function parseLinkedCss(site: Site, doc: HtmlDocument, html: SiteHtml): Pr
     cssName = cssName.replace(/[^\w\d\._-]/ig, "");
     if (!cssName.match(/\.css$/i))
       cssName += ".css";
-    if (addSiteCss(site, { name: cssName, url: cssUrl }))
+    if (site.addCss(new SiteCss({ name: cssName, url: cssUrl }, `[link] ${html.asRef}`)))
       console.log(`Found CSS link '${cssName}' ${cssUrl}`);
   }
 }
@@ -117,7 +158,7 @@ async function parseEmbeddedCss(site: Site, doc: HtmlDocument, html: SiteHtml): 
     const cssName = html.name.replace(/\.html$/i, `.embed${iEmbedStyle}.css`);
     const cssPath = `${site.dir}/${cssName}`;
     await fs.writeFile(cssPath, cssText);
-    if (addSiteCss(site, { name: cssName, path: cssPath, text: cssText }))
+    if (site.addCss(new SiteCss({ name: cssName, path: cssPath, text: cssText }, `[style] ${html.asRef}`)))
       console.log(`Found embedded CSS '${cssName}'`);
     iEmbedStyle++;
   }
@@ -153,23 +194,25 @@ async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: Sit
       .replace(/[^a-z0-9\[\]\/#_+-]/ig, '').replace(/\//g, '--');
   }
 
-  console.log(manifestCtx);
+  //console.log("manifest:", manifest);
   const csss = Object.entries(manifest)
     .selectMany(([ route, chunkUrls ]) => route.startsWith("/")
-      ? chunkUrls
+      ? [...chunkUrls]
         .where(u => /\.css$/i.test(u))
         .select((url, index) => ({
           name: `${nextJSRouteToPath(route)}-${index}.css`,
           url: new URL(`../../${url}`, manifestUrl).toString(),
+          route,
         }))
       : [])
-    .groupByWithSel(c => c.url, c => c.name)
+    .groupBy(c => c.url)
     .select(g => ({
       url: g.key,
-      name: g.orderBy(n => n.length, (a, b) => a - b).first(),
+      name: g.select(c => c.name).orderBy(n => n.length, (a, b) => a - b).first(),
+      routes: g.select(c => c.route).toArray()
     }));
   for (const css of csss)
-    if (addSiteCss(site, css))
+    if (site.addCss(new SiteCss(css, css.routes.map(r => `[nextjs] route (path: ${r}) ${html.asRef}`))))
       console.log(`Found Next.js CSS chunk '${css.name}' ${css.url}`);
 }
 
@@ -203,7 +246,7 @@ async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: Si
   if (!webpack)
     return;
 
-  console.log("webpack", webpack);
+  //console.log("webpack", webpack);
   const urlPrefix = Object.values(webpack).find(v => isString(v) && v.startsWith("https://")) as string;
   let emptyUrlCount = 0;
   for (let iChunk = 0; iChunk < 1_000_000; iChunk++) {
@@ -216,7 +259,7 @@ async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: Si
     }
     emptyUrlCount = 0;
     const cssName = basename(cssUrl);
-    if (addSiteCss(site, { name: cssName, url: cssUrl }))
+    if (site.addCss(new SiteCss({ name: cssName, url: cssUrl }, `[webpack] chunk (#${iChunk}) ${html.asRef}`)))
       console.log(`Found Next.js CSS chunk #${iChunk} '${cssName}' ${cssUrl}`);
   }
 }

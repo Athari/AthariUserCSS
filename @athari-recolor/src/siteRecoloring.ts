@@ -9,7 +9,7 @@ import mergeSelectorsPlugin from './mergeSelectorsPlugin.ts';
 import derandomSelectorPlugin from './derandomSelectorsPlugin.ts';
 import recolorPlugin from './recolorPlugin.ts';
 import { prettifyCss } from './codeFormatting.ts';
-import type { Site, SiteCss, SiteOptions } from './siteDownloading.ts';
+import { Site, SiteCss, SiteOptions } from './siteDownloading.ts';
 import type { PostCssResult } from './domUtils.ts';
 import { assertHasKeys, downloadText, getSiteDir, readTextFile, throwError } from './utils.ts';
 
@@ -99,11 +99,12 @@ async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: str
   });
 }
 
-function getCssHeader({ name, path, url }: SiteCss): string[] {
+function getCssHeader({ name, path, url, refs }: SiteCss, opts: SiteOptions): string[] {
   return [
     `name: ${name}`,
-    !url && path ? `path: ${basename(path)}` : null,
+    //!url && path ? `path: ${basename(path)}` : null, // == name
     url ? `url: ${url}` : null,
+    ...opts.refs ? [...refs.values()].map(r => `ref: ${r}`) : [],
   ].filter(s => s !== null);
 }
 
@@ -120,12 +121,12 @@ export async function recolorSiteCss(site: Site): Promise<void> {
   if (options.combine) {
     const combinedPath = `${site.dir}/_.css`;
     const combinedText = site.css.map(c => c.text).join("\n");
-    const css: SiteCss = { name: 'combined', path: combinedPath, text: combinedText };
+    const css = new SiteCss({ name: 'combined', path: combinedPath, text: combinedText }, 'combined');
     await fs.writeFile(combinedPath, combinedText);
     console.log(`Combined prettier CSS written to ${combinedPath}`);
-    await recolorOneSiteCss(site, css, site.css.flatMap(getCssHeader));
+    await recolorOneSiteCss(site, css, site.css.flatMap(c => getCssHeader(c, site.options)));
   } else {
     for (const css of site.css)
-      await recolorOneSiteCss(site, css, getCssHeader(css));
+      await recolorOneSiteCss(site, css, getCssHeader(css, site.options));
   }
 }
