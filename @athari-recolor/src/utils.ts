@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { AssertionError } from 'node:assert';
-import { pattern as regExpPattern } from 'regex';
+import { regex, pattern as re } from 'regex';
 import JSON5 from 'json5';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import enquirer from 'enquirer';
@@ -18,11 +18,7 @@ export type Guard<T = unknown> = (x: unknown) => x is T;
 
 export type GuardReturnType<T extends Guard> = T extends Guard<infer U> ? U : never;
 
-export function isSome<TGuard extends Guard[]>(...guards: TGuard): (x: unknown) => x is GuardReturnType<TGuard[number]> {
-  return (x: unknown): x is GuardReturnType<TGuard[number]> => guards.some(g => g(x));
-}
-
-export type RegExpPattern = ReturnType<typeof regExpPattern>;
+export type RegExpPattern = ReturnType<typeof re>;
 
 type ExtractNoArraysNoFunctions<T> = T extends (infer U)[] ? ExtractNoArraysNoFunctions<U> : T extends (...args: any[]) => any ? never : T;
 export type EnquirerPrompt = ExtractNoArraysNoFunctions<Parameters<enquirer['prompt']>[0]>;
@@ -45,6 +41,14 @@ export function assertHasKeys<T, K extends keyof T>(o: T, ...keys: K[]): asserts
       throw new AssertionError({
         message: `Property '${String(key)}' of '${String(o?.constructor?.name ?? typeof o)}' is null or undefined`,
       });
+}
+
+export function objectEntries<T>(o: Partial<T>): ObjectEntries<T> {
+  return Object.entries(o) as ObjectEntries<T>;
+}
+
+export function isSome<TGuard extends Guard[]>(...guards: TGuard): Guard<GuardReturnType<TGuard[number]>> {
+  return (x: unknown): x is GuardReturnType<TGuard[number]> => guards.some(g => g(x));
 }
 
 export function isBoolean(v: unknown): v is boolean {
@@ -81,6 +85,10 @@ export function isSymbol(v: unknown): v is symbol {
 
 export function isUndefined(v: unknown): v is undefined {
   return v === undefined;
+}
+
+export function regexp(pattern: string, flags?: string): RegExp {
+  return regex(flags)`${re(pattern)}`;
 }
 
 export function errorDetail(ex: Error | unknown): string {

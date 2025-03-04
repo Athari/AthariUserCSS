@@ -19,13 +19,20 @@ import {
   tokenizeCss, parseCssCompStr, stringifyCssComp, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
   declarePostCssPlugin,
 } from './domUtils.ts';
-import { ColorFormula } from './utils.ts';
+import { ColorFormula, regexp } from './utils.ts';
+
+interface RecolorVarTransform {
+  find: string;
+  replace: string;
+  reFind?: RegExp;
+}
 
 export interface RecolorPluginOptions {
   colorFormula: ColorFormula;
+  colorVarPrefix: string;
   palette: boolean;
   paletteVarPrefix: string;
-  colorVarPrefix: string;
+  paletteVarTransforms: RecolorVarTransform[];
 }
 
 type CompColor = CompFunction | CompToken;
@@ -123,6 +130,19 @@ function removeEmptyNodes(node: CssContainer): void {
   });
 }
 
+function applyVarTransforms(name: string, tfs: RecolorVarTransform[]): string {
+  name = name
+    .replace(/\./ig, "_").replace(/[^\w\d-]/ig, "-").replace(/-+/g, "-").replace(/^-?(.*?)-?$/, "$1")
+    .toLowerCase();
+  for (let i = 0; i < tfs.length; i++) {
+    const nameTf = tfs.reduce((r, t) => r.replace(t.reFind!, t.replace), name);
+    if (nameTf == name)
+      break;
+    name = nameTf;
+  }
+  return name;
+}
+
 function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor, opts: RecolorPluginOptions): PaletteColor {
   const [ colorRgbStr, colorOkLchStr ] = [ serializeRgb(colorData), serializeDisplayP3(colorData) ];
   const colorUniqueKey = `${colorRgbStr}/${colorOkLchStr}`;
@@ -134,9 +154,7 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
 
   let paletteColor = palette.uniqueColors[colorUniqueKey];
   if (paletteColor === undefined) {
-    const paletteVarName = colorIdent ?? roundStrNumbers(strNode)
-      .replace(/\./ig, "_").replace(/[^\w\d-]/ig, "-").replace(/-+/g, "-").replace(/^-?(.*?)-?$/, "$1")
-      .toLowerCase();
+    const paletteVar = applyVarTransforms(colorIdent ?? roundStrNumbers(strNode), opts.paletteVarTransforms);
     paletteColor = {
       colorData,
       colorRgb: roundStrNumbers(stringifyCssComp(isColorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
@@ -144,7 +162,7 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
       colorStr: colorIdent ?? strNode,
       expr: "",
       count: 0,
-      name: `--${opts.paletteVarPrefix}${paletteVarName}`,
+      name: `--${opts.paletteVarPrefix}${paletteVar}`,
     };
     palette.colors.push(paletteColor);
     palette.uniqueColors[colorUniqueKey] = paletteColor;
@@ -250,20 +268,27 @@ export default declarePostCssPlugin<RecolorPluginOptions>('recolor', {
   colorVarPrefix: "",
   palette: true,
   paletteVarPrefix: "c-",
-}, (opts) => ({
-  OnceExit(css: CssRoot) {
-    const palette: Palette = {
-      colors: [],
-      uniqueColors: {}
-    };
-
-    css.walkAtRules(rule => recolorCssAtRule(rule));
-    css.walkDecls(decl => recolorCssDecl(decl, palette, opts));
-
-    css.cleanRaws();
-    removeEmptyNodes(css);
-
-    if (opts.palette)
-      css.prepend(buildPaletteRule(palette));
-  }
-}));
+  paletteVarTransforms: [
+    { find: '-var-', replace: '-' },
+  ],
+}, (opts) => {
+  for (const transform of opts.paletteVarTransforms)
+    transform.reFind = regexp(transform.find, 'gi');
+  return {
+    OnceExit(css: CssRoot) {
+      const palette: Palette = {
+        colors: [],
+        uniqueColors: {},
+      };
+  
+      css.walkAtRules(rule => recolorCssAtRule(rule));
+      css.walkDecls(decl => recolorCssDecl(decl, palette, opts));
+  
+      css.cleanRaws();
+      removeEmptyNodes(css);
+  
+      if (opts.palette)
+        css.prepend(buildPaletteRule(palette));
+    }
+  };
+});

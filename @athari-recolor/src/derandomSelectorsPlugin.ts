@@ -110,7 +110,6 @@ export default declarePostCssPlugin<DerandomSelectorsPluginOptions>('derandom-se
   id: [],
 }, (opts) => ({
   OnceExit(css: CssRoot) {
-    console.log(regex('i')` ${r.newLine}+ `);
     // TODO: Support declarative derandom replacements
     //console.log(regex('i')`^${identToken}$`);
     css.walkRules((rule: CssRule) => {

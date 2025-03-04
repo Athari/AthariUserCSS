@@ -226,7 +226,7 @@ import {
 } from 'utility-types';
 
 import {
-  ObjectEntries,
+  objectEntries,
   throwError,
 } from './utils.ts';
 
@@ -267,11 +267,8 @@ export function declarePostCssPlugin<TOptions>(
     (opts?: Partial<TOptions>): PostCssPlugin => ({
       postcssPlugin: name,
       prepare() {
-        let actualOptions: TOptions = { ...defaultOptions };
-        if (opts)
-          for (const [key, value] of Object.entries(opts) as ObjectEntries<TOptions>)
-            if (value !== undefined)
-              actualOptions[key] = value;
+        const actualOptions = objectEntries<TOptions>(opts ?? {})
+          .reduce((o, [k, v]) => (o[k] = v ?? o[k], o), { ...defaultOptions });
         return processors(actualOptions);
       },
     }),

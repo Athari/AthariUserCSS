@@ -12,8 +12,8 @@
       css: [
         //{ name: "test.css", text: ".\\[background-image\\:linear-gradient\\(110deg\\2c \\#ececec_8\\%\\2c \\#f5f5f5_18\\%\\2c \\#ececec_33\\%\\)\\] { background-image: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); }" },
         //{ name: "test.css", url: "https://freepik.cdnpk.net/css/freepik.c129cfa853043d169d83.css" },
-        { name: "test.css", path: "./test.css" },
-        //{ name: "test.css", path: "./test.freepik.css" },
+        //{ name: "test.css", path: "./test.css" },
+        { name: "test.css", path: "./test.freepik.css" },
       ],
     },
     {
@@ -41,8 +41,28 @@
     {
       name: "freepik.com",
       options: {
-        recolor: { colorFormula: 'dark-full' },
+        recolor: {
+          colorFormula: 'dark-full',
+          paletteVarTransforms: [
+            {
+              find: "                                     \n\
+                - var                                     \n\
+                ( - tw )?                                 \n\
+                - ( # stupid fucking Node.js              \n\
+                  (?<p1> t ) ext | (?<p2> b ) order |     \n\
+                  (?<p3> p ) lace (?<p4> h ) older |      \n\
+                  (?<p5> b ) ack (?<p6> d ) rop |         \n\
+                  (?<p7> \\w+ ) # bg | ring | divide      \n\
+                )                                         \n\
+                (                                         \n\
+                  - (?<opacity> o ) pacity                \n\
+                )?",
+              replace: "-$<p1>$<p2>$<p3>$<p4>$<p5>$<p6>$<p7>$<opacity>"
+            },
+          ],
+        },
         combine: true,
+        refs: false,
       },
       html: [
         { name: "lynx-icon.html", url: "https://www.freepik.com/search?query=lynx&type=icon&ai=excluded" },
@@ -53,9 +73,9 @@
         { name: "lynx-template.html", url: "https://www.freepik.com/search?query=lynx&type=template&ai=excluded" },
         { name: "lynx-vector.html", url: "https://www.freepik.com/search?query=lynx&type=vector&ai=excluded" },
         { name: "lynx-video.html", url: "https://www.freepik.com/search?query=lynx&type=video&ai=excluded" },
-        { name: "content-3d.html", url: "https://www.freepik.com/3d-models" },
+        //{ name: "content-3d.html", url: "https://www.freepik.com/3d-models" }, // garbage css
         { name: "content-collection.html", url: "https://www.freepik.com/collections" },
-        { name: "content-fonts.html", url: "https://www.freepik.com/fonts/comic?type=color-font" },
+        //{ name: "content-fonts.html", url: "https://www.freepik.com/fonts/comic?type=color-font" }, // garbage css
         { name: "content-tunes.html", url: "https://tunes.freepik.com/" },
         { name: "tool-ai-background.html", url: "https://www.freepik.com/ai/background-remover" },
         { name: "tool-ai-icon.html", url: "https://www.freepik.com/ai/icon-generator/tool" },
@@ -71,8 +91,8 @@
         { name: "bookmarks.html", url: "https://www.freepik.com/user/bookmarks" },
         { name: "following.html", url: "https://www.freepik.com/user/following" },
         { name: "collections.html", url: "https://www.freepik.com/user/collections" },
-        { name: "devices.html", url: "https://www.freepik.com/user/device-manager" },
-        { name: "api.html", url: "https://www.freepik.com/api" },
+        //{ name: "devices.html", url: "https://www.freepik.com/user/device-manager" }, // garbage css
+        //{ name: "api.html", url: "https://www.freepik.com/api" }, // unstylable css
       ],
     },
     {

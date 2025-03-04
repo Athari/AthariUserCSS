@@ -250,32 +250,32 @@ function buildMergedNode(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): Excl
 
 function buildMergedSelectors(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): SelSelector[] {
   // TODO: Implement safe selectors merging mode which respects nextNodes & nextVariants
+  const mergedSels = trieNode.tries.flatMap(trie => buildMergedSelectors(trie, pseudo));
   if (trieNode.variants.length == 0)
-    return trieNode.tries.flatMap(trie => buildMergedSelectors(trie, pseudo));
+    return mergedSels;
 
   const mergedNode = buildMergedNode(trieNode, pseudo);
   if (trieNode.tries.length == 0)
     return [ Sel.selector([ mergedNode ]) ];
 
-  const mergedSels = trieNode.tries.flatMap(trie => buildMergedSelectors(trie, pseudo));
   for (const mergedSel of mergedSels)
     mergedSel.prepend(cloneSelNode(mergedNode));
   return mergedSels;
 }
 
 function buildMergedSelectorsLinear(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): SelSelector[] {
-  const nextSelectors = trieNode.tries.flatMap(t => buildMergedSelectorsLinear(t, pseudo));
+  const mergedSels = trieNode.tries.flatMap(t => buildMergedSelectorsLinear(t, pseudo));
   if (trieNode.variants.length == 0) // root
-    return nextSelectors;
+    return mergedSels;
 
   const currentNode = trieNode.variants.single().node;
   if (isSelCombinator(currentNode))
-    return nextSelectors.map(sel => sel.prepend(cloneSelNode(currentNode)));
+    return mergedSels.map(sel => sel.prepend(cloneSelNode(currentNode)));
 
   if (trieNode.tries.length == 0)
     return [ Sel.selector([ currentNode ]) ];
 
-  return nextSelectors
+  return mergedSels
     .groupBy(sel => selNodeCompat[sel.first.type])
     .select(selsByCompat => Sel.selector([
       currentNode,

@@ -69,9 +69,7 @@ program
         }),
       ]);
     }
-    const site = Object.assign(
-      { options: {}, html: [], css: [] },
-      sites.sites.find(s => s.name == a.siteName) ?? throwError(`Site '${a.siteName}' not found`));
+    const site = sites.sites.find(s => s.name == a.siteName) ?? throwError(`Site '${a.siteName}' not found`);
     site.options.recolor ??= {};
     site.options.recolor.colorFormula ??= o.colorFormula as ColorFormula;
     if (!site.options.recolor.colorFormula) {
