@@ -18,6 +18,16 @@ export type Guard<T = unknown> = (x: unknown) => x is T;
 
 export type GuardReturnType<T extends Guard> = T extends Guard<infer U> ? U : never;
 
+export type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends ((x: infer I) => void) ? I : never;
+
+export type Assigned<T> = T extends undefined | null ? never : T;
+
+export type OneOrArray<T> = T | T[];
+
+export type ArrayElement<T> = T extends readonly (infer U)[] ? U : never;
+
+export type ArrayIfNeeded<T> = T extends readonly (infer U)[] ? U[] : never;
+
 export type RegExpPattern = ReturnType<typeof re>;
 
 type ExtractNoArraysNoFunctions<T> = T extends (infer U)[] ? ExtractNoArraysNoFunctions<U> : T extends (...args: any[]) => any ? never : T;
@@ -55,8 +65,28 @@ export function objectValues<T>(o: Partial<T>): T[keyof T][] {
   return Object.values(o) as T[keyof T][];
 }
 
+export function toArrayIfNeeded<T>(v: OneOrArray<T>): T[] {
+  return isArray(v) ? v : [ v ];
+}
+
+export function toAssignedArrayIfNeeded<T>(v: OneOrArray<T>): Assigned<T>[] {
+  return toArrayIfNeeded(v).filter(isAssigned);
+}
+
+export function valuesOf<T>() {
+  return <U extends T[]>(...values: readonly [...U]) => values;
+}
+
+export function isValueIn<K, U extends K>(value: K, values: readonly U[]): value is U {
+  return values.includes(value as U);
+}
+
 export function isSome<TGuard extends Guard[]>(...guards: TGuard): Guard<GuardReturnType<TGuard[number]>> {
   return (x: unknown): x is GuardReturnType<TGuard[number]> => guards.some(g => g(x));
+}
+
+export function isAssigned<T>(v: T): v is Assigned<T> {
+  return v !== undefined && v !== null;
 }
 
 export function isBoolean(v: unknown): v is boolean {

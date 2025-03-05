@@ -1,33 +1,33 @@
+import { assert } from 'node:console';
 import {
   CssRoot, CssRule,
-  SelNodeTypes, SelNode, SelRoot,
+  SelNodeTypes, SelNode, SelRoot, SelSelector,
   cssSelectorParser, declarePostCssPlugin,
 } from './domUtils.ts';
-import { isArray, objectEntries, objectValues, regexp } from './utils.ts';
-
-type OneOrArray<T> = T | T[];
-type ArrayValue<T> = T extends readonly (infer U)[] ? U : never;
-type ArrayIfNeeded<T> = ArrayValue<T>[];
-
-function toArrayIfNeeded<T>(o: OneOrArray<T>): Array<T> {
-  return o == null ? [] : isArray(o) ? o : [ o ];
-}
+import {
+  ArrayIfNeeded, OneOrArray,
+  isValueIn, objectEntries, objectValues, valuesOf, toAssignedArrayIfNeeded, regexp,
+} from './utils.ts';
 
 type SelNodeNames = keyof SelNodeTypes;
 
-interface SelNodeOptions { flags?: string; }
-interface SelNodeTester { test(node: SelNode): boolean; }
+const SelMatcherKeys = valuesOf<SelNodeNames>()('nesting', 'universal');
+const SelNameMatcherKey = valuesOf<SelNodeNames>()('class', 'combinator', 'id', 'pseudo', 'tag');
+const SelAttributeMatcherKeys = valuesOf<SelNodeNames>()('attribute');
 
-interface SelMatcher<TMatch> { type: SelNodeNames; }
+interface SelNodeOptions { flags?: string; }
+interface SelNodeTester { type: SelNodeNames; test(node: SelNode): boolean; }
+
+interface SelMatcher<TMatch> { }
 interface SelNameMatcher<TMatch> extends SelMatcher<TMatch> { name?: TMatch; }
 interface SelAttributeMatcher<TMatch> extends SelNameMatcher<TMatch> { value?: TMatch; operator?: TMatch; }
 
 type SelectorMatcher<TMatcher, TExtra, TKeys extends SelNodeNames> = Partial<Pick<Record<SelNodeNames, OneOrArray<TMatcher & TExtra>>, TKeys>>;
 
 type SelectorMatcherFull<TMatch, TExtra> =
-  SelectorMatcher<TExtra, SelMatcher<TMatch>, 'nesting' | 'universal'> &
-  SelectorMatcher<TExtra, SelNameMatcher<TMatch>, 'class' | 'combinator' | 'id' | 'pseudo' | 'tag'> &
-  SelectorMatcher<TExtra, SelAttributeMatcher<TMatch>, 'attribute'>;
+  SelectorMatcher<TExtra, SelMatcher<TMatch>, typeof SelMatcherKeys[number]> &
+  SelectorMatcher<TExtra, SelNameMatcher<TMatch>, typeof SelNameMatcherKey[number]> &
+  SelectorMatcher<TExtra, SelAttributeMatcher<TMatch>, typeof SelAttributeMatcherKeys[number]>;
 
 interface SelectorRemoverOptions extends SelectorMatcherFull<string | undefined, SelNodeOptions> { }
 interface SelectorRemoverRunner extends SelectorMatcherFull<RegExp | undefined, SelNodeTester> { }
@@ -37,7 +37,7 @@ export interface RemoverPluginOptions {
 }
 
 function regExpSafe(pattern?: string, flags?: string): RegExp | undefined {
-  return pattern != null ? regexp(pattern, flags) : undefined;
+  return pattern != null ? regexp(pattern, flags ?? 'i') : undefined;
 }
 
 function testRegExpSafe(re?: RegExp, str?: string | null): boolean {
@@ -48,69 +48,58 @@ function optionsToRunner(options: SelectorRemoverOptions): SelectorRemoverRunner
   const runner: SelectorRemoverRunner = {};
 
   for (const [ type, matcher ] of objectEntries(options)) {
-    const matchers = toArrayIfNeeded(matcher);
-    // type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends ((x: infer I) => void) ? I : never;
-    // (optionMatchers as UnionToIntersection<typeof optionMatchers[0]>[]).map(o => {
-    //   const q = objectEntries(o).flatMap(([k, v]) => {
-    //     switch (k) {
-    //       case 'flags':
-    //         return [];
-    //       case 'type':
-    //         return [[ k, v ]];
-    //       default:
-    //         return [[ k, v !== null ? regexp(v, o.flags) : null ]];
-    //     }
-    //   });
-    // });
-    switch (type) {
-      case 'class':
-      case 'id':
-      case 'tag':
-      case 'combinator':
-      case 'pseudo': {
-        runner[type] = (matchers as ArrayIfNeeded<SelectorRemoverOptions[typeof type]>)!
-          .map(({ flags, name }) => new class {
-            type = type;
-            name = regExpSafe(name, flags);
-            test(node: SelNode): boolean {
-              return node.type === type && testRegExpSafe(this.name, node.value);
-            }
-          });
-        break;
-      }
-      case 'attribute': {
-        runner[type] = (matchers as ArrayIfNeeded<SelectorRemoverOptions[typeof type]>)!
-          .map(({ flags, name, operator, value }) => new class {
-            type = type;
-            name = regExpSafe(name, flags);
-            operator = regExpSafe(operator, flags);
-            value = regExpSafe(value, flags);
-            test(node: SelNode): boolean {
-              return node.type === type &&
-                testRegExpSafe(this.name, node.attribute) &&
-                testRegExpSafe(this.operator, node.operator) &&
-                testRegExpSafe(this.value, node.value);
-            }
-          });
-        break;
-      }
-      case 'nesting':
-      case 'universal': {
-        runner[type] = (matchers as ArrayIfNeeded<SelectorRemoverOptions[typeof type]>)!
-          .map(() => new class {
-            type = type;
-            test(node: SelNode): boolean {
-              return node.type === type;
-            }
-          });
-        break;
-      }
-      default: {
-        throw new Error(`Unhandled key: ${type}`);
-      }
+    const matchers = toAssignedArrayIfNeeded(matcher);
+    if (isValueIn(type, SelMatcherKeys)) {
+      runner[type] = matchers
+        .map(() => new class {
+          type = type;
+          test(node: SelNode): boolean {
+            return node.type === type;
+          }
+        });
+    } else if (isValueIn(type, SelNameMatcherKey)) {
+      runner[type] = (matchers as ArrayIfNeeded<SelectorRemoverOptions[typeof type]>)
+        .map(({ flags, name }) => new class {
+          type = type;
+          name = regExpSafe(name, flags);
+          test(node: SelNode): boolean {
+            return node.type === type && testRegExpSafe(this.name, node.value);
+          }
+        });
+    } else if (isValueIn(type, SelAttributeMatcherKeys)) {
+      runner[type] = (matchers as ArrayIfNeeded<SelectorRemoverOptions[typeof type]>)
+        .map(({ flags, name, operator, value }) => new class {
+          type = type;
+          name = regExpSafe(name, flags);
+          operator = regExpSafe(operator, flags);
+          value = regExpSafe(value, flags);
+          test(node: SelNode): boolean {
+            return node.type === type &&
+              testRegExpSafe(this.name, node.attribute) &&
+              testRegExpSafe(this.operator, node.operator) &&
+              testRegExpSafe(this.value, node.value);
+          }
+        });
+    } else {
+      const exhaustiveType: never = type;
+      assert(false, `Unexpected selector node type: ${exhaustiveType}`);
     }
   }
   return runner;
+}
+
+function matchSelNodeTesters(sel: SelSelector, matchers: SelNodeTester[]): SelNodeNames | null {
+  let matchedType: SelNodeNames | null = null;
+  sel.walk((node: SelNode): boolean => {
+    for (const matcher of matchers) {
+      if (matcher.test(node)) {
+        matchedType = matcher.type;
+        return false;
+      }
+    }
+    return true;
+  });
+  return matchedType;
 }
 
 export default declarePostCssPlugin<RemoverPluginOptions>('remover', {
@@ -121,24 +110,15 @@ export default declarePostCssPlugin<RemoverPluginOptions>('remover', {
   return {
     OnceExit(css: CssRoot) {
 
+      const matchedTypesCount: Partial<Record<SelNodeNames, number>> = {};
       css.walkRules((rule: CssRule) => {
-        const matchers = objectValues(runner).flat(1);
-        //console.log("MATCHERS:", matchers);
         const root: SelRoot = cssSelectorParser().astSync(rule, { lossless: false });
+        const testers = objectValues(runner).flat(1);
 
         for (const sel of root.nodes.toArray()) {
-          let matchedType: SelNodeNames | null = null;
-          sel.walk((node: SelNode): boolean => {
-            for (const matcher of matchers) {
-              if (matcher.test(node)) {
-                matchedType = matcher.type;
-                return false;
-              }
-            }
-            return true;
-          });
+          const matchedType = matchSelNodeTesters(sel, testers);
           if (matchedType !== null) {
-            //console.log(`Matched ${matchedType} within selector ${sel.toString()}, removing`);
+            matchedTypesCount[matchedType] = (matchedTypesCount[matchedType] ?? 0) + 1;
             sel.remove();
           }
         }
@@ -148,6 +128,8 @@ export default declarePostCssPlugin<RemoverPluginOptions>('remover', {
         else
           rule.remove();
       });
+
+      console.log(`Removed ${objectValues(matchedTypesCount).sum()} selectors`, matchedTypesCount);
     }
   };
 });
