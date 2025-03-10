@@ -51,8 +51,10 @@ program
         }),
       ]);
     }
-    await recolorCss(a.inputPath, a.outputPath, {
+    await recolorCss(sites.default, a.inputPath, a.outputPath, {
       recolor: { colorFormula: a.colorFormula ?? ColorFormula.Dark },
+      header: "",
+      combine: false,
     });
   });
 

@@ -1,5 +1,6 @@
 import { regex } from 'regex';
 import { isTokenHash, isTokenIdent, isTokenDelim, isTokenOpenSquare } from '@csstools/css-tokenizer';
+import { DeepRequired } from 'utility-types';
 import {
   CssRoot, CssRule,
   CssToken, Comp, CssHashType,
@@ -7,6 +8,7 @@ import {
   tokenizeCss, parseCssCompStr, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
   declarePostCssPlugin,
 } from './domUtils.ts';
+import { OptionalArray } from './utils.ts';
 
 export interface DerandomTransform {
   find: string[];
@@ -14,9 +16,11 @@ export interface DerandomTransform {
 };
 
 export interface DerandomSelectorsPluginOptions {
-  className: DerandomTransform[];
-  id: DerandomTransform[];
+  className?: OptionalArray<DerandomTransform>;
+  id?: OptionalArray<DerandomTransform>;
 }
+
+type Options = DeepRequired<DerandomSelectorsPluginOptions>;
 
 // https://www.w3.org/TR/2021/CRD-css-syntax-3-20211224/#token-diagrams
 const r = new class {
@@ -108,7 +112,7 @@ export default declarePostCssPlugin<DerandomSelectorsPluginOptions>('derandom-se
     },
   ],
   id: [],
-}, (opts) => ({
+}, (opts: Options) => ({
   OnceExit(css: CssRoot) {
     // TODO: Support declarative derandom replacements
     // TODO: Replace this shit with cssSelectorParser

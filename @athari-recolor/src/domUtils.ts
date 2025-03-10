@@ -222,10 +222,12 @@ export type {
 } from '@csstools/css-tokenizer';
 
 import {
+  DeepRequired,
   NonUndefined,
 } from 'utility-types';
 
 import {
+  deepMerge,
   objectEntries,
   throwError,
 } from './utils.ts';
@@ -260,15 +262,14 @@ type PostCssProcessors = ReturnType<NonUndefined<PostCssPlugin['prepare']>>;
 
 export function declarePostCssPlugin<TOptions>(
   name: string,
-  defaultOptions: TOptions,
-  processors: (opts: TOptions) => PostCssProcessors,
-): PostCssPluginCreator<Partial<TOptions>> {
+  defaultOptions: DeepRequired<TOptions>,
+  processors: (opts: DeepRequired<TOptions>) => PostCssProcessors,
+): PostCssPluginCreator<TOptions> {
   return Object.assign(
-    (opts?: Partial<TOptions>): PostCssPlugin => ({
+    (opts?: TOptions): PostCssPlugin => ({
       postcssPlugin: name,
       prepare() {
-        const actualOptions = objectEntries<TOptions>(opts ?? {})
-          .reduce((o, [k, v]) => (o[k] = v ?? o[k], o), { ...defaultOptions });
+        const actualOptions = deepMerge(null, {}, defaultOptions, opts) as DeepRequired<TOptions>;
         return processors(actualOptions);
       },
     }),

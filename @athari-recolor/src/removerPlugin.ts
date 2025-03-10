@@ -1,12 +1,13 @@
 import { assert } from 'node:console';
+import { DeepRequired } from 'utility-types';
 import {
   CssRoot, CssRule,
   SelNodeTypes, SelNode, SelRoot, SelSelector,
   cssSelectorParser, declarePostCssPlugin,
 } from './domUtils.ts';
 import {
-  ArrayIfNeeded, OneOrArray,
-  isValueIn, objectEntries, objectValues, valuesOf, toAssignedArrayIfNeeded, regexp,
+  AssignedArrayIfNeeded, OneOrArray, OptionalObject,
+  isValueIn, isAssigned, objectEntries, objectValues, valuesOf, toAssignedArrayIfNeeded, regexp,
 } from './utils.ts';
 
 type SelNodeNames = keyof SelNodeTypes;
@@ -22,7 +23,13 @@ interface SelMatcher<TMatch> { }
 interface SelNameMatcher<TMatch> extends SelMatcher<TMatch> { name?: TMatch; }
 interface SelAttributeMatcher<TMatch> extends SelNameMatcher<TMatch> { value?: TMatch; operator?: TMatch; }
 
-type SelectorMatcher<TMatcher, TExtra, TKeys extends SelNodeNames> = Partial<Pick<Record<SelNodeNames, OneOrArray<TMatcher & TExtra>>, TKeys>>;
+type SelectorMatcher<TMatcher, TExtra, TKeys extends SelNodeNames> =
+  Partial<Pick<
+    Record<
+      SelNodeNames,
+      //OneOrArray<OptionalObject<TMatcher & TExtra>>>,
+      OneOrArray<TMatcher & TExtra>>,
+    TKeys>>;
 
 type SelectorMatcherFull<TMatch, TExtra> =
   SelectorMatcher<TExtra, SelMatcher<TMatch>, typeof SelMatcherKeys[number]> &
@@ -33,8 +40,10 @@ interface SelectorRemoverOptions extends SelectorMatcherFull<string | undefined,
 interface SelectorRemoverRunner extends SelectorMatcherFull<RegExp | undefined, SelNodeTester> { }
 
 export interface RemoverPluginOptions {
-  selector: SelectorRemoverOptions;
+  selector?: OptionalObject<SelectorRemoverOptions>;
 }
+
+type Options = DeepRequired<RemoverPluginOptions>;
 
 function regExpSafe(pattern?: string, flags?: string): RegExp | undefined {
   return pattern != null ? regexp(pattern, flags ?? 'i') : undefined;
@@ -50,7 +59,7 @@ function optionsToRunner(options: SelectorRemoverOptions): SelectorRemoverRunner
   for (const [ type, matcher ] of objectEntries(options)) {
     const matchers = toAssignedArrayIfNeeded(matcher);
     if (isValueIn(type, SelMatcherKeys)) {
-      runner[type] = matchers
+      runner[type] = (matchers as AssignedArrayIfNeeded<SelectorRemoverOptions[typeof type]>)
         .map(() => new class {
           type = type;
           test(node: SelNode): boolean {
@@ -58,7 +67,7 @@ function optionsToRunner(options: SelectorRemoverOptions): SelectorRemoverRunner
           }
         });
     } else if (isValueIn(type, SelNameMatcherKey)) {
-      runner[type] = (matchers as ArrayIfNeeded<SelectorRemoverOptions[typeof type]>)
+      runner[type] = (matchers as AssignedArrayIfNeeded<SelectorRemoverOptions[typeof type]>)
         .map(({ flags, name }) => new class {
           type = type;
           name = regExpSafe(name, flags);
@@ -67,7 +76,7 @@ function optionsToRunner(options: SelectorRemoverOptions): SelectorRemoverRunner
           }
         });
     } else if (isValueIn(type, SelAttributeMatcherKeys)) {
-      runner[type] = (matchers as ArrayIfNeeded<SelectorRemoverOptions[typeof type]>)
+      runner[type] = (matchers as AssignedArrayIfNeeded<SelectorRemoverOptions[typeof type]>)
         .map(({ flags, name, operator, value }) => new class {
           type = type;
           name = regExpSafe(name, flags);
@@ -103,8 +112,17 @@ function matchSelNodeTesters(sel: SelSelector, matchers: SelNodeTester[]): SelNo
 }
 
 export default declarePostCssPlugin<RemoverPluginOptions>('remover', {
-  selector: {},
-}, (opts: RemoverPluginOptions) => {
+  selector: {
+    attribute: [],
+    class: [],
+    combinator: [],
+    id: [],
+    nesting: [],
+    pseudo: [],
+    tag: [],
+    universal: [],
+  },
+}, (opts: Options) => {
   const runner = optionsToRunner(opts.selector);
 
   return {
@@ -113,7 +131,7 @@ export default declarePostCssPlugin<RemoverPluginOptions>('remover', {
       const matchedTypesCount: Partial<Record<SelNodeNames, number>> = {};
       css.walkRules((rule: CssRule) => {
         const root: SelRoot = cssSelectorParser().astSync(rule, { lossless: false });
-        const testers = objectValues(runner).flat(1);
+        const testers = objectValues(runner).flat(1).filter(isAssigned);
 
         for (const sel of root.nodes.toArray()) {
           const matchedType = matchSelNodeTesters(sel, testers);

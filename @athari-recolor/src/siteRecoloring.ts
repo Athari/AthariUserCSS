@@ -9,10 +9,9 @@ import removerPlugin from './removerPlugin.ts';
 import mergeSelectorsPlugin from './mergeSelectorsPlugin.ts';
 import derandomSelectorPlugin from './derandomSelectorsPlugin.ts';
 import recolorPlugin from './recolorPlugin.ts';
-import { prettifyCss } from './codeFormatting.ts';
 import { Site, SiteCss, SiteOptions } from './siteDownloading.ts';
 import type { PostCssResult } from './domUtils.ts';
-import { assertHasKeys, downloadText, getSiteDir, readTextFile, throwError } from './utils.ts';
+import { assertHasKeys, deepMerge, downloadText, getSiteDir, readTextFile, throwError } from './utils.ts';
 
 interface RecolorOptions extends SiteOptions {
   header: string;
@@ -26,7 +25,7 @@ async function runPostCss(inputPath: string, css: string, plugins: postCss.Accep
   return result;
 }
 
-export async function recolorCss(inputPath: string, outputPath: string, opts: Partial<RecolorOptions> = {}): Promise<void> {
+export async function recolorCss(site: Site, inputPath: string, outputPath: string, opts: RecolorOptions): Promise<void> {
   const inputCss = await readTextFile(inputPath) ?? throwError(`File '${inputPath}' not found`);
   let result = await runPostCss(inputPath, inputCss, [
     autoPrefixerPlugin({ add: false }),
@@ -46,8 +45,8 @@ export async function recolorCss(inputPath: string, outputPath: string, opts: Pa
     recolorPlugin(opts?.recolor),
   ]);
 
-  const outputCssPretty = await prettifyCss(outputPath, result.css);
-  const outputCssUserstyle = (opts.header + outputCssPretty).replace(/^/mg, "  ");
+  const outputCssPretty = await site.prettifyCode(outputPath, result.css, 'css');
+  const outputCssUserstyle = (opts?.header + outputCssPretty).replace(/^/mg, "  ");
   await fs.writeFile(outputPath, outputCssUserstyle);
   console.log(`Transformed CSS written to ${outputPath}`);
 }
@@ -55,7 +54,7 @@ export async function recolorCss(inputPath: string, outputPath: string, opts: Pa
 async function prettifyOneSiteCss(site: Site, css: SiteCss): Promise<void> {
   assertHasKeys(css, 'path', 'text');
   const pathPretty = css.path.replace(/\.css$/i, ".pretty.css");
-  const textPretty = await prettifyCss(css.path, css.text);
+  const textPretty = await site.prettifyCode(css.path, css.text, 'css');
   await fs.writeFile(pathPretty, textPretty);
   css.text = textPretty;
   console.log(`Prettier CSS written to ${pathPretty}`);
@@ -95,10 +94,17 @@ async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: str
     `site: ${site.name}`,
     ...extraHeaderLines,
   ].map(s => ` * ${s}\n`).join("");
-  await recolorCss(css.path, outputPath, {
-    ...site.options,
-    header: `/*\n${headerLines} */\n`,
-  });
+  const options = deepMerge(null,
+    {
+      combine: true,
+      refs: false,
+    },
+    // HACK: Why type assert needed?
+    site.options as RecolorOptions,
+    {
+      header: `/*\n${headerLines} */\n`,
+    });
+  await recolorCss(site, css.path, outputPath, options);
 }
 
 function getCssHeader({ name, path, url, refs }: SiteCss, opts: SiteOptions): string[] {

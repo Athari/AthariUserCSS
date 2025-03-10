@@ -36,9 +36,17 @@ export type ArrayElement<T> = T extends readonly (infer U)[] ? U : never;
 
 export type ArrayIfNeeded<T> = T extends readonly (infer U)[] ? U[] : never;
 
+export type AssignedArrayIfNeeded<T> = T extends readonly (infer U)[] ? Assigned<U>[] : never;
+
 export type ArrayGenerator<T> = Generator<T, void, unknown>;
 
 export type KeyOfAny<T> = T extends any ? keyof T : never;
+
+export type OptionalObject<T> = { [P in keyof T]?: T[P] | undefined } | undefined;
+
+export type OptionalArray<T> = Array<T | undefined> | undefined;
+
+export type OptionalPrimitive<T> = T | undefined;
 
 export type RegExpPattern = ReturnType<typeof re>;
 
@@ -76,11 +84,11 @@ export function objectValues<T>(o: Partial<T>): T[keyof T][] {
   return Object.values(o) as T[keyof T][];
 }
 
-export function toArrayIfNeeded<T>(v: OneOrArray<T>): T[] {
-  return isArray(v) ? v : [ v ];
+export function toArrayIfNeeded<T>(v: OneOrArray<T> | undefined): T[] {
+  return isNotAssigned(v) ? [] : isArray(v) ? v : [ v ];
 }
 
-export function toAssignedArrayIfNeeded<T>(v: OneOrArray<T>): Assigned<T>[] {
+export function toAssignedArrayIfNeeded<T>(v: OneOrArray<T> | undefined): Assigned<T>[] {
   return toArrayIfNeeded(v).filter(isAssigned);
 }
 
@@ -271,7 +279,10 @@ export async function loadJson<T>(ctr: ClassConstructor<T>, path: string): Promi
   const pojo = JSON5.parse(await readTextFile(path) ?? "null");
   if (pojo == null)
     return null;
-  return plainToInstance<T, object>(ctr, pojo) as T;
+  const obj = plainToInstance<T, object>(ctr, pojo) as T & Record<string, any>;
+  if (isFunction(obj?.hydrate))
+    obj.hydrate();
+  return obj;
 }
 
 export async function saveJson<T>(instance: T, path: string): Promise<boolean> {
@@ -413,7 +424,11 @@ type DM_Proc<T, S, O extends DeepMergeOptions> =
     S;
 type DeepMerge<T, TSources extends unknown[], O extends DeepMergeOptions> =
   TSources extends [infer S, ...infer Rest] ?
-    DeepMerge<DM_Proc<T, S, O>, Rest, O> :
+    S extends undefined ?
+      DeepMerge<T, Rest, O> :
+    S extends null ?
+      DeepMerge<T, Rest, O> :
+      DeepMerge<DM_Proc<T, S, O>, Rest, O> :
     T;
 
 export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOptions>(
@@ -426,7 +441,7 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
   const checkArrayValue = getValueChecker(opts.undefinedValues == 'merge', opts.nullValues == 'merge');
   const checkObjectValue = getValueChecker(opts.undefinedProps == 'merge', opts.nullProps == 'merge');
 
-  return sources.reduce(deepMergeProc, target) as DeepMerge<T, TSources, O>;
+  return sources.filter(isAssigned).reduce(deepMergeProc, target) as DeepMerge<T, TSources, O>;
 
   function deepMergeProc(targetVal: unknown, sourceVal: unknown): unknown {
     if (isArrayOrSet(targetVal)) {

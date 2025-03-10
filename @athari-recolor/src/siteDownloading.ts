@@ -7,22 +7,31 @@ import type { MergeSelectorsPluginOptions } from './mergeSelectorsPlugin.ts';
 import type { DerandomSelectorsPluginOptions } from './derandomSelectorsPlugin.ts';
 import type { RecolorPluginOptions } from './recolorPlugin.ts';
 import type { RemoverPluginOptions } from './removerPlugin.ts';
-import { prettifyHtml } from './codeFormatting.ts';
+import {
+  format as prettifyCode,
+  Options as PrettierOptions,
+} from 'prettier';
 import {
   HtmlDocument,
   parseHtmlDocument, htmlQuerySelectorAll, htmlQuerySelector, getHtmlAllInnerText,
 } from './domUtils.ts';
 import {
-  assertHasKeys, downloadText, getSiteDir, isArray, isString, readTextFile,
+  assertHasKeys, deepMerge, downloadText, errorDetail, getSiteDir, isArray, isString, OptionalObject, readTextFile,
 } from './utils.ts';
 
 export class SiteOptions {
-  recolor?: Partial<RecolorPluginOptions> | undefined;
-  derandomSelectors?: Partial<DerandomSelectorsPluginOptions> | undefined;
-  mergeSelectors?: Partial<MergeSelectorsPluginOptions> | undefined;
-  remove?: Partial<RemoverPluginOptions> | undefined;
-  combine: boolean = true;
-  refs: boolean = false;
+  recolor?: OptionalObject<RecolorPluginOptions>;
+  derandomSelectors?: OptionalObject<DerandomSelectorsPluginOptions>;
+  mergeSelectors?: OptionalObject<MergeSelectorsPluginOptions>;
+  remove?: OptionalObject<RemoverPluginOptions>;
+  combine?: boolean | undefined = true;
+  refs?: boolean | undefined = false;
+}
+
+export class SiteFormat {
+  default?: PrettierOptions | undefined;
+  html?: PrettierOptions | undefined;
+  css?: PrettierOptions | undefined;
 }
 
 export class SiteHtml {
@@ -77,6 +86,9 @@ export class Site {
   @Type(() => SiteOptions)
   options: SiteOptions = new SiteOptions();
 
+  @Type(() => SiteFormat)
+  format: SiteFormat = new SiteFormat();
+
   @Type(() => SiteHtml)
   html: SiteHtml[] = [];
 
@@ -86,9 +98,18 @@ export class Site {
   @Exclude()
   dir: string = "";
 
+  hydrate(root: SitesConfig) {
+    //type Q = { foo?: { bar?: { baz: true } } };
+    //const q1: Q = { foo: { bar: { baz: true } } };
+    //const q2: Q = deepMerge(null, {} as Q, q1);
+    // HACK: Why type assert any required?
+    this.options = deepMerge(null, new SiteOptions(), root.options.default, this.options) as any;
+    this.format = deepMerge(null, new SiteFormat(), root.format, this.format);
+  }
+
   addCss(css: SiteCss): boolean {
     this.css ??= [];
-  
+
     if (css.url) {
       const existingCss = this.css.find(c => c.url === css.url);
       if (existingCss) {
@@ -97,15 +118,50 @@ export class Site {
         return false;
       }
     }
-  
+
     this.css.push(css);
     return true;
   }
+
+  async #prettifyCodeSafe(filepath: string, source: string, options: PrettierOptions): Promise<string> {
+    try {
+      const pretty = await prettifyCode(source, { filepath, ...options });
+      return pretty.trimEnd();
+    } catch (ex: unknown) {
+      console.log(`Failed to prettify ${filepath}, keeping formatting`);
+      console.log(errorDetail(ex));
+      return source.trimEnd();
+    }
+  }
+
+  async prettifyCode(filepath: string, source: string, lang: keyof SiteFormat): Promise<string> {
+    const options = deepMerge(null, {} as PrettierOptions, this.format.default, this.format.css);
+    return await this.#prettifyCodeSafe(filepath, source, options);
+  }
+}
+
+export class SitesConfigOptions {
+  @Type(() => SiteOptions)
+  default: SiteOptions = new SiteOptions();
 }
 
 export class SitesConfig {
+  @Type(() => SitesConfigOptions)
+  options: SitesConfigOptions = new SitesConfigOptions();
+
+  @Type(() => SiteFormat)
+  format: SiteFormat = new SiteFormat();
+
   @Type(() => Site)
   sites: Site[] = [];
+
+  @Exclude()
+  default: Site = new Site();
+
+  hydrate() {
+    for (const site of [ ...this.sites, this.default ])
+      site.hydrate(this);
+  }
 }
 
 async function downloadOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
@@ -119,10 +175,10 @@ async function downloadOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
   html.path = `${site.dir}/${html.name}`;
   await fs.writeFile(html.path, html.text);
   console.log(`HTML written to ${html.path}`);
-  await prettifyOneSiteHtml(html);
+  await prettifyOneSiteHtml(site, html);
 }
 
-async function readOneSiteHtml(_: Site, html: SiteHtml): Promise<void> {
+async function readOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
   assertHasKeys(html, 'path');
   const htmlText = await readTextFile(html.path);
   if (htmlText == null)
@@ -130,13 +186,13 @@ async function readOneSiteHtml(_: Site, html: SiteHtml): Promise<void> {
 
   html.text = htmlText;
   console.log(`Original HTML read from ${html.path}`);
-  await prettifyOneSiteHtml(html);
+  await prettifyOneSiteHtml(site, html);
 }
 
-async function prettifyOneSiteHtml(html: SiteHtml): Promise<void> {
+async function prettifyOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
   assertHasKeys(html, 'path', 'text');
   const pathPretty = html.path.replace(/\.html$/i, ".pretty.html");
-  const textPretty = await prettifyHtml(html.path, html.text);
+  const textPretty = await site.prettifyCode(html.path, html.text, 'html');
   await fs.writeFile(pathPretty, textPretty);
   console.log(`Prettier HTML written to ${pathPretty}`);
 }

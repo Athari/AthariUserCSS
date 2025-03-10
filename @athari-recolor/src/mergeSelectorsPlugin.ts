@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import JSON5 from 'json5';
 import { regex } from 'regex';
-import { Brand } from 'utility-types';
+import { Brand, DeepRequired } from 'utility-types';
 import {
   CssRoot, CssRule,
   Sel, SelNodeTypes, SelNode, SelContainer, SelRoot, SelSelector, SelPseudo,
@@ -21,9 +21,11 @@ type FormatTrieField = 'nextTries' | 'nextVariants';
 type FormatTrieFields = FormatTrieField[];
 
 export interface MergeSelectorsPluginOptions {
-  pseudo: MergeSelectorsPseudo;
-  mergeMode: MergeSelectorsMode;
+  pseudo?: MergeSelectorsPseudo | undefined;
+  mergeMode?: MergeSelectorsMode | undefined;
 }
+
+type Options = DeepRequired<MergeSelectorsPluginOptions>;
 
 class TrieNode {
   /** List of compatible {@link SelNode nodes}. Lists of incompatible nodes are within the siblings to this trie node. */
@@ -295,7 +297,7 @@ function replaceSelContainerSelectors(buildFn: typeof buildMergedSelectors, root
 export default declarePostCssPlugin<MergeSelectorsPluginOptions>('merge-selectors', {
   pseudo: 'is',
   mergeMode: 'unsafe',
-}, (opts) => ({
+}, (opts: Options) => ({
   OnceExit(css: CssRoot) {
     css.walkRules((rule: CssRule) => {
       if (rule.selectors.length <= 1)

@@ -12,6 +12,7 @@ import {
 import {
   isTokenHash, isTokenIdent, TokenHash, TokenIdent,
 } from '@csstools/css-tokenizer';
+import { DeepRequired } from 'utility-types';
 import {
   CssRoot, CssContainer, CssAtRule, CssRule, CssDecl, CssComment,
   Comp, CompFunction, CompToken, CssToken,
@@ -19,7 +20,7 @@ import {
   tokenizeCss, parseCssCompStr, stringifyCssComp, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
   declarePostCssPlugin,
 } from './domUtils.ts';
-import { ColorFormula, regexp } from './utils.ts';
+import { ColorFormula, OptionalArray, regexp } from './utils.ts';
 
 interface RecolorVarTransform {
   find: string;
@@ -28,12 +29,14 @@ interface RecolorVarTransform {
 }
 
 export interface RecolorPluginOptions {
-  colorFormula: ColorFormula;
-  colorVarPrefix: string;
-  palette: boolean;
-  paletteVarPrefix: string;
-  paletteVarTransforms: RecolorVarTransform[];
+  colorFormula?: ColorFormula | undefined;
+  colorVarPrefix?: string | undefined;
+  palette?: boolean | undefined;
+  paletteVarPrefix?: string | undefined;
+  paletteVarTransforms?: OptionalArray<RecolorVarTransform>;
 }
+
+type Options = DeepRequired<RecolorPluginOptions>;
 
 type CompColor = CompFunction | CompToken;
 
@@ -143,7 +146,7 @@ function applyVarTransforms(name: string, tfs: RecolorVarTransform[]): string {
   return name;
 }
 
-function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor, opts: RecolorPluginOptions): PaletteColor {
+function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor, opts: Options): PaletteColor {
   const [ colorRgbStr, colorOkLchStr ] = [ serializeRgb(colorData), serializeDisplayP3(colorData) ];
   const colorUniqueKey = `${colorRgbStr}/${colorOkLchStr}`;
   const colorIdent = getIdentColorName(colorData);
@@ -172,7 +175,7 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
   return paletteColor;
 }
 
-function recolorCompColor(node: CompColor, opts: RecolorPluginOptions): string {
+function recolorCompColor(node: CompColor, opts: Options): string {
   type cmp = string | boolean | number;
 
   const colorVar = (s: string, i: number) =>
@@ -215,7 +218,7 @@ function recolorCssAtRule(rule: CssAtRule): false | void {
   }
 }
 
-function recolorCssDecl(decl: CssDecl, palette: Palette, opts: RecolorPluginOptions): false | void {
+function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false | void {
   let newDeclProp = '-';
   let newDeclValue: string | null = null;
   let isComplexValue = false;
@@ -269,9 +272,9 @@ export default declarePostCssPlugin<RecolorPluginOptions>('recolor', {
   palette: true,
   paletteVarPrefix: "c-",
   paletteVarTransforms: [
-    { find: '-var-', replace: '-' },
+    { find: '-var-', replace: '-', reFind: null! },
   ],
-}, (opts) => {
+}, (opts: Options) => {
   for (const transform of opts.paletteVarTransforms)
     transform.reFind = regexp(transform.find, 'gi');
   return {
