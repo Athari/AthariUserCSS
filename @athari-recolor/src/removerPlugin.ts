@@ -1,4 +1,3 @@
-import { assert } from 'node:console';
 import { DeepRequired } from 'utility-types';
 import {
   CssRoot, CssRule,
@@ -7,7 +6,7 @@ import {
 } from './domUtils.ts';
 import {
   AssignedArrayIfNeeded, OneOrArray, OptionalObject,
-  isValueIn, isAssigned, objectEntries, objectValues, valuesOf, toAssignedArrayIfNeeded, regexp,
+  isValueIn, isAssigned, objectEntries, objectValues, valuesOf, toAssignedArrayIfNeeded, regexp, assertNever,
 } from './utils.ts';
 
 type SelNodeNames = keyof SelNodeTypes;
@@ -16,28 +15,40 @@ const SelMatcherKeys = valuesOf<SelNodeNames>()('nesting', 'universal');
 const SelNameMatcherKey = valuesOf<SelNodeNames>()('class', 'combinator', 'id', 'pseudo', 'tag');
 const SelAttributeMatcherKeys = valuesOf<SelNodeNames>()('attribute');
 
-interface SelNodeOptions { flags?: string; }
-interface SelNodeTester { type: SelNodeNames; test(node: SelNode): boolean; }
+interface SelNodeOptions {
+  flags?: string | undefined;
+}
+interface SelNodeTester {
+  type: SelNodeNames;
+  test(node: SelNode): boolean;
+}
 
 interface SelMatcher<TMatch> { }
-interface SelNameMatcher<TMatch> extends SelMatcher<TMatch> { name?: TMatch; }
-interface SelAttributeMatcher<TMatch> extends SelNameMatcher<TMatch> { value?: TMatch; operator?: TMatch; }
+interface SelNameMatcher<TMatch> extends SelMatcher<TMatch> {
+  name?: TMatch | undefined;
+}
+interface SelAttributeMatcher<TMatch> extends SelNameMatcher<TMatch> {
+  value?: TMatch | undefined;
+  operator?: TMatch | undefined;
+}
 
-type SelectorMatcher<TMatcher, TExtra, TKeys extends SelNodeNames> =
+type SelectorMatcher<TMatcher, TExtra, TKeys extends readonly SelNodeNames[], IsOptional extends boolean> =
   Partial<Pick<
     Record<
       SelNodeNames,
-      //OneOrArray<OptionalObject<TMatcher & TExtra>>>,
-      OneOrArray<TMatcher & TExtra>>,
-    TKeys>>;
+      OneOrArray<
+        IsOptional extends true ?
+          OptionalObject<TMatcher & TExtra> :
+          TMatcher & TExtra>>,
+    TKeys[number]>>;
 
-type SelectorMatcherFull<TMatch, TExtra> =
-  SelectorMatcher<TExtra, SelMatcher<TMatch>, typeof SelMatcherKeys[number]> &
-  SelectorMatcher<TExtra, SelNameMatcher<TMatch>, typeof SelNameMatcherKey[number]> &
-  SelectorMatcher<TExtra, SelAttributeMatcher<TMatch>, typeof SelAttributeMatcherKeys[number]>;
+type SelectorMatcherFull<TMatch, TExtra, IsOptional extends boolean> =
+  SelectorMatcher<TExtra, SelMatcher<TMatch>, typeof SelMatcherKeys, IsOptional> &
+  SelectorMatcher<TExtra, SelNameMatcher<TMatch>, typeof SelNameMatcherKey, IsOptional> &
+  SelectorMatcher<TExtra, SelAttributeMatcher<TMatch>, typeof SelAttributeMatcherKeys, IsOptional>;
 
-interface SelectorRemoverOptions extends SelectorMatcherFull<string | undefined, SelNodeOptions> { }
-interface SelectorRemoverRunner extends SelectorMatcherFull<RegExp | undefined, SelNodeTester> { }
+interface SelectorRemoverOptions extends SelectorMatcherFull<string, SelNodeOptions, true> { }
+interface SelectorRemoverRunner extends SelectorMatcherFull<RegExp, SelNodeTester, false> { }
 
 export interface RemoverPluginOptions {
   selector?: OptionalObject<SelectorRemoverOptions>;
@@ -45,19 +56,11 @@ export interface RemoverPluginOptions {
 
 type Options = DeepRequired<RemoverPluginOptions>;
 
-function regExpSafe(pattern?: string, flags?: string): RegExp | undefined {
-  return pattern != null ? regexp(pattern, flags ?? 'i') : undefined;
-}
-
-function testRegExpSafe(re?: RegExp, str?: string | null): boolean {
-  return re != null && str != null && re.test(str);
-}
-
 function optionsToRunner(options: SelectorRemoverOptions): SelectorRemoverRunner {
   const runner: SelectorRemoverRunner = {};
 
   for (const [ type, matcher ] of objectEntries(options)) {
-    const matchers = toAssignedArrayIfNeeded(matcher);
+    const matchers = toAssignedArrayIfNeeded(matcher) /*as AllUnionFields<Assigned<ArrayElement<SelectorRemoverOptions[typeof type]>>>[]*/;
     if (isValueIn(type, SelMatcherKeys)) {
       runner[type] = (matchers as AssignedArrayIfNeeded<SelectorRemoverOptions[typeof type]>)
         .map(() => new class {
@@ -90,11 +93,18 @@ function optionsToRunner(options: SelectorRemoverOptions): SelectorRemoverRunner
           }
         });
     } else {
-      const exhaustiveType: never = type;
-      assert(false, `Unexpected selector node type: ${exhaustiveType}`);
+      assertNever(type);
     }
   }
   return runner;
+
+  function regExpSafe(pattern?: string, flags?: string): RegExp | undefined {
+    return pattern != null ? regexp(pattern, flags ?? 'i') : undefined;
+  }
+  
+  function testRegExpSafe(re?: RegExp, str?: string | null): boolean {
+    return re != null && str != null && re.test(str);
+  }
 }
 
 function matchSelNodeTesters(sel: SelSelector, matchers: SelNodeTester[]): SelNodeNames | null {

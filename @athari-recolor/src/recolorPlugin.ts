@@ -20,7 +20,7 @@ import {
   tokenizeCss, parseCssCompStr, stringifyCssComp, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
   declarePostCssPlugin,
 } from './domUtils.ts';
-import { ColorFormula, OptionalArray, regexp } from './utils.ts';
+import { ColorFormula, compare, objectEntries, objectFromEntries, OptionalArray, regexp } from './utils.ts';
 
 interface RecolorVarTransform {
   find: string;
@@ -40,6 +40,8 @@ type Options = DeepRequired<RecolorPluginOptions>;
 
 type CompColor = CompFunction | CompToken;
 
+type CssColorName = keyof typeof cssColorsNames | 'transparent';
+
 interface Palette {
   colors: PaletteColor[];
   uniqueColors: Record<string, PaletteColor>;
@@ -57,7 +59,7 @@ interface PaletteColor {
 
 const identifiableColorNotations = new Set([ ColorNotation.HEX, ColorNotation.RGB, ColorNotation.HSL, ColorNotation.HWB ]);
 
-const cssColorMap = Object.fromEntries(Object.entries(cssColorsNames).map(([name, [r, g, b]]) => [ `${r}|${g}|${b}`, name ]));
+const cssColorMap = objectFromEntries(objectEntries(cssColorsNames).map(([name, [r, g, b]]) => [ `${r}|${g}|${b}` as const, name ]));
 
 const reColorFunction = regex('i')`
   ^ (
@@ -113,7 +115,7 @@ function isTokenHashOrIdent(x?: CssToken | null): x is TokenHash | TokenIdent {
   return isTokenHash(x) || isTokenIdent(x)
 }
 
-function getIdentColorName(color: ColorData): string | null {
+function getIdentColorName(color: ColorData): CssColorName | null {
   const [ r, g, b ] = color.channels;
   if (r === 0 && g === 0 && b === 0 && color.alpha === 0)
     return 'transparent';
@@ -199,8 +201,8 @@ function buildPaletteRule(palette: Palette): CssRule {
   return new CssRule({
     selector: ':root',
     nodes: palette.colors
-      .orderBy(c => c.count, (a, b) => b - a)
-      .thenBy(c => c.colorRgb, (a, b) => a.localeCompare(b))
+      .orderByDescending(c => c.count, compare)
+      .thenBy(c => c.colorRgb, compare)
       .selectMany(c => [
         new CssComment({ text: `color ${c.colorStr} n=${c.count} ${c.colorRgb} ${c.colorOkLch}` }),
         new CssDecl({ prop: c.name, value: c.expr }),
@@ -267,7 +269,7 @@ function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false |
 }
 
 export default declarePostCssPlugin<RecolorPluginOptions>('recolor', {
-  colorFormula: ColorFormula.Dark,
+  colorFormula: ColorFormula.DarkFull,
   colorVarPrefix: "",
   palette: true,
   paletteVarPrefix: "c-",

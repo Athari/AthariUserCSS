@@ -4,7 +4,7 @@ import enquirer from 'enquirer';
 import { Command, Option } from 'commander';
 import { SitesConfig, downloadSiteHtml } from './siteDownloading.ts';
 import { recolorCss, recolorSiteCss } from './siteRecoloring.ts';
-import { ColorFormula, errorDetail, loadJson, questionInput, questionSelect, saveJson, throwError } from './utils.ts';
+import { ColorFormula, deepMerge, errorDetail, loadJson, objectValues, questionInput, questionSelect, saveJson, throwError } from './utils.ts';
 
 class NpmPackage {
   version: string = "";
@@ -27,7 +27,7 @@ const sites: SitesConfig = await loadJson(SitesConfig, "./sites.json") ?? throwE
 
 const program = new Command();
 const optionColorFormula = new Option('-c, --color-formula', "Color transform formula")
-  .choices(Object.values(ColorFormula));
+  .choices(objectValues(ColorFormula));
 
 program
   .name('recolor')
@@ -39,7 +39,7 @@ program
   .description("Recolor CSS file")
   .addOption(optionColorFormula)
   .action(async (inputPath: string, outputPath: string, o: Partial<RecolorCssCommandOptions>) => {
-    const a = Object.assign(o, { inputPath, outputPath });
+    const a = deepMerge(null, o, { inputPath, outputPath });
     if (!a.inputPath?.length) {
       await enquirer.prompt([
         questionInput(a, 'inputPath', "Path to input CSS file:"),
@@ -63,7 +63,7 @@ program
   .description("Recolor all CSS files of a site defined in sites.json")
   .addOption(optionColorFormula)
   .action(async (siteName: string, o: Partial<RecolorSiteCssCommandOptions>) => {
-    const a = Object.assign(o, { siteName });
+    const a = deepMerge(null, o, { siteName });
     if (!a.siteName?.length) {
       await enquirer.prompt([
         questionSelect(a, 'siteName', "Site to download CSS from:", {

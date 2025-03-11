@@ -3,20 +3,21 @@ import { basename } from 'node:path';
 import vm from 'node:vm';
 import { Exclude, Type } from 'class-transformer';
 import { WritableKeys } from 'utility-types';
+import {
+  format as prettifyCode,
+  Options as PrettierOptions,
+} from 'prettier';
 import type { MergeSelectorsPluginOptions } from './mergeSelectorsPlugin.ts';
 import type { DerandomSelectorsPluginOptions } from './derandomSelectorsPlugin.ts';
 import type { RecolorPluginOptions } from './recolorPlugin.ts';
 import type { RemoverPluginOptions } from './removerPlugin.ts';
 import {
-  format as prettifyCode,
-  Options as PrettierOptions,
-} from 'prettier';
-import {
   HtmlDocument,
   parseHtmlDocument, htmlQuerySelectorAll, htmlQuerySelector, getHtmlAllInnerText,
 } from './domUtils.ts';
 import {
-  assertHasKeys, deepMerge, downloadText, errorDetail, getSiteDir, isArray, isString, OptionalObject, readTextFile,
+  OptionalObject,
+  assertHasKeys, compare, deepMerge, downloadText, errorDetail, getSiteDir, isArray, isString, objectEntries, objectValues, readTextFile,
 } from './utils.ts';
 
 export class SiteOptions {
@@ -99,11 +100,7 @@ export class Site {
   dir: string = "";
 
   hydrate(root: SitesConfig) {
-    //type Q = { foo?: { bar?: { baz: true } } };
-    //const q1: Q = { foo: { bar: { baz: true } } };
-    //const q2: Q = deepMerge(null, {} as Q, q1);
-    // HACK: Why type assert any required?
-    this.options = deepMerge(null, new SiteOptions(), root.options.default, this.options) as any;
+    this.options = deepMerge(null, new SiteOptions(), root.options.default, this.options);
     this.format = deepMerge(null, new SiteFormat(), root.format, this.format);
   }
 
@@ -159,13 +156,13 @@ export class SitesConfig {
   default: Site = new Site();
 
   hydrate() {
-    for (const site of [ ...this.sites, this.default ])
+    for (const site of this.sites)
       site.hydrate(this);
   }
 }
 
 async function downloadOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
-  assertHasKeys(html, 'path', 'url');
+  assertHasKeys(html, 'url');
   console.log(`Downloading HTML ${html.url}`);
   const htmlText = await downloadText(html.url);
   if (htmlText == null)
@@ -253,7 +250,7 @@ async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: Sit
   }
 
   //console.log("manifest:", manifest);
-  const csss = Object.entries(manifest)
+  const csss = objectEntries(manifest)
     .selectMany(([ route, chunkUrls ]) => route.startsWith("/")
       ? [...chunkUrls]
         .where(u => /\.css$/i.test(u))
@@ -266,7 +263,7 @@ async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: Sit
     .groupBy(c => c.url)
     .select(g => ({
       url: g.key,
-      name: g.select(c => c.name).orderBy(n => n.length, (a, b) => a - b).first(),
+      name: g.select(c => c.name).orderBy(n => n.length, compare).first(),
       routes: g.select(c => c.route).toArray()
     }));
   for (const css of csss)
@@ -305,7 +302,7 @@ async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: Si
     return;
 
   //console.log("webpack", webpack);
-  const urlPrefix = Object.values(webpack).find(v => isString(v) && v.startsWith("https://")) as string;
+  const urlPrefix = objectValues(webpack).filter(isString).find(v => v.startsWith("https://")) ?? "";
   let emptyUrlCount = 0;
   for (let iChunk = 0; iChunk < 1_000_000; iChunk++) {
     const cssUrl = urlPrefix + webpack.miniCssF(iChunk);
@@ -325,8 +322,6 @@ async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: Si
 export async function downloadSiteHtml(site: Site): Promise<void> {
   site.dir = await getSiteDir(site.name);
 
-  for (const html of site.html)
-    html.path ??= `${site.dir}/${html.name}`;
   for (const html of site.html.filter(h => h.url && !h.path && !h.text))
     await downloadOneSiteHtml(site, html);
   for (const html of site.html.filter(h => h.path && !h.text))

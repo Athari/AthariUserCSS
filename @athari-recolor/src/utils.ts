@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { AssertionError } from 'node:assert';
+import { isDate } from 'node:util/types';
 import { regex, pattern as re } from 'regex';
 import JSON5 from 'json5';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
@@ -7,12 +8,17 @@ import enquirer from 'enquirer';
 import makeFetchCookie from 'fetch-cookie';
 import { CookieJar, MemoryCookieStore } from 'tough-cookie';
 import NetscapeCookieStore from './toughCookieNetscapeStore.ts';
+import { isPrimitive, Primitive } from 'utility-types';
 
 const downloadTimeout = 30000;
 
 export type ObjectEntries<T> = {
   [K in keyof T]-?: [K, T[K]];
 }[keyof T][];
+
+type ObjectFromEntries<T extends ReadonlyArray<readonly [PropertyKey, any]>> = {
+  [K in T[number][0]]: Extract<T[number], readonly [K, any]>[1]
+};
 
 export type Intersect<T extends any[]> = T extends [infer First, ...infer Rest] ? First & Intersect<Rest>  : {};
 
@@ -70,6 +76,10 @@ export function assertHasKeys<T, K extends keyof T>(o: T, ...keys: K[]): asserts
       throw new AssertionError({
         message: `Property '${String(key)}' of '${String(o?.constructor?.name ?? typeof o)}' is null or undefined`,
       });
+}
+
+export function objectFromEntries<T extends ReadonlyArray<readonly [PropertyKey, any]>>(entries: T): ObjectFromEntries<T> {
+  return Object.fromEntries(entries) as ObjectFromEntries<T>;
 }
 
 export function objectEntries<T>(o: Partial<T>): ObjectEntries<T> {
@@ -178,6 +188,24 @@ export function isWeakSet(value: unknown): value is WeakSet<WeakKey> {
 
 export function regexp(pattern: string, flags?: string): RegExp {
   return regex(flags)`${re(pattern)}`;
+}
+
+export function compare<T>(a: T, b: T): number {
+  if (isNumber(a) && isNumber(b)) {
+    const an = isNaN(a), bn = isNaN(b);
+    return an ? (bn ? 0 : 1) : bn ? -1 : a - b;
+  }
+  if (isDate(a) && isDate(b))
+    return a.getTime() - b.getTime();
+  if (isString(a) && isString(b))
+    return a.localeCompare(b);
+  if (isBoolean(a) && isBoolean(b))
+    return a === b ? 0 : a ? 1 : -1;
+  if (a < b)
+    return -1;
+  if (a > b)
+    return 1;
+  return 0;
 }
 
 export function errorDetail(ex: Error | unknown): string {
@@ -349,57 +377,84 @@ const isArrayOrSet = isSome(isArray, isSet);
 const isObjectOrMap = isSome(isObject, isMap);
 const isAlways = (_: unknown) => true;
 
-type MergeValueChecker = (v: unknown) => boolean;
+type IfAssigned<T, TAssigned, TNotAssigned> =
+  undefined extends T ?
+    TNotAssigned :
+  null extends T ?
+    TNotAssigned :
+    TAssigned;
+type IfDefined<T, TDefined, TUndefined> =
+  undefined extends T ?
+    TUndefined :
+    TDefined;
+type IfUndefinedOrNull<T, TUndefined, TNull, TAssigned> =
+  undefined extends T ?
+    TUndefined :
+  null extends T ?
+    TNull :
+    TAssigned;
+type ToWithUndefined<T> =
+  T extends undefined ? T : T | undefined;
+
+type IsOptional<T, K extends keyof T> = {} extends Pick<T, K> ? true : false;
+type UndefinedOnPartialObject<T> = // based on UndefinedOnPartialDeep
+  T extends Primitive | void | Date | RegExp | Function ?
+    T :
+  T extends Map<infer K, infer V> ?
+    Map<K, V | undefined> :
+  T extends ReadonlyMap<infer K, infer V> ?
+    ReadonlyMap<K, V | undefined> :
+  T extends Record<any, any> ? {
+    [K in keyof T]:
+      IsOptional<T, K> extends true ?
+        ToWithUndefined<T[K]> :
+        T[K] } :
+  T;
 
 type AssignedOption<T, O extends T | null | undefined, D extends Required<T>, K extends keyof D> =
   K extends keyof O ?
-    O[K] extends undefined ?
-      D[K] :
-    O[K] extends null ?
-      D[K] :
-      Assigned<O[K]> :
+    IfAssigned<O[K],
+      Assigned<O[K]>,
+      D[K]> :
     D[K];
 type AssignedOptions<T, O extends T | null | undefined, D extends Required<T>> =
-  O extends undefined ?
-    D :
-  O extends null ?
-    D :
-    { [K in keyof D]: AssignedOption<T, O, D, K> };
-
-type DeepMergeOptionsAssigned<O extends DeepMergeOptions> =
+  IfAssigned<O,
+    { [K in keyof D]: AssignedOption<T, O, D, K> },
+    D>;
+type DM_Opt<O extends DeepMergeOptions> =
   AssignedOptions<DeepMergeOptions, O, typeof deepMergeOptionsDefaults>;
-type DM_Defined<V, OU extends DeepMergeValue, ON extends DeepMergeValue> =
-  V extends undefined ?
-    (OU extends 'merge' ? V : never) :
-  V extends null ?
-    (ON extends 'merge' ? V : never) :
-    V;
-type DM_DefinedProp<V, O extends DeepMergeOptions> =
+
+type DM_Defined<V, OUndefined extends DeepMergeValue, ONull extends DeepMergeValue> =
+  IfUndefinedOrNull<V,
+    OUndefined extends 'merge' ? V : never,
+    ONull extends 'merge' ? V : never,
+    V>;
+type DM_Prop<V, O extends DeepMergeOptions> =
   DM_Defined<V,
-    DeepMergeOptionsAssigned<O>['undefinedProps'],
-    DeepMergeOptionsAssigned<O>['nullProps']>;
-type DM_DefinedValue<V, O extends DeepMergeOptions> =
+    DM_Opt<O>['undefinedProps'],
+    DM_Opt<O>['nullProps']>;
+type DM_Value<V, O extends DeepMergeOptions> =
   DM_Defined<V,
-    DeepMergeOptionsAssigned<O>['undefinedValues'],
-    DeepMergeOptionsAssigned<O>['nullValues']>;
+    DM_Opt<O>['undefinedValues'],
+    DM_Opt<O>['nullValues']>;
 type DM_ArrayConcat<T extends any[], S, O extends DeepMergeOptions> =
   S extends any[] ?
-    Array<DM_DefinedValue<T[number] | S[number], O>> :
-    Array<DM_DefinedValue<T[number] | S, O>>; /*S*/
+    Array<DM_Value<T[number] | S[number], O>> :
+    Array<DM_Value<T[number] | S, O>>; /*S*/
 type DM_ArrayReplace<T extends any[], S, O extends DeepMergeOptions> =
   S extends any[] ?
-    Array<DM_DefinedValue<S[number], O>> :
-    Array<DM_DefinedValue<S, O>>;
+    Array<DM_Value<S[number], O>> :
+    Array<DM_Value<S, O>>;
 type DM_Array<T extends any[], S, O extends DeepMergeOptions> =
-  DeepMergeOptionsAssigned<O>['arrays'] extends 'replace' ?
+  DM_Opt<O>['arrays'] extends 'replace' ?
     DM_ArrayReplace<T, S, O> :
     DM_ArrayConcat<T, S, O>;
 type DM_ObjectValuesSource<T extends object, S extends object, K extends keyof S, O extends DeepMergeOptions> =
   K extends keyof T ?
-    DM_DefinedProp<S[K], O> extends never ?
+    DM_Prop<S[K], O> extends never ?
       T[K] :
-      DM_Proc<T[K], DM_DefinedProp<S[K], O>, O> :
-    DM_DefinedProp<S[K], O>;
+      DM_Proc<T[K], DM_Prop<S[K], O>, O> :
+    DM_Prop<S[K], O>;
 type DM_ObjectValuesTarget<T extends object, K, O extends DeepMergeOptions> =
   K extends keyof T ?
     T[K] :
@@ -414,7 +469,9 @@ type DM_ObjectKeys<T extends object, S extends object, K extends KeyOfAny<T | S>
     K;
 type DM_Object<T extends object, S, O extends DeepMergeOptions> =
   S extends object ?
-    { [K in KeyOfAny<T | S> as DM_ObjectKeys<T, S, K, O>]: DM_ObjectValues<T, S, K, O> } :
+    UndefinedOnPartialObject<{
+      [K in KeyOfAny<T | S> as DM_ObjectKeys<T, S, K, O>]: DM_ObjectValues<T, S, K, O>
+    }> :
     S;
 type DM_Proc<T, S, O extends DeepMergeOptions> =
   T extends any[] ?
@@ -424,16 +481,18 @@ type DM_Proc<T, S, O extends DeepMergeOptions> =
     S;
 type DeepMerge<T, TSources extends unknown[], O extends DeepMergeOptions> =
   TSources extends [infer S, ...infer Rest] ?
-    S extends undefined ?
-      DeepMerge<T, Rest, O> :
-    S extends null ?
-      DeepMerge<T, Rest, O> :
-      DeepMerge<DM_Proc<T, S, O>, Rest, O> :
+    IfAssigned<S,
+      DeepMerge<DM_Proc<T, S, O>, Rest, O>,
+      DeepMerge<T, Rest, O>> :
     T;
 
 export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOptions>(
   options: O | null | undefined, target: T, ...sources: TSources
 ): DeepMerge<T, TSources, O> {
+  type UnknownObject = object | Map<unknown, unknown>;
+  type UnknownArray = unknown[] | Set<unknown>;
+  type ValueChecker = (v: unknown) => boolean;
+
   const opts = objectKeys(deepMergeOptionsDefaults).reduce(
     (o, prop) => (o[prop] = options?.[prop] ?? deepMergeOptionsDefaults[prop], o),
     {} as ObjectRecord<DeepMergeOptions>) as Required<DeepMergeOptions>;
@@ -445,38 +504,39 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
 
   function deepMergeProc(targetVal: unknown, sourceVal: unknown): unknown {
     if (isArrayOrSet(targetVal)) {
-      const sourceItems = isArrayOrSet(sourceVal) ? sourceVal : [ sourceVal ]; // make merging primitives into array optional?
+      // TODO: Make merging primitives into array optional
       if (opts.arrays === 'concat') {
         const addToTargetArray = getArrayAdder(targetVal);
-        for (const v of sourceItems)
+        const sourceIt = iterateClonedArray(isArrayOrSet(sourceVal) ? sourceVal : [ sourceVal ]);
+        for (const v of sourceIt)
           addToTargetArray(v);
         return targetVal;
       } else if (opts.arrays === 'replace') {
-        const [ targetIsArray, sourceIsArray ] = [ isArray(targetVal), isArray(sourceItems) ];
-        if (targetIsArray === sourceIsArray)
-          return sourceItems;
-        if (!targetIsArray)
-          return new Set(sourceItems);
-        if (targetIsArray)
-          return [...sourceItems];
-        assertNever(targetIsArray, sourceIsArray as never);
+        return cloneArrayAs(sourceVal, targetVal);
       } else {
         assertNever(opts.arrays);
       }
     } else if (isObjectOrMap(targetVal)) {
+      if (isArrayOrSet(sourceVal))
+        return cloneArrayAs(sourceVal, sourceVal);
       if (!isObjectOrMap(sourceVal))
-        return sourceVal;
+        return isPrimitive(sourceVal) ? sourceVal : throwError(`unexpected sourceVal type ${typeof sourceVal}`);
       const getTargetObjectProp = getObjectGetter(targetVal);
       const setTargetObjectProp = getObjectSetter(targetVal);
       for (const [ k, v ] of iterateObject(sourceVal))
         setTargetObjectProp(k, deepMergeProc(getTargetObjectProp(k), v));
       return targetVal;
     } else {
-      return sourceVal; // primitive
+      return structuredClone(sourceVal);
     }
   }
 
-  function getValueChecker(mergeUndefined: boolean, mergeNull: boolean): MergeValueChecker {
+  function cloneArrayAs(a: unknown, as: UnknownArray) {
+    const it = iterateClonedArray(isArrayOrSet(a) ? a : [ a ]);
+    return isArray(as) ? [...it] : new Set(it);
+  }
+
+  function getValueChecker(mergeUndefined: boolean, mergeNull: boolean): ValueChecker {
     if (!mergeUndefined && !mergeNull)
       return isAssigned;
     if (!mergeUndefined)
@@ -488,7 +548,7 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
     assertNever(mergeUndefined, mergeNull);
   }
 
-  function getArrayAdder(a: unknown[] | Set<unknown>): (v: unknown) => void {
+  function getArrayAdder(a: UnknownArray): (v: unknown) => void {
     if (isSet(a))
       return v => checkArrayValue(v) && a.add(v);
     if (isArray(a))
@@ -496,7 +556,7 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
     assertNever(a);
   }
 
-  function getObjectGetter(o: object | Map<unknown, unknown>): (k: unknown) => unknown {
+  function getObjectGetter(o: UnknownObject): (k: unknown) => unknown {
     if (isMap(o))
       return k => o.get(k);
     if (isObject(o))
@@ -504,7 +564,7 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
     assertNever(o);
   }
 
-  function getObjectSetter(o: object | Map<unknown, unknown>): (k: unknown, v: unknown) => void {
+  function getObjectSetter(o: UnknownObject): (k: unknown, v: unknown) => void {
     if (isMap(o))
       return (k, v) => checkObjectValue(v) && o.set(k, v);
     if (isObject(o))
@@ -512,11 +572,16 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
     assertNever(o);
   }
 
-  function* iterateObject(o: object | Map<unknown, unknown>): ArrayGenerator<[unknown, unknown]> {
+  function* iterateClonedArray(a: UnknownArray): ArrayGenerator<unknown> {
+    for (const v of a)
+      yield structuredClone(v);
+  }
+
+  function* iterateObject(o: UnknownObject): ArrayGenerator<[unknown, unknown]> {
     if (isMap(o))
       return yield* o.entries();
     if (isObject(o))
-      return yield* Object.entries(o);
+      return yield* objectEntries(o);
     assertNever(o);
   }
 
