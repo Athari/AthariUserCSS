@@ -1,15 +1,13 @@
 import { DeepRequired } from 'utility-types';
 import {
   CssRoot, CssRule,
-  SelNodeTypes, SelNode, SelRoot, SelSelector,
-  cssSelectorParser, declarePostCssPlugin,
+  Sel, SelNodeNames, SelNode, SelRoot, SelSelector,
+  declarePostCssPlugin,
 } from './domUtils.ts';
 import {
-  AssignedArrayIfNeeded, OneOrArray, OptionalObject,
+  AssignedArrayIfNeeded, OptionalOneOrArray, OptionalObject,
   isValueIn, isAssigned, objectEntries, objectValues, valuesOf, toAssignedArrayIfNeeded, regexp, assertNever,
 } from './utils.ts';
-
-type SelNodeNames = keyof SelNodeTypes;
 
 const SelMatcherKeys = valuesOf<SelNodeNames>()('nesting', 'universal');
 const SelNameMatcherKey = valuesOf<SelNodeNames>()('class', 'combinator', 'id', 'pseudo', 'tag');
@@ -36,7 +34,7 @@ type SelectorMatcher<TMatcher, TExtra, TKeys extends readonly SelNodeNames[], Is
   Partial<Pick<
     Record<
       SelNodeNames,
-      OneOrArray<
+      OptionalOneOrArray<
         IsOptional extends true ?
           OptionalObject<TMatcher & TExtra> :
           TMatcher & TExtra>>,
@@ -101,7 +99,7 @@ function optionsToRunner(options: SelectorRemoverOptions): SelectorRemoverRunner
   function regExpSafe(pattern?: string, flags?: string): RegExp | undefined {
     return pattern != null ? regexp(pattern, flags ?? 'i') : undefined;
   }
-  
+
   function testRegExpSafe(re?: RegExp, str?: string | null): boolean {
     return re != null && str != null && re.test(str);
   }
@@ -134,15 +132,14 @@ export default declarePostCssPlugin<RemoverPluginOptions>('remover', {
   },
 }, (opts: Options) => {
   const runner = optionsToRunner(opts.selector);
+  const testers = objectValues(runner).flat(1).filter(isAssigned);
 
   return {
     OnceExit(css: CssRoot) {
-
       const matchedTypesCount: Partial<Record<SelNodeNames, number>> = {};
-      css.walkRules((rule: CssRule) => {
-        const root: SelRoot = cssSelectorParser().astSync(rule, { lossless: false });
-        const testers = objectValues(runner).flat(1).filter(isAssigned);
 
+      css.walkRules((rule: CssRule) => {
+        const root: SelRoot = Sel.parseRoot(rule);
         for (const sel of root.nodes.toArray()) {
           const matchedType = matchSelNodeTesters(sel, testers);
           if (matchedType !== null) {

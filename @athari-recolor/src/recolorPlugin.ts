@@ -285,13 +285,13 @@ export default declarePostCssPlugin<RecolorPluginOptions>('recolor', {
         colors: [],
         uniqueColors: {},
       };
-  
+
       css.walkAtRules(rule => recolorCssAtRule(rule));
       css.walkDecls(decl => recolorCssDecl(decl, palette, opts));
-  
+
       css.cleanRaws();
       removeEmptyNodes(css);
-  
+
       if (opts.palette)
         css.prepend(buildPaletteRule(palette));
     }

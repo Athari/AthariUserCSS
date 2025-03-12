@@ -121,8 +121,10 @@ const selNodeCompat: Record<keyof SelNodeTypes, SelNodeCompatType> = {
 function areNodesCompatible(a: SelNode, b: SelNode, mergeMode: MergeSelectorsModeInternal): boolean {
   //const cmp = (() => {
     const [ aCompat, bCompat ] = [ selNodeCompat[a.type], selNodeCompat[b.type] ];
-    if (aCompat === 'never' || bCompat === 'never')
-      assert(false, `Unexpected selector node compat check: ${a} | ${b}`);
+    if (aCompat === 'never' || bCompat === 'never') {
+      //assert(false, `Unexpected selector node compat check: ${a} | ${b}`);
+      return false; // syntax errors can result in this
+    }
 
     const isMergeModeUnsafe = mergeMode === 'unsafe' || mergeMode === 'unsafe-linear';
     const [ aSpec, bSpec ] = [ getSelSpecificity(a), getSelSpecificity(b) ];
@@ -161,7 +163,7 @@ function formatTrie(trie: TrieNode | TrieVariant, fields: FormatTrieFields = [ '
         return key !== 'selector' ? formatNodeHeadFull(value) : undefined;
 
       if (value instanceof TrieVariant &&
-        (value.nextTries.size == 0 || !hasNextTries) && 
+        (value.nextTries.size == 0 || !hasNextTries) &&
         (value.nextVariants.size == 0 || !hasNextVariants)
       )
         return formatNodeHeadFull(value.node);

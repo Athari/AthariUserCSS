@@ -50,7 +50,9 @@ export type KeyOfAny<T> = T extends any ? keyof T : never;
 
 export type OptionalObject<T> = { [P in keyof T]?: T[P] | undefined } | undefined;
 
-export type OptionalArray<T> = Array<T | undefined> | undefined;
+export type OptionalArray<T> = (T | undefined)[] | undefined;
+
+export type OptionalOneOrArray<T> = T | (T | undefined)[] | undefined;
 
 export type OptionalPrimitive<T> = T | undefined;
 
@@ -439,12 +441,12 @@ type DM_Value<V, O extends DeepMergeOptions> =
     DM_Opt<O>['nullValues']>;
 type DM_ArrayConcat<T extends any[], S, O extends DeepMergeOptions> =
   S extends any[] ?
-    Array<DM_Value<T[number] | S[number], O>> :
-    Array<DM_Value<T[number] | S, O>>; /*S*/
+    DM_Value<T[number] | S[number], O>[] :
+    DM_Value<T[number] | S, O>[]; /*S*/
 type DM_ArrayReplace<T extends any[], S, O extends DeepMergeOptions> =
   S extends any[] ?
-    Array<DM_Value<S[number], O>> :
-    Array<DM_Value<S, O>>;
+    DM_Value<S[number], O>[] :
+    DM_Value<S, O>[];
 type DM_Array<T extends any[], S, O extends DeepMergeOptions> =
   DM_Opt<O>['arrays'] extends 'replace' ?
     DM_ArrayReplace<T, S, O> :

@@ -68,6 +68,7 @@ export {
 import postCss, {
   Plugin as PostCssPlugin,
   PluginCreator as PostCssPluginCreator,
+  Rule as CssRule,
 } from 'postcss';
 
 import cssSelectorParser from 'postcss-selector-parser';
@@ -227,8 +228,8 @@ import {
 } from 'utility-types';
 
 import {
+  Assigned,
   deepMerge,
-  objectEntries,
   throwError,
 } from './utils.ts';
 
@@ -278,6 +279,10 @@ export function declarePostCssPlugin<TOptions>(
     },
   );
 }
+
+export type SelNodeNames = keyof SelNodeTypes;
+
+export type SelParseOptions = Assigned<Parameters<ReturnType<typeof cssSelectorParser>['astSync']>[1]>;
 
 export type SelContainer = SelRoot | SelSelector | SelPseudo;
 
@@ -339,6 +344,10 @@ export function cloneSelNodeHeader<T extends SelNode>(node: T): T {
 }
 
 export namespace Sel {
+  export function parseRoot(selectors: string | CssRule, opts?: SelParseOptions): SelRoot {
+    return cssSelectorParser().astSync(selectors, Object.assign(<SelParseOptions>{ lossless: false }, opts));
+  }
+
   export function attribute(attribute: string, operator?: SelAttributeOperator, value?: string, insensitive?: boolean): SelAttribute {
     const opts: SelAttributeOptions = {
       attribute, value,

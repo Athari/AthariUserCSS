@@ -22,8 +22,8 @@ import {
 
 export class SiteOptions {
   recolor?: OptionalObject<RecolorPluginOptions>;
-  derandomSelectors?: OptionalObject<DerandomSelectorsPluginOptions>;
-  mergeSelectors?: OptionalObject<MergeSelectorsPluginOptions>;
+  derandom?: OptionalObject<DerandomSelectorsPluginOptions>;
+  merge?: OptionalObject<MergeSelectorsPluginOptions>;
   remove?: OptionalObject<RemoverPluginOptions>;
   combine?: boolean | undefined = true;
   refs?: boolean | undefined = false;

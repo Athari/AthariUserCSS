@@ -40,8 +40,8 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
   ]);
 
   result = await runPostCss(inputPath, result.css, [
-    mergeSelectorsPlugin(opts?.mergeSelectors),
-    derandomSelectorPlugin(opts?.derandomSelectors),
+    mergeSelectorsPlugin(opts?.merge),
+    derandomSelectorPlugin(opts?.derandom),
     recolorPlugin(opts?.recolor),
   ]);
 

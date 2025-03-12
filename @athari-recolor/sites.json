@@ -45,6 +45,20 @@
       ],
     },
     {
+      name: "boosty.to",
+      options: {
+        derandom: {
+          class: {
+            find: [ 'main=identSingleDash', '_', 'sub=identSingleDash', '_', 'hash=ident' ],
+            replace: '[class*="$<main>_$<sub>_"]',
+          },
+        },
+      },
+      html: [
+        { name: "index.html", url: "https://boosty.to/" },
+      ],
+    },
+    {
       name: "boxofficemojo.com",
       options: {},
       html: [
@@ -73,6 +87,12 @@
               replace: "-$<p1>$<p2>$<p3>$<p4>$<p5>$<p6>$<p7>$<opacity>"
             },
           ],
+        },
+        derandom: {
+          class: {
+            find: [ 'main=identUnderSingleDash', '--', 'sub=identUnderSingleDash', '--', 'hash=identUnderSingleDash' ],
+            replace: '[class*="$<main>--$<sub>--"]',
+          },
         },
         remove: {
           selector: {

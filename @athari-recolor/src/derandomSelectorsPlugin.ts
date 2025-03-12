@@ -1,29 +1,52 @@
-import { regex } from 'regex';
-import { isTokenHash, isTokenIdent, isTokenDelim, isTokenOpenSquare } from '@csstools/css-tokenizer';
+import { InterpolatedValue, regex } from 'regex';
 import { DeepRequired } from 'utility-types';
 import {
   CssRoot, CssRule,
-  CssToken, Comp, CssHashType,
-  isCompTokenType, isCompTokenTypeType, isCompTokenTypeValue,
-  tokenizeCss, parseCssCompStr, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
+  Sel, SelNode, SelNodeNames, SelRoot,
+  SelSelector,
   declarePostCssPlugin,
 } from './domUtils.ts';
-import { OptionalArray } from './utils.ts';
+import {
+  OneOrArray, OptionalArray, OptionalOneOrArray,
+  isAssigned, objectValues, throwError, toAssignedArrayIfNeeded, valuesOf,
+} from './utils.ts';
 
-export interface DerandomTransform {
+interface DerandomTransformOption {
+  flags?: string | undefined;
   find: string[];
   replace: string;
-};
-
-export interface DerandomSelectorsPluginOptions {
-  className?: OptionalArray<DerandomTransform>;
-  id?: OptionalArray<DerandomTransform>;
 }
+
+interface DerandomTransform {
+  find: RegExp;
+  replace: string;
+  type: SelNodeNames;
+  transform(node: SelNode): SelNode[] | null;
+}
+
+const SelDerandomKeys = valuesOf<SelNodeNames>()('class', 'id');
+
+type DerandomTransformer<TTransform, TKeys extends readonly SelNodeNames[], IsOptional extends boolean> =
+  Pick<
+    Record<
+      SelNodeNames,
+      IsOptional extends true ?
+        OptionalArray<TTransform> :
+        Array<TTransform>>,
+    TKeys[number]>;
+
+export interface DerandomSelectorsPluginOptions extends
+  Partial<DerandomTransformer<DerandomTransformOption | undefined, typeof SelDerandomKeys, true>> { }
+
+interface Runner extends DerandomTransformer<DerandomTransform, typeof SelDerandomKeys, false> { }
 
 type Options = DeepRequired<DerandomSelectorsPluginOptions>;
 
+type MatchedTypesCounter = Partial<Record<SelNodeNames, number>>;
+
 // https://www.w3.org/TR/2021/CRD-css-syntax-3-20211224/#token-diagrams
-const r = new class {
+const r = new class CssTokenRegExps {
+  "" = null;
   newLine = regex('i')`
     \n | \r\n | \r | \f
   `;
@@ -49,24 +72,38 @@ const r = new class {
     [ a-z _ ]
   `;
   alphaNum = regex('i')`
-    [ a-z 0-9 _ ]
+    [ a-z 0-9 ]
   `;
   alphaNumDash = regex('i')`
+    [ a-z 0-9 \- ]
+  `;
+  alphaNumUnder = regex('i')`
+    [ a-z 0-9 _ ]
+  `;
+  alphaNumUnderDash = regex('i')`
     [ a-z 0-9 _ \- ]
   `;
   sign = regex('i')`
     [ \+ \- ]
   `;
-  identToken = regex('i')`
+  ident = regex('i')`
     (
       -- |
       -? ( ${this.alpha} | ${this.escape} )
     )
     (
+      ${this.alphaNumUnderDash} | ${this.escape}
+    )*
+  `;
+  identDash = regex('i')`
+    (
+      ${this.alpha} | ${this.escape}
+    )
+    (
       ${this.alphaNumDash} | ${this.escape}
     )*
   `;
-  xIdentSingleDash = regex('i')`
+  identSingleDash = regex('i')`
     (
       ${this.alpha} | ${this.escape}
     )
@@ -75,15 +112,24 @@ const r = new class {
       ${this.alphaNumDash} | ${this.escape}
     )*
   `;
-  xIdentNoDash = regex('i')`
+  identUnderDash = regex('i')`
     (
       ${this.alpha} | ${this.escape}
     )
     (
-      ${this.alphaNum} | ${this.escape}
+      ${this.alphaNumUnder} | ${this.escape}
     )*
   `;
-  numberToken = regex('i')`
+  identUnderSingleDash = regex('i')`
+    (
+      ${this.alpha} | ${this.escape}
+    )
+    (
+      (?! -- )
+      ${this.alphaNumUnderDash} | ${this.escape}
+    )*
+  `;
+  number = regex('i')`
     ${this.sign}?
     (
       ( ${this.digit}+ \. ${this.digit}+ ) |
@@ -96,69 +142,87 @@ const r = new class {
       ${this.digit}+
     )?
   `;
-  dimToken = regex('i')`
-    ${this.numberToken} ${this.identToken}
+  dim = regex('i')`
+    ${this.number} ${this.ident}
   `;
-  percentToken = regex('i')`
-    ${this.numberToken} %
+  percent = regex('i')`
+    ${this.number} %
   `;
 }();
 
-export default declarePostCssPlugin<DerandomSelectorsPluginOptions>('derandom-selectors', {
-  className: [
-    {
-      find: ['main=identSingleDash', '--', 'sub=identSingleDash', '--', 'hash=identSingleDash'],
-      replace: '[class*="{main}--{sub}--"]',
-    },
-  ],
-  id: [],
-}, (opts: Options) => ({
-  OnceExit(css: CssRoot) {
-    // TODO: Support declarative derandom replacements
-    // TODO: Replace this shit with cssSelectorParser
-    //console.log(regex('i')`^${identToken}$`);
-    css.walkRules((rule: CssRule) => {
-      let didDerandom = false;
+function getDerandomTransform(type: SelNodeNames, opt: DerandomTransformOption): DerandomTransform {
+  const raw: string[] = [ "^" ];
+  const values: InterpolatedValue[] = [];
 
-      // derandom classes
-      let prevComp: Comp;
-      let newComps: Comp[][] = replaceCssComps(parseCssCompCommaList(tokenizeCss(rule.selector)), (comp: Comp) => {
-        if (isCompTokenTypeValue(prevComp, isTokenDelim, ".") && isCompTokenType(comp, isTokenIdent)) {
-          const className = comp.value[4].value;
-          const newSelector = className.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[class*="$1--$2--"]');
-          if (newSelector !== className) {
-            didDerandom = true;
-            return parseCssCompStr(newSelector);
-          }
-        }
-        prevComp = comp;
-        return;
-      });
+  const appendRaw = (s: string) => raw[raw.length - 1] += s;
+  const appendValue = (v: InterpolatedValue) => (values.push(v), raw.push(""));
+  const escapeRegExp = (s: string) => s.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
 
-      let newTokens: CssToken[] = tokenizeCss(stringifyCssComps(newComps));
-      if (didDerandom) {
-        newTokens = newTokens.filter((token, i) => {
-          const nextToken = newTokens[i + 1];
-          return !(isTokenDelim(token) && token[4].value === "." && isTokenOpenSquare(nextToken));
-        });
-      }
-
-      // derandom ids
-      newComps = replaceCssComps(parseCssCompCommaList(newTokens), (comp: Comp) => {
-        if (isCompTokenTypeType(comp, isTokenHash, CssHashType.ID)) {
-          const idName = comp.value[4].value;
-          const newSelector = idName.replace(/^([\w\d]+)--((?:[\w\d]+)(?:-(?:[\w\d]+))*)--([\w\d\\+-]+)$/, '[id^="$1--$2--"]');
-          if (newSelector !== idName) {
-            didDerandom = true;
-            return parseCssCompStr(newSelector);
-          }
-        }
-        prevComp = comp;
-        return;
-      });
-
-      if (didDerandom)
-        rule.selector = stringifyCssComps(newComps);
-    });
+  for (const s of opt.find) {
+    if (!s.includes('=')) {
+      appendRaw(escapeRegExp(s));
+    } else {
+      const [ name, key = "" ] = s.split('=', 2) as [ string, keyof typeof r ];
+      appendRaw(name.length > 0 ? `(?<${name}>` : "(");
+      appendValue(r[key] ?? throwError(`regex '${key}' not found`));
+      appendRaw(")");
+    }
   }
-}));
+  appendRaw("$");
+
+  return {
+    find: regex(opt.flags ?? 'i')({ raw }, ...values),
+    replace: opt.replace,
+    type,
+    transform(node: SelNode): SelNode[] | null {
+      if (node.type !== this.type || !node.value )
+        return null;
+      const newValue = node.value.replace(this.find, this.replace);
+      if (newValue === node.value)
+        return null;
+      return Sel.parseRoot(newValue).nodes.single().nodes;
+    },
+  };
+}
+
+function optionsToRunner(opts: Options): Runner {
+  return {
+    class: toAssignedArrayIfNeeded(opts.class).map(t => getDerandomTransform('class', t)),
+    id: toAssignedArrayIfNeeded(opts.id).map(t => getDerandomTransform('id', t)),
+  };
+}
+
+function applySelTransforms(sel: SelSelector, transforms: DerandomTransform[], counter: MatchedTypesCounter): void {
+  sel.walk((node: SelNode): void => {
+    for (const transform of transforms) {
+      const newNodes = transform.transform(node);
+      if (newNodes) {
+        counter[transform.type] = (counter[transform.type] ?? 0) + 1;
+        node.replaceWith(...newNodes);
+      }
+    }
+  });
+}
+
+export default declarePostCssPlugin<DerandomSelectorsPluginOptions>('derandom-selectors', {
+  class: [],
+  id: [],
+}, (opts: Options) => {
+  const runner: Runner = optionsToRunner(opts);
+  const transforms = objectValues(runner).flat(1).filter(isAssigned);
+
+  return {
+    OnceExit(css: CssRoot) {
+      const matchedTypesCount: MatchedTypesCounter = {};
+
+      css.walkRules((rule: CssRule) => {
+        const root: SelRoot = Sel.parseRoot(rule);
+        for (const sel of root.nodes.toArray())
+          applySelTransforms(sel, transforms, matchedTypesCount);
+        rule.selector = root.toString();
+      });
+
+      console.log(`Derandomised ${objectValues(matchedTypesCount).sum()} selectors`, matchedTypesCount);
+    }
+  }
+});
