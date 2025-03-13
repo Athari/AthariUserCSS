@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Fandom.com – Clean Enhanced Nav [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.1.0
 @description    Redesigns Wikia.com/Fandom.com and moves community menu to the left side. Removes all panels you don't need. Configurable hiding of panels, menu depth and page size. Unique feature: doesn't break website when logged in.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -247,8 +247,12 @@
       }
       .resizable-container {
         display: contents !important;
-        > :not(.page) {
+        > :not(.page, .community-header-wrapper) {
           display: none !important;
+        }
+        .community-header-wrapper { /* sticky disabled unless this is out ofscreen */
+          position: relative;
+          top: -1000px;
         }
         .page {
           display: contents !important;
