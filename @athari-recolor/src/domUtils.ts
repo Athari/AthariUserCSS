@@ -49,6 +49,22 @@ import {
 
 // CSS: PostCSS
 
+import {
+  AtRule as CssAtRule,
+  Comment as CssComment,
+  Container as CssContainer,
+  Declaration as CssDecl,
+  Document as CssDocument,
+  Node as CssNode,
+  Plugin as PostCssPlugin,
+  Root as CssRoot,
+  Rule as CssRule,
+} from 'postcss';
+
+export type {
+  Helpers as PostCssHelpers,
+} from 'postcss';
+
 export {
   AtRule as CssAtRule,
   Comment as CssComment,
@@ -63,12 +79,6 @@ export {
   Root as CssRoot,
   Rule as CssRule,
   Warning as PostCssWarning,
-} from 'postcss';
-
-import postCss, {
-  Plugin as PostCssPlugin,
-  PluginCreator as PostCssPluginCreator,
-  Rule as CssRule,
 } from 'postcss';
 
 import cssSelectorParser from 'postcss-selector-parser';
@@ -259,23 +269,34 @@ export function htmlCompileQuery<T extends HtmlElement>(selector: HtmlSimpleSele
 
 // CSS: Functions
 
-type PostCssProcessors = ReturnType<NonUndefined<PostCssPlugin['prepare']>>;
+export const isCssAtRule = (n: unknown): n is CssAtRule => n instanceof CssAtRule;
+export const isCssComment = (n: unknown): n is CssComment => n instanceof CssComment;
+export const isCssContainer = (n: unknown): n is CssContainer => n instanceof CssContainer;
+export const isCssDecl = (n: unknown): n is CssDecl => n instanceof CssDecl;
+export const isCssDocument = (n: unknown): n is CssDocument => n instanceof CssDocument;
+export const isCssNode = (n: unknown): n is CssNode => n instanceof CssNode;
+export const isCssRoot = (n: unknown): n is CssRoot => n instanceof CssRoot;
+export const isCssRule = (n: unknown): n is CssRule => n instanceof CssRule;
 
-export function declarePostCssPlugin<TOptions>(
+export type PostCssProcessors = ReturnType<NonUndefined<PostCssPlugin['prepare']>>;
+
+export type PostCssPluginCreate<O> = ((opts?: O) => PostCssPlugin) & { postcss: true };
+
+export function declarePostCssPlugin<O>(
   name: string,
-  defaultOptions: DeepRequired<TOptions>,
-  processors: (opts: DeepRequired<TOptions>) => PostCssProcessors,
-): PostCssPluginCreator<TOptions> {
+  defaultOptions: DeepRequired<O>,
+  processors: (opts: DeepRequired<O>) => PostCssProcessors,
+): PostCssPluginCreate<O> {
   return Object.assign(
-    (opts?: TOptions): PostCssPlugin => ({
+    (opts?: O): PostCssPlugin => ({
       postcssPlugin: name,
       prepare() {
-        const actualOptions = deepMerge(null, {}, defaultOptions, opts) as DeepRequired<TOptions>;
+        const actualOptions = deepMerge(null, {}, defaultOptions, opts) as DeepRequired<O>;
         return processors(actualOptions);
       },
     }),
     {
-      postcss: true as true,
+      postcss: true as const,
     },
   );
 }
@@ -350,14 +371,15 @@ export namespace Sel {
 
   export function attribute(attribute: string, operator?: SelAttributeOperator, value?: string, insensitive?: boolean): SelAttribute {
     const opts: SelAttributeOptions = {
-      attribute, value,
+      attribute, value, quoteMark: null,
       insensitive: insensitive ?? false,
-      quoteMark: value === undefined ? null : value.includes("'") ? '"' : value.includes('"') || !/^\w[\w\d]+$/.test(value) ? "'" : null,
       raws: {},
     };
     if (operator !== undefined)
       opts.operator = operator;
-    return cssSelectorParser.attribute(opts);
+    const ret = cssSelectorParser.attribute(opts);
+    ret.quoteMark = ret.smartQuoteMark({ quoteMark: "'" });
+    return ret;
   }
 
   export function className(className: string): SelClassName {

@@ -14,7 +14,7 @@ import {
 } from '@csstools/css-tokenizer';
 import { DeepRequired } from 'utility-types';
 import {
-  CssRoot, CssContainer, CssAtRule, CssRule, CssDecl, CssComment,
+  CssRoot, CssAtRule, CssRule, CssDecl, CssComment,
   Comp, CompFunction, CompToken, CssToken,
   isCompFunction, isCompToken, isCompTokenType,
   tokenizeCss, parseCssCompStr, stringifyCssComp, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
@@ -124,17 +124,6 @@ function getIdentColorName(color: ColorData): CssColorName | null {
   return cssColorMap[`${255 * r}|${255 * g}|${255 * b}`] ?? null;
 }
 
-function removeEmptyNodes(node: CssContainer): void {
-  if (!node.nodes)
-    return;
-  node.nodes = node.nodes.filter(child => {
-    const isContainer = child.type == 'rule' || child.type == 'atrule';
-    if (isContainer)
-      removeEmptyNodes(child);
-    return isContainer && (child.nodes?.length ?? 0) > 0 || child.type === 'decl';
-  });
-}
-
 function applyVarTransforms(name: string, tfs: RecolorVarTransform[]): string {
   name = name
     .replace(/\./ig, "_").replace(/[^\w\d-]/ig, "-").replace(/-+/g, "-").replace(/^-?(.*?)-?$/, "$1")
@@ -204,7 +193,7 @@ function buildPaletteRule(palette: Palette): CssRule {
       .orderByDescending(c => c.count, compare)
       .thenBy(c => c.colorRgb, compare)
       .selectMany(c => [
-        new CssComment({ text: `color ${c.colorStr} n=${c.count} ${c.colorRgb} ${c.colorOkLch}` }),
+        new CssComment({ text: `!ath! color ${c.colorStr} n=${c.count} ${c.colorRgb} ${c.colorOkLch}` }),
         new CssDecl({ prop: c.name, value: c.expr }),
       ])
       .toArray(),
@@ -288,12 +277,20 @@ export default declarePostCssPlugin<RecolorPluginOptions>('recolor', {
 
       css.walkAtRules(rule => recolorCssAtRule(rule));
       css.walkDecls(decl => recolorCssDecl(decl, palette, opts));
-
-      css.cleanRaws();
-      removeEmptyNodes(css);
-
       if (opts.palette)
         css.prepend(buildPaletteRule(palette));
+
+      css.cleanRaws();
+
+      const reAthComment = regex('i')` ^ \s* !ath! \s* `;
+      css.walkComments(comment => {
+        if (comment.parent?.nodes?.length == 1)
+          comment.parent.remove();
+        else if (reAthComment.test(comment.text))
+          comment.text = comment.text.replace(reAthComment, "").trim();
+        else
+          comment.remove();
+      });
     }
   };
 });

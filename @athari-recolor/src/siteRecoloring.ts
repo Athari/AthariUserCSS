@@ -5,50 +5,76 @@ import cssSafeParser from 'postcss-safe-parser';
 import cssNanoPlugin from 'cssnano';
 import cssNanoPresetDefault from 'cssnano-preset-default';
 import autoPrefixerPlugin from 'autoprefixer';
+import discardEmptyPlugin from 'postcss-discard-empty';
 import removerPlugin from './removerPlugin.ts';
 import mergeSelectorsPlugin from './mergeSelectorsPlugin.ts';
-import derandomSelectorPlugin from './derandomSelectorsPlugin.ts';
+import derandomSelectorsPlugin from './derandomSelectorsPlugin.ts';
 import recolorPlugin from './recolorPlugin.ts';
-import { Site, SiteCss, SiteOptions } from './siteDownloading.ts';
-import type { PostCssResult } from './domUtils.ts';
-import { assertHasKeys, deepMerge, downloadText, getSiteDir, readTextFile, throwError } from './utils.ts';
+import styleAttrPlugin from './styleAttrPlugin.ts';
+import { PluginKeys, Site, SiteCss, SiteOptions } from './siteDownloading.ts';
+import type { PostCssPlugin, PostCssPluginCreate, PostCssResult } from './domUtils.ts';
+import { assertHasKeys, deepMerge, downloadText, getSiteDir, objectEntries, readTextFile, throwError } from './utils.ts';
 
 interface RecolorOptions extends SiteOptions {
   header: string;
   combine: boolean;
 }
 
+type PluginMap = {
+  [K in PluginKeys]?: PostCssPluginCreate<SiteOptions[K]>;
+};
+
 async function runPostCss(inputPath: string, css: string, plugins: postCss.AcceptedPlugin[]): Promise<PostCssResult> {
   const result = await postCss(plugins).process(css, { from: inputPath, parser: cssSafeParser });
-  for (const message of result.messages)
-    console.log(`  ${message.plugin}: ${message.type} ${message.node?.toString().ellipsis(50)}`);
+  console.log(
+    Object.fromEntries(result.messages
+      .groupBy(m => m.plugin ?? "?")
+      .select(gp => [
+        gp.key,
+        Object.fromEntries(gp
+          .groupBy(m => m.type)
+          .select(gt => [ gt.key, gt.count() ])
+          .toArray())
+      ])
+      .toArray()));
   return result;
+}
+
+function optionalPostCssPlugins(opts: SiteOptions, plugins: PluginMap): PostCssPlugin[] {
+  return objectEntries(plugins)
+    .map(([ key, plugin ]) => (opts?.[key]?.enabled ?? true) ? plugin?.(opts?.[key]) : null)
+    .filter(p => !!p);
 }
 
 export async function recolorCss(site: Site, inputPath: string, outputPath: string, opts: RecolorOptions): Promise<void> {
   const inputCss = await readTextFile(inputPath) ?? throwError(`File '${inputPath}' not found`);
   let result = await runPostCss(inputPath, inputCss, [
     autoPrefixerPlugin({ add: false }),
-    removerPlugin(opts?.remove),
+    ...optionalPostCssPlugins(opts, {
+      remove: removerPlugin,
+    }),
     cssNanoPlugin({
       preset: [
         cssNanoPresetDefault({
-          //discardComments: false,
+          discardComments: false,
         }),
       ],
     }),
   ]);
 
   result = await runPostCss(inputPath, result.css, [
-    mergeSelectorsPlugin(opts?.merge),
-    derandomSelectorPlugin(opts?.derandom),
-    recolorPlugin(opts?.recolor),
+    ...optionalPostCssPlugins(opts, {
+      merge: mergeSelectorsPlugin,
+      derandom: derandomSelectorsPlugin,
+      recolor: recolorPlugin,
+    }),
+    discardEmptyPlugin(),
   ]);
 
   const outputCssPretty = await site.prettifyCode(outputPath, result.css, 'css');
   const outputCssUserstyle = (opts?.header + outputCssPretty).replace(/^/mg, "  ");
   await fs.writeFile(outputPath, outputCssUserstyle);
-  console.log(`Transformed CSS written to ${outputPath}`);
+  console.log(`Recolored CSS written to ${outputPath}`);
 }
 
 async function prettifyOneSiteCss(site: Site, css: SiteCss): Promise<void> {
@@ -85,6 +111,25 @@ async function readOneSiteCss(site: Site, css: SiteCss): Promise<void> {
   await prettifyOneSiteCss(site, css);
 }
 
+async function transformInlineSiteCss(site: Site, css: SiteCss, opts: SiteOptions): Promise<SiteCss> {
+  assertHasKeys(css, 'text');
+  css.path = `${site.dir}/${css.name}`;
+  const origPath = css.path.replace(/\.css$/i, ".in.css");
+  await fs.writeFile(origPath, css.text);
+  console.log(`Style attributes CSS written to ${origPath}`);
+
+  const result = await runPostCss(origPath, css.text, [
+    ...optionalPostCssPlugins(opts, {
+      styleAttr: styleAttrPlugin,
+    })
+  ]);
+
+  css.text = result.css;
+  await fs.writeFile(css.path, css.text);
+  console.log(`Transformed style attributes CSS written to ${css.path}`);
+  return css;
+}
+
 async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: string[]): Promise<void> {
   assertHasKeys(css, 'path');
   const outputPath = css.path.replace(/\.css$/i, ".out.css");
@@ -95,7 +140,7 @@ async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: str
     ...extraHeaderLines,
   ].map(s => ` * ${s}\n`).join("");
   const options = deepMerge(null,
-    {
+    <RecolorOptions>{
       combine: true,
       refs: false,
     },
@@ -124,6 +169,8 @@ export async function recolorSiteCss(site: Site): Promise<void> {
     await downloadOneSiteCss(site, css);
   for (const css of site.css.filter(c => c.path && !c.text))
     await readOneSiteCss(site, css);
+  if (site.inlineCss.text)
+    site.addCss(await transformInlineSiteCss(site, site.inlineCss, site.options))
   site.css = site.css.filter(c => c.text);
 
   if (options.combine) {

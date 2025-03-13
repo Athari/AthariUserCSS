@@ -11,20 +11,34 @@ import type { MergeSelectorsPluginOptions } from './mergeSelectorsPlugin.ts';
 import type { DerandomSelectorsPluginOptions } from './derandomSelectorsPlugin.ts';
 import type { RecolorPluginOptions } from './recolorPlugin.ts';
 import type { RemoverPluginOptions } from './removerPlugin.ts';
+import type { StyleAttrPluginOptions } from './styleAttrPlugin.ts';
 import {
-  HtmlDocument,
+  HtmlDocument, HtmlElement,
+  Sel,
   parseHtmlDocument, htmlQuerySelectorAll, htmlQuerySelector, getHtmlAllInnerText,
 } from './domUtils.ts';
 import {
-  OptionalObject,
-  assertHasKeys, compare, deepMerge, downloadText, errorDetail, getSiteDir, isArray, isString, objectEntries, objectValues, readTextFile,
+  Assigned, OptionalObject,
+  assertHasKeys, compare, deepMerge, downloadText, errorDetail, getSiteDir, isArray, isString, objectEntries, objectKeys, objectValues, readTextFile, throwError,
 } from './utils.ts';
 
+export interface OptionalPlugin {
+  enabled?: boolean | undefined;
+};
+
+export type PluginOptions<T> = OptionalObject<T & OptionalPlugin>;
+
+export type PluginKeys = Assigned<{
+  [K in keyof SiteOptions]: SiteOptions[K] extends PluginOptions<any> ? K : never
+}[keyof SiteOptions]>;
+
 export class SiteOptions {
-  recolor?: OptionalObject<RecolorPluginOptions>;
-  derandom?: OptionalObject<DerandomSelectorsPluginOptions>;
-  merge?: OptionalObject<MergeSelectorsPluginOptions>;
-  remove?: OptionalObject<RemoverPluginOptions>;
+  recolor?: PluginOptions<RecolorPluginOptions>;
+  derandom?: PluginOptions<DerandomSelectorsPluginOptions>;
+  merge?: PluginOptions<MergeSelectorsPluginOptions>;
+  remove?: PluginOptions<RemoverPluginOptions>;
+  styleAttr?: PluginOptions<StyleAttrPluginOptions>;
+  encoding?: string | undefined = 'utf-8';
   combine?: boolean | undefined = true;
   refs?: boolean | undefined = false;
 }
@@ -96,8 +110,15 @@ export class Site {
   @Type(() => SiteCss)
   css: SiteCss[] = [];
 
+  @Type(() => SiteCss)
+  inlineCss: SiteCss = new SiteCss({ name: "inline-style-attrs.css" });
+
   @Exclude()
   dir: string = "";
+
+  async downloadText(url: string): Promise<string | null> {
+    return await downloadText(url, { encoding: this.options.encoding });
+  }
 
   hydrate(root: SitesConfig) {
     this.options = deepMerge(null, new SiteOptions(), root.options.default, this.options);
@@ -164,7 +185,7 @@ export class SitesConfig {
 async function downloadOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
   assertHasKeys(html, 'url');
   console.log(`Downloading HTML ${html.url}`);
-  const htmlText = await downloadText(html.url);
+  const htmlText = await site.downloadText(html.url);
   if (htmlText == null)
     return;
 
@@ -219,6 +240,48 @@ async function parseEmbeddedCss(site: Site, doc: HtmlDocument, html: SiteHtml): 
   }
 }
 
+async function parseStyleAttributes(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
+  const skipSelAttrs = new Set([ 'id', 'class', 'style' ]);
+  const obsoleteAttrs = { color: 'color', bgcolor: 'background-color', bordercolor: 'border-color' };
+
+  const styleDecls: string[] = [];
+  for (const el of htmlQuerySelectorAll(doc, '[style]')) {
+    const attrStyle = el.attribs.style ?? throwError("missing style attribute");
+    styleDecls.push(`${buildTagSelector(el)}[style] {\n  ${attrStyle}\n}`);
+  }
+
+  //console.log(objectKeys(obsoleteAttrs).map(a => `[${a}]`).join(", "));
+  for (const el of htmlQuerySelectorAll(doc, objectKeys(obsoleteAttrs).map(a => `[${a}]`).join(", "))) {
+    //console.log(el.attributes.map(a => `${a.name}=${a.value}`).join(", "));
+    for (const [ attrName, ruleName ] of objectEntries(obsoleteAttrs)) {
+      const attrValue = el.attribs[attrName];
+      if (!attrValue)
+        continue;
+      const sel = buildTagSelector(el);
+      sel.first.append(Sel.attribute(attrName, '=', attrValue));
+      styleDecls.push(`${sel} {\n  ${ruleName}: ${attrValue}\n}`);
+    }
+  }
+
+  site.inlineCss.text ??= "";
+  site.inlineCss.text += styleDecls.join("\n");
+  site.inlineCss.refs.add(html.asRef);
+  return;
+
+  function buildTagSelector(el: HtmlElement) {
+    const sel = Sel.selector([ Sel.tag(el.tagName) ]);
+    if (el.attribs.id)
+      sel.append(Sel.id(el.attribs.id));
+    if (el.attribs.class) {
+      const classNames = el.attribs.class.split(/\s+/).map(s => s.trim()).filter(s => s.length > 0);
+      sel.nodes.push(...classNames.map(cls => Sel.className(cls)));
+    }
+    for (const attr of el.attributes.filter(a => !skipSelAttrs.has(a.name) && !(a.name in obsoleteAttrs)))
+      sel.append(Sel.attribute(attr.name, '=', attr.value));
+    return Sel.root([ sel ]);
+  }
+}
+
 async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
   const elBuildManifest = htmlQuerySelector(doc, 'script[src$="buildManifest.js" i]');
   if (!elBuildManifest)
@@ -227,7 +290,7 @@ async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: Sit
   const manifestUrl = new URL(elBuildManifest.attribs.src!, html.url).toString();
   console.log(`Found Next.js build manifest ${manifestUrl}`);
 
-  const manifestCode = await downloadText(manifestUrl);
+  const manifestCode = await site.downloadText(manifestUrl);
   if (!manifestCode)
     return;
   const manifestPath = `${site.dir}/buildManifest.js`;
@@ -283,7 +346,7 @@ async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: Si
   const webpackUrl = new URL(elWebpack.attribs.src!, html.url).toString();
   console.log(`Found WebPack script ${webpackUrl}`);
 
-  let webpackCode = await downloadText(webpackUrl);
+  let webpackCode = await site.downloadText(webpackUrl);
   if (!webpackCode)
     return;
   // TODO: Find a proper pattern for webpack miniCss hook
@@ -330,9 +393,10 @@ export async function downloadSiteHtml(site: Site): Promise<void> {
   for (const html of site.html.filter(c => c.text)) {
     assertHasKeys(html, 'text');
     const doc = parseHtmlDocument(html.text);
-    await parseNextJSBuildManifest(site, doc, html);
-    await parseWebpackMiniCssChunks(site, doc, html);
     await parseLinkedCss(site, doc, html);
     await parseEmbeddedCss(site, doc, html);
+    await parseStyleAttributes(site, doc, html);
+    await parseNextJSBuildManifest(site, doc, html);
+    await parseWebpackMiniCssChunks(site, doc, html);
   }
 }

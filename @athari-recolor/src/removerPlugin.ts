@@ -135,7 +135,7 @@ export default declarePostCssPlugin<RemoverPluginOptions>('remover', {
   const testers = objectValues(runner).flat(1).filter(isAssigned);
 
   return {
-    OnceExit(css: CssRoot) {
+    OnceExit(css: CssRoot): void {
       const matchedTypesCount: Partial<Record<SelNodeNames, number>> = {};
 
       css.walkRules((rule: CssRule) => {

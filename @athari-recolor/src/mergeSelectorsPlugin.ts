@@ -254,6 +254,7 @@ function buildMergedNode(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): Excl
 
 function buildMergedSelectors(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): SelSelector[] {
   // TODO: Implement safe selectors merging mode which respects nextNodes & nextVariants
+  // TODO: Implement producing selectors which aren't leaves (`input, select` + `input, select.a` != `:is(input, select).a`)
   const mergedSels = trieNode.tries.flatMap(trie => buildMergedSelectors(trie, pseudo));
   if (trieNode.variants.length == 0)
     return mergedSels;
@@ -296,6 +297,15 @@ function replaceSelContainerSelectors(buildFn: typeof buildMergedSelectors, root
     root.append(sel);
 }
 
+function unwrapSimplePseudoIs(root: SelRoot) {
+  if (
+    root.length === 1 &&
+    root.at(0).length === 1 &&
+    isSelPseudoClassIs(root.at(0).at(0) ?? root)
+  )
+    root.at(0).replaceWith(...(root.at(0).at(0) as SelPseudo).nodes);
+}
+
 export default declarePostCssPlugin<MergeSelectorsPluginOptions>('merge-selectors', {
   pseudo: 'is',
   mergeMode: 'unsafe',
@@ -305,7 +315,7 @@ export default declarePostCssPlugin<MergeSelectorsPluginOptions>('merge-selector
       if (rule.selectors.length <= 1)
         return;
 
-      const root: SelRoot = cssSelectorParser().astSync(rule, { lossless: false });
+      const root: SelRoot = Sel.parseRoot(rule);
       removeSelectorComments(root);
       //console.log("ORIGINAL:", formatNode(root));
 
@@ -322,6 +332,8 @@ export default declarePostCssPlugin<MergeSelectorsPluginOptions>('merge-selector
         replaceSelContainerSelectors(buildMergedSelectorsLinear, root, trieRootLinear, opts.pseudo);
         //console.log("MERGED:", formatNode(root));
       }
+
+      unwrapSimplePseudoIs(root);
 
       rule.selector = root.toString();
     });

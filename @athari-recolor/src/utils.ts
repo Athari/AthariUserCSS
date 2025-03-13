@@ -84,6 +84,8 @@ export function objectFromEntries<T extends ReadonlyArray<readonly [PropertyKey,
   return Object.fromEntries(entries) as ObjectFromEntries<T>;
 }
 
+export function objectEntries<T>(o: T): ObjectEntries<T>
+export function objectEntries<T>(o: Partial<T>): ObjectEntries<T>
 export function objectEntries<T>(o: Partial<T>): ObjectEntries<T> {
   return Object.entries(o) as ObjectEntries<T>;
 }
@@ -325,11 +327,15 @@ const memoryCookies = new MemoryCookieStore();
 netscapeCookies.export(memoryCookies);
 const fetchCookie = makeFetchCookie(fetch, new CookieJar(memoryCookies));
 
-export async function downloadText(url: string, init: RequestInit = {}): Promise<string | null> {
+export interface DownloadInit extends RequestInit {
+  encoding?: string | undefined;
+}
+
+export async function downloadText(url: string, init: DownloadInit = {}): Promise<string | null> {
   const response = await withTimeout(fetchCookie(url, Object.assign(init, {
     headers: {
       'accept': "*/*",
-      'accept-encoding': "gzip, deflate, br, zstd",
+      //'accept-encoding': "gzip, deflate, br, zstd",
       'accept-language': "en-US,en",
       'cache-control': 'no-cache',
       'dnt': '1',
@@ -348,7 +354,10 @@ export async function downloadText(url: string, init: RequestInit = {}): Promise
     console.error(`WARNING: Failed to download ${url} (${response.status} ${response.statusText})`);
     return null;
   }
-  return await response.text();
+  const getText = async () => [ 'utf8', 'utf-8' ].includes(init.encoding ?? 'utf-8')
+    ? await response.text()
+    : new TextDecoder(init.encoding).decode(await response.arrayBuffer());
+  return await getText();
 }
 
 type DeepMergeValue = 'skip' | 'merge';

@@ -2,6 +2,7 @@
   options: {
     default: {
       recolor: { colorFormula: 'dark-full', palette: true },
+      merge: { enabled: false },
       combine: true,
       refs: true,
     },
@@ -94,6 +95,9 @@
             replace: '[class*="$<main>--$<sub>--"]',
           },
         },
+        merge: {
+          enabled: false,
+        },
         remove: {
           selector: {
             class: [ { name: " ^ _ [\\w\\d]{6,9} $" } ],
@@ -134,6 +138,21 @@
         { name: "primary.css", url: "https://meta.stackexchange.com/Content/Sites/stackexchangemeta/primary.css" },
         { name: "stacks.css", url: "https://meta.stackexchange.com/Content/Shared/stacks.css" },
         //{ name: "channels.css", url: "https://meta.stackexchange.com/Content/Shared/Channels/channels.css" }, // unused??
+      ],
+    },
+    {
+      name: "nnmclub.to",
+      options: {
+        encoding: 'windows-1251',
+        combine: true,
+      },
+      // TODO: Transform absolute font units (px, pt) to relative
+      html: [
+        { name: "tracker.html", url: "https://nnmclub.to/forum/tracker.php" },
+        { name: "agreement.html", url: "https://nnmclub.to/forum/info.php?show=user_agreement" },
+        { name: "bbcode.html", url: "https://nnmclub.to/forum/faq.php?mode=bbcode" },
+        { name: "faq.html", url: "https://nnmclub.to/forum/viewtopic.php?t=74841" },
+        { name: "office.html", url: "https://nnmclub.to/forum/viewtopic.php?t=975461" },
       ],
     },
     {
