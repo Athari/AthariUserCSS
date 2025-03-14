@@ -6,7 +6,7 @@ import {
   CssRoot, CssRule,
   Sel, SelNodeTypes, SelNode, SelContainer, SelRoot, SelSelector, SelPseudo,
   isSelAttribute, isSelCombinator, isSelContainer, isSelNode, isSelPseudo, isSelPseudoClass, isSelRoot, isSelSelector,
-  cssSelectorParser, getSelSpecificity, compareSelSpecificity, areSelNodesEqual, areSelNodeHeadersEqual, cloneSelNode, cloneSelNodeHeader,
+  getSelSpecificity, compareSelSpecificity, areSelNodesEqual, areSelNodeHeadersEqual, cloneSelNode, cloneSelNodeHeader,
   declarePostCssPlugin,
 } from './domUtils.ts';
 import { isArray, isSome } from './utils.ts';
@@ -15,7 +15,7 @@ const defaultPrintHeadWidth = 40;
 const defaultPrintCssWidth = 80;
 
 type MergeSelectorsPseudo = 'is' | 'where';
-type MergeSelectorsMode = 'safe' | 'expansive' | 'unsafe';
+type MergeSelectorsMode = 'safe' | 'greedy' | 'unsafe';
 type MergeSelectorsModeInternal = MergeSelectorsMode | 'unsafe-linear';
 type FormatTrieField = 'nextTries' | 'nextVariants';
 type FormatTrieFields = FormatTrieField[];

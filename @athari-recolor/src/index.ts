@@ -4,7 +4,8 @@ import enquirer from 'enquirer';
 import { Command, Option } from 'commander';
 import { SitesConfig, downloadSiteHtml } from './siteDownloading.ts';
 import { recolorCss, recolorSiteCss } from './siteRecoloring.ts';
-import { ColorFormula, deepMerge, errorDetail, loadJson, objectValues, questionInput, questionSelect, saveJson, throwError } from './utils.ts';
+import { ColorFormula } from './commonUtils.ts';
+import { deepMerge, errorDetail, loadJson, objectValues, questionInput, questionSelect, saveJson, throwError } from './utils.ts';
 
 class NpmPackage {
   version: string = "";

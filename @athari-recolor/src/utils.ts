@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
-import { AssertionError } from 'node:assert';
+import assert, { AssertionError } from 'node:assert';
 import { isDate } from 'node:util/types';
-import { regex, pattern as re } from 'regex';
+import { regex, pattern as re, InterpolatedValue as RegExpValue } from 'regex';
 import JSON5 from 'json5';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
 import enquirer from 'enquirer';
@@ -56,16 +56,56 @@ export type OptionalOneOrArray<T> = T | (T | undefined)[] | undefined;
 
 export type OptionalPrimitive<T> = T | undefined;
 
-export type RegExpPattern = ReturnType<typeof re>;
-
 type ExtractNoArraysNoFunctions<T> = T extends (infer U)[] ? ExtractNoArraysNoFunctions<U> : T extends (...args: any[]) => any ? never : T;
 export type EnquirerPrompt = ExtractNoArraysNoFunctions<Parameters<enquirer['prompt']>[0]>;
 
-export enum ColorFormula {
-  Dark = 'dark',
-  DarkFull = 'dark-full',
-  DarkAuto = 'dark-auto',
-  DarkFullAuto = 'dark-full-auto',
+export type RegExpPattern = ReturnType<typeof re>;
+
+export class RawsTemplate<T> {
+  #raws: string[][] = [ [] ];
+  #values: T[] = [];
+
+  get raw(): string[] {
+    return this.#raws.map(r => r.join(""));
+  }
+
+  get values(): ReadonlyArray<T> {
+    return this.#values;
+  }
+
+  appendRaw(raw: string): void {
+    this.#raws[this.#raws.length - 1]!.push(raw);
+  }
+
+  appendValue(value: T): void {
+    this.#values.push(value);
+    this.#raws.push([]);
+  }
+
+  format<R>(fn: (template: { raw: string[] }, ...values: T[]) => R): R {
+    return fn({ raw: this.raw }, ...this.values);
+  }
+}
+
+export class RegExpTemplate extends RawsTemplate<RegExpValue> {
+  #flags?: string;
+
+  constructor(flags?: string) {
+    super();
+    Object.assign(this, { flags });
+  }
+
+  appendText(raw: string): void {
+    this.appendRaw(escapeRegExp(raw));
+  }
+
+  formatRegExp(): RegExp {
+    return this.format<RegExp>(this.#flags ? regex(this.#flags) : regex);
+  }
+}
+
+export function escapeRegExp(s: string) {
+  return s.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
 }
 
 export function assertNever(...values: never[]): never {
@@ -253,12 +293,6 @@ export async function writeTextFile(path: string, data: WritableFileData): Promi
     console.log(errorDetail(ex));
     return false;
   }
-}
-
-export async function getSiteDir(siteName: string): Promise<string> {
-  const siteDir = `./sites/${siteName}`;
-  await fs.mkdir(siteDir, { recursive: true });
-  return await fs.realpath(siteDir);
 }
 
 export function validateRequired(name: string): (input: string) => true | string {

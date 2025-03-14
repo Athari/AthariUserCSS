@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { DeepRequired } from 'utility-types';
 import {
   CssRoot, CssRule, CssNode, CssComment,
-  Sel, SelRoot, SelAttribute, SelAttributeOperator,
+  Sel, SelSelector, SelAttribute, SelAttributeOperator,
   isCssDecl, isSelAttribute,
   declarePostCssPlugin,
 } from './domUtils.ts';
@@ -15,7 +15,7 @@ export interface StyleAttrPluginOptions {
 
 type Options = DeepRequired<StyleAttrPluginOptions>;
 
-function* processStyleAttr(rule: CssRule, selRootTag: SelRoot, opts: Options): ArrayGenerator<CssRule> {
+function* processStyleAttr(rule: CssRule, selTag: SelSelector, opts: Options): ArrayGenerator<CssRule> {
   for (const declSel of rule.nodes) {
     assert(isCssDecl(declSel));
     const declDecl = declSel.clone();
@@ -27,35 +27,29 @@ function* processStyleAttr(rule: CssRule, selRootTag: SelRoot, opts: Options): A
     delete declSel.raws.value;
     const declSelStr = opts.insensitive ? declSel.toString().toLowerCase() : declSel.toString();
 
-    const selRootStyle = Sel.root([
-      Sel.selector([
-        Sel.attribute('style', opts.operator, declSelStr, opts.insensitive),
-      ]),
-    ]);
+    const selStyle = Sel.attribute('style', opts.operator, declSelStr, opts.insensitive);
 
     yield new CssRule({
-      selector: selRootStyle.toString(),
+      selector: selStyle.toString(),
       nodes: [
-        new CssComment({ text: `!ath! ${selRootTag.toString()}` }),
+        new CssComment({ text: `!ath! ${selTag.toString()}` }),
         declDecl,
       ],
     });
   }
 }
 
-function processObsoleteAttr(rule: CssRule, attr: SelAttribute, selRootTag: SelRoot, opts: Options): CssRule {
+function processObsoleteAttr(rule: CssRule, attr: SelAttribute, selTag: SelSelector, opts: Options): CssRule {
   rule.cleanRaws();
   const declSel = attr.clone();
   declSel.insensitive = opts.insensitive;
   if (opts.insensitive)
     declSel.value = declSel.value?.toLowerCase();
 
-  const selRootStyle = Sel.root([ Sel.selector([ declSel ]) ]);
-
   return new CssRule({
-    selector: selRootStyle.toString(),
+    selector: declSel.toString(),
     nodes: [
-      new CssComment({ text: `!ath! ${selRootTag.toString()}` }),
+      new CssComment({ text: `!ath! ${selTag.toString()}` }),
       ...rule.nodes,
     ],
   });
@@ -70,13 +64,13 @@ export default declarePostCssPlugin<StyleAttrPluginOptions>('style-attr', {
       const newRules: CssNode[] = [];
 
       css.walkRules((rule: CssRule): void => {
-        const selRootTag: SelRoot = Sel.parseRoot(rule);
-        assert(isSelAttribute(selRootTag.first.last));
-        const selAttr = selRootTag.first.last;
+        const selTag: SelSelector = Sel.parseSelector(rule);
+        assert(isSelAttribute(selTag.last));
+        const selAttr = selTag.last;
         if (selAttr.attribute === 'style')
-          newRules.push(...processStyleAttr(rule, selRootTag, opts));
+          newRules.push(...processStyleAttr(rule, selTag, opts));
         else
-          newRules.push(processObsoleteAttr(rule, selAttr, selRootTag, opts))
+          newRules.push(processObsoleteAttr(rule, selAttr, selTag, opts))
         rule.remove();
       });
 

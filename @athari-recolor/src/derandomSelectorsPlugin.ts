@@ -1,5 +1,5 @@
-import { InterpolatedValue, regex } from 'regex';
 import { DeepRequired } from 'utility-types';
+import { cssTokenRegExps } from './commonUtils.ts';
 import {
   CssRoot, CssRule,
   Sel, SelNode, SelNodeNames, SelRoot,
@@ -7,7 +7,7 @@ import {
   declarePostCssPlugin,
 } from './domUtils.ts';
 import {
-  OneOrArray, OptionalArray, OptionalOneOrArray,
+  OptionalArray, RegExpTemplate,
   isAssigned, objectValues, throwError, toAssignedArrayIfNeeded, valuesOf,
 } from './utils.ts';
 
@@ -44,134 +44,23 @@ type Options = DeepRequired<DerandomSelectorsPluginOptions>;
 
 type MatchedTypesCounter = Partial<Record<SelNodeNames, number>>;
 
-// https://www.w3.org/TR/2021/CRD-css-syntax-3-20211224/#token-diagrams
-const r = new class CssTokenRegExps {
-  "" = null;
-  newLine = regex('i')`
-    \n | \r\n | \r | \f
-  `;
-  whiteSpace = regex('i')`
-    \ | \t | ${this.newLine}
-  `;
-  digit = regex('i')`
-    [ 0-9 ]
-  `;
-  hexDigit = regex('i')`
-    [ 0-9 a-f ]
-  `;
-  escape = regex('i')`
-    \\ (
-      ${this.hexDigit}{1,6} ${this.whiteSpace}? |
-      ( (?! ${this.newLine} | ${this.hexDigit} ) . )
-    )
-  `;
-  whiteSpaceStar = regex('i')`
-    ${this.whiteSpace}*
-  `;
-  alpha = regex('i')`
-    [ a-z _ ]
-  `;
-  alphaNum = regex('i')`
-    [ a-z 0-9 ]
-  `;
-  alphaNumDash = regex('i')`
-    [ a-z 0-9 \- ]
-  `;
-  alphaNumUnder = regex('i')`
-    [ a-z 0-9 _ ]
-  `;
-  alphaNumUnderDash = regex('i')`
-    [ a-z 0-9 _ \- ]
-  `;
-  sign = regex('i')`
-    [ \+ \- ]
-  `;
-  ident = regex('i')`
-    (
-      -- |
-      -? ( ${this.alpha} | ${this.escape} )
-    )
-    (
-      ${this.alphaNumUnderDash} | ${this.escape}
-    )*
-  `;
-  identDash = regex('i')`
-    (
-      ${this.alpha} | ${this.escape}
-    )
-    (
-      ${this.alphaNumDash} | ${this.escape}
-    )*
-  `;
-  identSingleDash = regex('i')`
-    (
-      ${this.alpha} | ${this.escape}
-    )
-    (
-      (?! -- )
-      ${this.alphaNumDash} | ${this.escape}
-    )*
-  `;
-  identUnderDash = regex('i')`
-    (
-      ${this.alpha} | ${this.escape}
-    )
-    (
-      ${this.alphaNumUnder} | ${this.escape}
-    )*
-  `;
-  identUnderSingleDash = regex('i')`
-    (
-      ${this.alpha} | ${this.escape}
-    )
-    (
-      (?! -- )
-      ${this.alphaNumUnderDash} | ${this.escape}
-    )*
-  `;
-  number = regex('i')`
-    ${this.sign}?
-    (
-      ( ${this.digit}+ \. ${this.digit}+ ) |
-      ( \. ${this.digit}+ ) |
-      ${this.digit}+
-    )+
-    (
-      e
-      ${this.sign}?
-      ${this.digit}+
-    )?
-  `;
-  dim = regex('i')`
-    ${this.number} ${this.ident}
-  `;
-  percent = regex('i')`
-    ${this.number} %
-  `;
-}();
-
 function getDerandomTransform(type: SelNodeNames, opt: DerandomTransformOption): DerandomTransform {
-  const raw: string[] = [ "^" ];
-  const values: InterpolatedValue[] = [];
-
-  const appendRaw = (s: string) => raw[raw.length - 1] += s;
-  const appendValue = (v: InterpolatedValue) => (values.push(v), raw.push(""));
-  const escapeRegExp = (s: string) => s.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
-
+  const tpl = new RegExpTemplate(opt.flags ?? 'i');
+  tpl.appendRaw("^");
   for (const s of opt.find) {
     if (!s.includes('=')) {
-      appendRaw(escapeRegExp(s));
+      tpl.appendText(s);
     } else {
-      const [ name, key = "" ] = s.split('=', 2) as [ string, keyof typeof r ];
-      appendRaw(name.length > 0 ? `(?<${name}>` : "(");
-      appendValue(r[key] ?? throwError(`regex '${key}' not found`));
-      appendRaw(")");
+      const [ name, key = "" ] = s.split('=', 2) as [ string, keyof typeof cssTokenRegExps ];
+      tpl.appendRaw(name.length > 0 ? `(?<${name}>` : "(");
+      tpl.appendValue(cssTokenRegExps[key] ?? throwError(`regex '${key}' not found`));
+      tpl.appendRaw(")");
     }
   }
-  appendRaw("$");
+  tpl.appendRaw("$");
 
   return {
-    find: regex(opt.flags ?? 'i')({ raw }, ...values),
+    find: tpl.formatRegExp(),
     replace: opt.replace,
     type,
     transform(node: SelNode): SelNode[] | null {
@@ -180,7 +69,7 @@ function getDerandomTransform(type: SelNodeNames, opt: DerandomTransformOption):
       const newValue = node.value.replace(this.find, this.replace);
       if (newValue === node.value)
         return null;
-      return Sel.parseRoot(newValue).nodes.single().nodes;
+      return Sel.parseSelector(newValue).nodes;
     },
   };
 }

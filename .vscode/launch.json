@@ -31,6 +31,17 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Recolor CSS: current site",
+      "cwd": "${workspaceFolder}/@athari-recolor",
+      "program": "${workspaceFolder}/@athari-recolor/dist/index.js",
+      "args": ["recolor-site-css", "forum.ru-board.com"],
+      "runtimeArgs": ["--preserve-symlinks"],
+      "console": "integratedTerminal",
+      "preLaunchTask": "tsc: build - tsconfig.json"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Recolor CSS: test site",
       "cwd": "${workspaceFolder}/@athari-recolor",
       "program": "${workspaceFolder}/@athari-recolor/dist/index.js",

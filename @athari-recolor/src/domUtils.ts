@@ -233,14 +233,12 @@ export type {
 } from '@csstools/css-tokenizer';
 
 import {
-  DeepRequired,
-  NonUndefined,
+  DeepRequired, NonUndefined,
 } from 'utility-types';
 
 import {
   Assigned,
-  deepMerge,
-  throwError,
+  deepMerge, throwError,
 } from './utils.ts';
 
 // HTML: Functions
@@ -367,6 +365,10 @@ export function cloneSelNodeHeader<T extends SelNode>(node: T): T {
 export namespace Sel {
   export function parseRoot(selectors: string | CssRule, opts?: SelParseOptions): SelRoot {
     return cssSelectorParser().astSync(selectors, Object.assign(<SelParseOptions>{ lossless: false }, opts));
+  }
+
+  export function parseSelector(selector: string | CssRule, opts?: SelParseOptions): SelSelector {
+    return parseRoot(selector, opts).nodes.single();
   }
 
   export function attribute(attribute: string, operator?: SelAttributeOperator, value?: string, insensitive?: boolean): SelAttribute {

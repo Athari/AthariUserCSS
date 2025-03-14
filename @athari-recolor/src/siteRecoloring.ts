@@ -12,8 +12,9 @@ import derandomSelectorsPlugin from './derandomSelectorsPlugin.ts';
 import recolorPlugin from './recolorPlugin.ts';
 import styleAttrPlugin from './styleAttrPlugin.ts';
 import { PluginKeys, Site, SiteCss, SiteOptions } from './siteDownloading.ts';
+import { getSiteDir } from './commonUtils.ts';
 import type { PostCssPlugin, PostCssPluginCreate, PostCssResult } from './domUtils.ts';
-import { assertHasKeys, deepMerge, downloadText, getSiteDir, objectEntries, readTextFile, throwError } from './utils.ts';
+import { assertHasKeys, deepMerge, downloadText, objectEntries, readTextFile, throwError } from './utils.ts';
 
 interface RecolorOptions extends SiteOptions {
   header: string;

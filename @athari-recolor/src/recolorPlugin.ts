@@ -1,3 +1,4 @@
+import { DeepRequired } from 'utility-types';
 import { regex } from 'regex';
 import cssColorsNames from 'color-name';
 import {
@@ -12,7 +13,7 @@ import {
 import {
   isTokenHash, isTokenIdent, TokenHash, TokenIdent,
 } from '@csstools/css-tokenizer';
-import { DeepRequired } from 'utility-types';
+import { ColorFormula } from './commonUtils.ts';
 import {
   CssRoot, CssAtRule, CssRule, CssDecl, CssComment,
   Comp, CompFunction, CompToken, CssToken,
@@ -20,7 +21,7 @@ import {
   tokenizeCss, parseCssCompStr, stringifyCssComp, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
   declarePostCssPlugin,
 } from './domUtils.ts';
-import { ColorFormula, compare, objectEntries, objectFromEntries, OptionalArray, regexp } from './utils.ts';
+import { compare, objectEntries, objectFromEntries, OptionalArray, regexp } from './utils.ts';
 
 interface RecolorVarTransform {
   find: string;

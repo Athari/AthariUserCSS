@@ -3,15 +3,9 @@ import { basename } from 'node:path';
 import vm from 'node:vm';
 import { Exclude, Type } from 'class-transformer';
 import { WritableKeys } from 'utility-types';
-import {
-  format as prettifyCode,
-  Options as PrettierOptions,
-} from 'prettier';
-import type { MergeSelectorsPluginOptions } from './mergeSelectorsPlugin.ts';
-import type { DerandomSelectorsPluginOptions } from './derandomSelectorsPlugin.ts';
-import type { RecolorPluginOptions } from './recolorPlugin.ts';
-import type { RemoverPluginOptions } from './removerPlugin.ts';
-import type { StyleAttrPluginOptions } from './styleAttrPlugin.ts';
+import { regex } from 'regex';
+import { format as prettifyCode, Options as PrettierOptions } from 'prettier';
+import { getSiteDir } from './commonUtils.ts';
 import {
   HtmlDocument, HtmlElement,
   Sel,
@@ -19,7 +13,7 @@ import {
 } from './domUtils.ts';
 import {
   Assigned, OptionalObject,
-  assertHasKeys, compare, deepMerge, downloadText, errorDetail, getSiteDir, isArray, isString, objectEntries, objectKeys, objectValues, readTextFile, throwError,
+  assertHasKeys, compare, deepMerge, downloadText, errorDetail, isArray, isString, objectEntries, objectKeys, objectValues, readTextFile, throwError,
 } from './utils.ts';
 
 export interface OptionalPlugin {
@@ -33,11 +27,11 @@ export type PluginKeys = Assigned<{
 }[keyof SiteOptions]>;
 
 export class SiteOptions {
-  recolor?: PluginOptions<RecolorPluginOptions>;
-  derandom?: PluginOptions<DerandomSelectorsPluginOptions>;
-  merge?: PluginOptions<MergeSelectorsPluginOptions>;
-  remove?: PluginOptions<RemoverPluginOptions>;
-  styleAttr?: PluginOptions<StyleAttrPluginOptions>;
+  recolor?: PluginOptions<import('./recolorPlugin.ts').RecolorPluginOptions>;
+  derandom?: PluginOptions<import('./derandomSelectorsPlugin.ts').DerandomSelectorsPluginOptions>;
+  merge?: PluginOptions<import('./mergeSelectorsPlugin.ts').MergeSelectorsPluginOptions>;
+  remove?: PluginOptions<import('./removerPlugin.ts').RemoverPluginOptions>;
+  styleAttr?: PluginOptions<import('./styleAttrPlugin.ts').StyleAttrPluginOptions>;
   encoding?: string | undefined = 'utf-8';
   combine?: boolean | undefined = true;
   refs?: boolean | undefined = false;
@@ -243,6 +237,11 @@ async function parseEmbeddedCss(site: Site, doc: HtmlDocument, html: SiteHtml): 
 async function parseStyleAttributes(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
   const skipSelAttrs = new Set([ 'id', 'class', 'style' ]);
   const obsoleteAttrs = { color: 'color', bgcolor: 'background-color', bordercolor: 'border-color' };
+  const reIdent = regex('i')`
+    ^
+    [ a-z _ \- ]
+    [ a-z 0-9 _ \- ]+
+    $ `;
 
   const styleDecls: string[] = [];
   for (const el of htmlQuerySelectorAll(doc, '[style]')) {
@@ -250,9 +249,7 @@ async function parseStyleAttributes(site: Site, doc: HtmlDocument, html: SiteHtm
     styleDecls.push(`${buildTagSelector(el)}[style] {\n  ${attrStyle}\n}`);
   }
 
-  //console.log(objectKeys(obsoleteAttrs).map(a => `[${a}]`).join(", "));
   for (const el of htmlQuerySelectorAll(doc, objectKeys(obsoleteAttrs).map(a => `[${a}]`).join(", "))) {
-    //console.log(el.attributes.map(a => `${a.name}=${a.value}`).join(", "));
     for (const [ attrName, ruleName ] of objectEntries(obsoleteAttrs)) {
       const attrValue = el.attribs[attrName];
       if (!attrValue)
@@ -277,7 +274,8 @@ async function parseStyleAttributes(site: Site, doc: HtmlDocument, html: SiteHtm
       sel.nodes.push(...classNames.map(cls => Sel.className(cls)));
     }
     for (const attr of el.attributes.filter(a => !skipSelAttrs.has(a.name) && !(a.name in obsoleteAttrs)))
-      sel.append(Sel.attribute(attr.name, '=', attr.value));
+      if (reIdent.test(attr.name))
+        sel.append(Sel.attribute(attr.name, '=', attr.value));
     return Sel.root([ sel ]);
   }
 }
