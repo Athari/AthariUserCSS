@@ -5,7 +5,7 @@ import { Command, Option } from 'commander';
 import { SitesConfig, downloadSiteHtml } from './siteDownloading.ts';
 import { recolorCss, recolorSiteCss } from './siteRecoloring.ts';
 import { ColorFormula } from './commonUtils.ts';
-import { deepMerge, errorDetail, loadJson, objectValues, questionInput, questionSelect, saveJson, throwError } from './utils.ts';
+import { configureInspect, deepMerge, inspectPretty, loadJson, logError, objectValues, questionInput, questionSelect, saveJson, throwError } from './utils.ts';
 
 class NpmPackage {
   version: string = "";
@@ -25,6 +25,8 @@ interface RecolorSiteCssCommandOptions {
 
 const npmPackage: NpmPackage = await loadJson(NpmPackage, "./package.json") ?? throwError("Missing JSON package metadata");
 const sites: SitesConfig = await loadJson(SitesConfig, "./sites.json") ?? throwError("Missing JSON site metadata");
+
+configureInspect();
 
 const program = new Command();
 const optionColorFormula = new Option('-c, --color-formula', "Color transform formula")
@@ -82,7 +84,7 @@ program
         })
       ]);
     }
-    console.log("Site config: ", a.siteName, site);
+    console.log("Site config: ", a.siteName, inspectPretty(site));
     await downloadSiteHtml(site);
     await recolorSiteCss(site);
     await saveJson(site, `${site.dir}/site.json`);
@@ -102,6 +104,6 @@ try {
   }
   await program.parseAsync(process.argv);
 } catch (ex: unknown) {
-  console.error(`Error running command "${process.argv[2] ?? '<?>'}": ${errorDetail(ex)}`);
+  logError(ex, `Error running command "${process.argv[2] ?? '<?>'}"`);
   process.exit(1);
 }

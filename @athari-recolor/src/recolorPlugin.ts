@@ -2,8 +2,7 @@ import { DeepRequired } from 'utility-types';
 import { regex } from 'regex';
 import cssColorsNames from 'color-name';
 import {
-  ColorData,
-  ColorNotation,
+  ColorData, ColorNotation,
   color as parseCssColor,
   serializeRGB as serializeRgb,
   serializeOKLCH as serializeOkLch,
@@ -21,7 +20,10 @@ import {
   tokenizeCss, parseCssCompStr, stringifyCssComp, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
   declarePostCssPlugin,
 } from './domUtils.ts';
-import { compare, objectEntries, objectFromEntries, OptionalArray, regexp } from './utils.ts';
+import {
+  OptArray,
+  compare, objectEntries, objectFromEntries, regexp,
+} from './utils.ts';
 
 interface RecolorVarTransform {
   find: string;
@@ -34,7 +36,7 @@ export interface RecolorPluginOptions {
   colorVarPrefix?: string | undefined;
   palette?: boolean | undefined;
   paletteVarPrefix?: string | undefined;
-  paletteVarTransforms?: OptionalArray<RecolorVarTransform>;
+  paletteVarTransforms?: OptArray<RecolorVarTransform>;
 }
 
 type Options = DeepRequired<RecolorPluginOptions>;
@@ -282,16 +284,6 @@ export default declarePostCssPlugin<RecolorPluginOptions>('recolor', {
         css.prepend(buildPaletteRule(palette));
 
       css.cleanRaws();
-
-      const reAthComment = regex('i')` ^ \s* !ath! \s* `;
-      css.walkComments(comment => {
-        if (comment.parent?.nodes?.length == 1)
-          comment.parent.remove();
-        else if (reAthComment.test(comment.text))
-          comment.text = comment.text.replace(reAthComment, "").trim();
-        else
-          comment.remove();
-      });
     }
   };
 });

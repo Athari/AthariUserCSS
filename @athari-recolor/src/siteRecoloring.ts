@@ -6,15 +6,15 @@ import cssNanoPlugin from 'cssnano';
 import cssNanoPresetDefault from 'cssnano-preset-default';
 import autoPrefixerPlugin from 'autoprefixer';
 import discardEmptyPlugin from 'postcss-discard-empty';
-import removerPlugin from './removerPlugin.ts';
+import transformerPlugin from './transformerPlugin.ts';
 import mergeSelectorsPlugin from './mergeSelectorsPlugin.ts';
-import derandomSelectorsPlugin from './derandomSelectorsPlugin.ts';
 import recolorPlugin from './recolorPlugin.ts';
 import styleAttrPlugin from './styleAttrPlugin.ts';
 import { PluginKeys, Site, SiteCss, SiteOptions } from './siteDownloading.ts';
 import { getSiteDir } from './commonUtils.ts';
 import type { PostCssPlugin, PostCssPluginCreate, PostCssResult } from './domUtils.ts';
-import { assertHasKeys, deepMerge, downloadText, objectEntries, readTextFile, throwError } from './utils.ts';
+import { assertHasKeys, deepMerge, downloadText, inspectPretty, objectEntries, readTextFile, throwError } from './utils.ts';
+import { regex } from 'regex';
 
 interface RecolorOptions extends SiteOptions {
   header: string;
@@ -27,17 +27,18 @@ type PluginMap = {
 
 async function runPostCss(inputPath: string, css: string, plugins: postCss.AcceptedPlugin[]): Promise<PostCssResult> {
   const result = await postCss(plugins).process(css, { from: inputPath, parser: cssSafeParser });
-  console.log(
-    Object.fromEntries(result.messages
-      .groupBy(m => m.plugin ?? "?")
-      .select(gp => [
-        gp.key,
-        Object.fromEntries(gp
-          .groupBy(m => m.type)
-          .select(gt => [ gt.key, gt.count() ])
-          .toArray())
-      ])
-      .toArray()));
+  const groupedMessages = result.messages
+    .groupBy(m => m.plugin ?? "?")
+    .select(gp => [
+      gp.key,
+      Object.fromEntries(gp
+        .groupBy(m => m.type)
+        .select(gt => [ gt.key, gt.count() ])
+        .toArray())
+    ])
+    .toArray();
+  if (groupedMessages.length > 0)
+    console.log("PostCSS messages: ", inspectPretty(Object.fromEntries(groupedMessages)));
   return result;
 }
 
@@ -52,7 +53,7 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
   let result = await runPostCss(inputPath, inputCss, [
     autoPrefixerPlugin({ add: false }),
     ...optionalPostCssPlugins(opts, {
-      remove: removerPlugin,
+      remove: transformerPlugin,
     }),
     cssNanoPlugin({
       preset: [
@@ -66,8 +67,24 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
   result = await runPostCss(inputPath, result.css, [
     ...optionalPostCssPlugins(opts, {
       merge: mergeSelectorsPlugin,
-      derandom: derandomSelectorsPlugin,
+      derandom: transformerPlugin,
       recolor: recolorPlugin,
+    }),
+    transformerPlugin({
+      css: {
+        comment: {
+          text: { find: regex('i')`^ \s* !ath!`, negate: true },
+          operations: { operation: 'remove' },
+        },
+      },
+    }),
+    transformerPlugin({
+      css: {
+        comment: {
+          text: { find: regex('si')`^ \s* !ath! \s* (?<text> .* )` },
+          operations: { operation: 'rename', replace: '$<text>' },
+        },
+      },
     }),
     discardEmptyPlugin(),
   ]);
@@ -141,15 +158,14 @@ async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: str
     ...extraHeaderLines,
   ].map(s => ` * ${s}\n`).join("");
   const options = deepMerge(null,
-    <RecolorOptions>{
+    {
       combine: true,
       refs: false,
     },
-    // HACK: Why type assert needed?
-    site.options as RecolorOptions,
+    site.options,
     {
       header: `/*\n${headerLines} */\n`,
-    });
+    }) as RecolorOptions;
   await recolorCss(site, css.path, outputPath, options);
 }
 

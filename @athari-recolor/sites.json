@@ -2,7 +2,15 @@
   options: {
     default: {
       recolor: { colorFormula: 'dark-full', palette: true },
+      derandom: { enabled: false },
       merge: { enabled: false },
+      remove: { enabled: false },
+      styleAttr: {
+        enabled: true,
+        operator: '*=',
+        insensitive: true,
+      },
+      encoding: 'utf-8',
       combine: true,
       refs: true,
     },
@@ -127,6 +135,29 @@
         { name: "following.html", url: "https://www.freepik.com/user/following" },
         { name: "collections.html", url: "https://www.freepik.com/user/collections" },
         //{ name: "devices.html", url: "https://www.freepik.com/user/device-manager" }, // garbage css
+      ],
+    },
+    {
+      name: "forum.ru-board.com",
+      options: {
+        encoding: 'windows-1251',
+      },
+      html: [
+        { name: "blog.html", url: "https://forum.ru-board.com/blog.cgi" },
+        { name: "board.html", url: "https://forum.ru-board.com/board.cgi" },
+        { name: "boardnews.html", url: "https://forum.ru-board.com/boardnews.cgi" },
+        { name: "codes.html", url: "https://forum.ru-board.com/board/codes.html" },
+        { name: "forum.html", url: "https://forum.ru-board.com/forum.cgi" },
+        { name: "legal.html", url: "https://forum.ru-board.com/legal.cgi" },
+        { name: "messanger-inbox.html", url: "https://forum.ru-board.com/messanger.cgi?action=inbox" },
+        { name: "post-poll.html", url: "https://forum.ru-board.com/post.cgi?action=poll" },
+        { name: "post-reply.html", url: "https://forum.ru-board.com/post.cgi?action=reply" },
+        { name: "profile-show.html", url: "https://forum.ru-board.com/profile.cgi?action=show&member=batva" },
+        { name: "profile.html", url: "https://forum.ru-board.com/profile.cgi" },
+        { name: "tools-settings.html", url: "https://forum.ru-board.com/tools.cgi?action=settings" },
+        { name: "topic.html", url: "https://forum.ru-board.com/topic.cgi?forum=13&topic=3697" },
+        { name: "topmember.html", url: "https://forum.ru-board.com/topmember.cgi" },
+        { name: "whosonline.html", url: "https://forum.ru-board.com/whosonline.cgi" },
       ],
     },
     {

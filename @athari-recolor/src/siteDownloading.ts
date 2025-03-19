@@ -12,15 +12,15 @@ import {
   parseHtmlDocument, htmlQuerySelectorAll, htmlQuerySelector, getHtmlAllInnerText,
 } from './domUtils.ts';
 import {
-  Assigned, OptionalObject,
-  assertHasKeys, compare, deepMerge, downloadText, errorDetail, isArray, isString, objectEntries, objectKeys, objectValues, readTextFile, throwError,
+  Assigned, OptObject,
+  assertHasKeys, compare, deepMerge, downloadText, isArray, isString, logError, objectEntries, objectKeys, objectValues, readTextFile, throwError,
 } from './utils.ts';
 
 export interface OptionalPlugin {
   enabled?: boolean | undefined;
 };
 
-export type PluginOptions<T> = OptionalObject<T & OptionalPlugin>;
+export type PluginOptions<T> = OptObject<T & OptionalPlugin>;
 
 export type PluginKeys = Assigned<{
   [K in keyof SiteOptions]: SiteOptions[K] extends PluginOptions<any> ? K : never
@@ -28,9 +28,9 @@ export type PluginKeys = Assigned<{
 
 export class SiteOptions {
   recolor?: PluginOptions<import('./recolorPlugin.ts').RecolorPluginOptions>;
-  derandom?: PluginOptions<import('./derandomSelectorsPlugin.ts').DerandomSelectorsPluginOptions>;
+  derandom?: PluginOptions<import('./transformerPlugin.ts').RegularTransformerPluginOptions>;
   merge?: PluginOptions<import('./mergeSelectorsPlugin.ts').MergeSelectorsPluginOptions>;
-  remove?: PluginOptions<import('./removerPlugin.ts').RemoverPluginOptions>;
+  remove?: PluginOptions<import('./transformerPlugin.ts').RegularTransformerPluginOptions>;
   styleAttr?: PluginOptions<import('./styleAttrPlugin.ts').StyleAttrPluginOptions>;
   encoding?: string | undefined = 'utf-8';
   combine?: boolean | undefined = true;
@@ -115,8 +115,9 @@ export class Site {
   }
 
   hydrate(root: SitesConfig) {
-    this.options = deepMerge(null, new SiteOptions(), root.options.default, this.options);
-    this.format = deepMerge(null, new SiteFormat(), root.format, this.format);
+    // HACK: When properly typed, these expressions murder performance, so fuck them
+    this.options = (deepMerge as any)(null, new SiteOptions(), root.options.default, this.options) as SiteOptions;
+    this.format = (deepMerge as any)(null, new SiteFormat(), root.format, this.format) as SiteFormat;
   }
 
   addCss(css: SiteCss): boolean {
@@ -140,8 +141,7 @@ export class Site {
       const pretty = await prettifyCode(source, { filepath, ...options });
       return pretty.trimEnd();
     } catch (ex: unknown) {
-      console.log(`Failed to prettify ${filepath}, keeping formatting`);
-      console.log(errorDetail(ex));
+      logError(ex, `Failed to prettify ${filepath}, keeping formatting`);
       return source.trimEnd();
     }
   }

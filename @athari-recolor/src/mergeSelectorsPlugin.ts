@@ -1,4 +1,4 @@
-import assert from 'node:assert';
+import assert, { fail } from 'node:assert/strict';
 import JSON5 from 'json5';
 import { regex } from 'regex';
 import { Brand, DeepRequired } from 'utility-types';
@@ -122,8 +122,8 @@ function areNodesCompatible(a: SelNode, b: SelNode, mergeMode: MergeSelectorsMod
   //const cmp = (() => {
     const [ aCompat, bCompat ] = [ selNodeCompat[a.type], selNodeCompat[b.type] ];
     if (aCompat === 'never' || bCompat === 'never') {
-      //assert(false, `Unexpected selector node compat check: ${a} | ${b}`);
       return false; // syntax errors can result in this
+      fail(`Unexpected selector node compat check: ${a} | ${b}`);
     }
 
     const isMergeModeUnsafe = mergeMode === 'unsafe' || mergeMode === 'unsafe-linear';
@@ -138,7 +138,7 @@ function areNodesCompatible(a: SelNode, b: SelNode, mergeMode: MergeSelectorsMod
     if (aCompat === 'spec' && bCompat === 'spec')
       return areSpecEqual || isMergeModeUnsafe;
 
-    assert(false, `Unexpected selector node compat type: ${aCompat} | ${bCompat}`);
+    fail(`Unexpected selector node compat type: ${aCompat} | ${bCompat}`);
   /*})();
   const formatSelSpecificity = (spec: SelSpecificity) => `(${spec.a}:${spec.b}:${spec.c})`;
   const formatCmp = (a: SelNode) => `${formatSelSpecificity(getSelSpecificity(a))} ${printNodeHead(a).ellipsis(30)}`.padEnd(40);
@@ -224,7 +224,7 @@ function buildTrie(node: SelNode, trie: TrieNode, mergeMode: MergeSelectorsModeI
         if (isSelPseudo(part))
           buildTrie(part, compatTrie, mergeMode);
         else if (isSelContainer(part))
-          assert(false, `Non-is pseudo expected, got ${part.type} container`);
+          fail(`Non-is pseudo expected, got ${part.type} container`);
       }
     }
 
@@ -236,7 +236,7 @@ function buildTrie(node: SelNode, trie: TrieNode, mergeMode: MergeSelectorsModeI
     }
 
   } else {
-    assert(false, `Container expected, got ${node.type}`);
+    fail(`Container expected, got ${node.type}`);
   }
 }
 

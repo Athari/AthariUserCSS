@@ -49,8 +49,10 @@ import {
 
 // CSS: PostCSS
 
-import {
+import postCss, {
+  AnyNode as CssAnyNode,
   AtRule as CssAtRule,
+  ChildNode as CssChildNode,
   Comment as CssComment,
   Container as CssContainer,
   Declaration as CssDecl,
@@ -62,6 +64,8 @@ import {
 } from 'postcss';
 
 export type {
+  AnyNode as CssAnyNode,
+  ChildNode as CssChildNode,
   Helpers as PostCssHelpers,
 } from 'postcss';
 
@@ -81,6 +85,8 @@ export {
   Warning as PostCssWarning,
 } from 'postcss';
 
+import cssSafeParser from 'postcss-safe-parser';
+
 import cssSelectorParser from 'postcss-selector-parser';
 
 import type {
@@ -91,7 +97,7 @@ import type {
   Combinator as SelCombinator,
   Comment as SelComment,
   ContainerOptions as SelContainerOptions,
-  //Container as SelContainer,
+  Container as SelContainerBase,
   Identifier as SelIdentifier,
   Nesting as SelNesting,
   Node as SelNode,
@@ -107,7 +113,7 @@ import type {
 
 const {
   isAttribute: isSelAttribute,
-  isClassName: isSelClassName,
+  isClassName: isSelClass,
   isCombinator: isSelCombinator,
   isComment: isSelComment,
   isContainer: isSelContainer,
@@ -127,7 +133,7 @@ const {
 
 export {
   isSelAttribute,
-  isSelClassName,
+  isSelClass,
   isSelCombinator,
   isSelComment,
   isSelContainer,
@@ -232,13 +238,17 @@ export type {
   stringify as stringifyCss,
 } from '@csstools/css-tokenizer';
 
+// Utils
+
+import assert from 'node:assert/strict';
+
 import {
   DeepRequired, NonUndefined,
 } from 'utility-types';
 
 import {
-  Assigned,
-  deepMerge, throwError,
+  Assigned, Guard,
+  deepMerge, isSome, throwError,
 } from './utils.ts';
 
 // HTML: Functions
@@ -267,6 +277,14 @@ export function htmlCompileQuery<T extends HtmlElement>(selector: HtmlSimpleSele
 
 // CSS: Functions
 
+export type CssNodeNames = CssAnyNode['type'];
+
+export type CssChildNodeNames = CssChildNode['type'];
+
+export type CssNodeTypes = {
+  [K in CssNodeNames]: Extract<CssAnyNode, { type: K }>;
+};
+
 export const isCssAtRule = (n: unknown): n is CssAtRule => n instanceof CssAtRule;
 export const isCssComment = (n: unknown): n is CssComment => n instanceof CssComment;
 export const isCssContainer = (n: unknown): n is CssContainer => n instanceof CssContainer;
@@ -275,6 +293,7 @@ export const isCssDocument = (n: unknown): n is CssDocument => n instanceof CssD
 export const isCssNode = (n: unknown): n is CssNode => n instanceof CssNode;
 export const isCssRoot = (n: unknown): n is CssRoot => n instanceof CssRoot;
 export const isCssRule = (n: unknown): n is CssRule => n instanceof CssRule;
+export const isCssChildNode = (n: unknown): n is CssChildNode => isSome(isCssAtRule, isCssComment, isCssDecl, isCssRule)(n);
 
 export type PostCssProcessors = ReturnType<NonUndefined<PostCssPlugin['prepare']>>;
 
@@ -282,21 +301,82 @@ export type PostCssPluginCreate<O> = ((opts?: O) => PostCssPlugin) & { postcss: 
 
 export function declarePostCssPlugin<O>(
   name: string,
-  defaultOptions: DeepRequired<O>,
+  defaultOpts: DeepRequired<O>,
   processors: (opts: DeepRequired<O>) => PostCssProcessors,
 ): PostCssPluginCreate<O> {
   return Object.assign(
     (opts?: O): PostCssPlugin => ({
       postcssPlugin: name,
       prepare() {
-        const actualOptions = deepMerge(null, {}, defaultOptions, opts) as DeepRequired<O>;
-        return processors(actualOptions);
+        const actualOpts = deepMerge(null, {}, defaultOpts, opts) as DeepRequired<O>;
+        return processors(actualOpts);
       },
     }),
     {
       postcss: true as const,
     },
   );
+}
+
+export function declarePostCssPluginOpt<O>(
+  name: string,
+  defaultOptions: O,
+  processors: (opts: O) => PostCssProcessors,
+): PostCssPluginCreate<O> {
+  return Object.assign(
+    (opts?: O): PostCssPlugin => ({
+      postcssPlugin: name,
+      prepare() {
+        const actualOpts = Object.assign({}, defaultOptions, opts) as O;
+        return processors(actualOpts);
+      },
+    }),
+    {
+      postcss: true as const,
+    },
+  );
+}
+
+export namespace Css {
+  function parseNode<T extends CssAnyNode>(guard: Guard<T>): (css: string) => T {
+    return css => {
+      const node = parseRoot(css).nodes.single();
+      assert(guard(node));
+      return node;
+    };
+  }
+
+  function parseNodes<T extends CssAnyNode>(guard?: Guard<T>): (css: string) => T[] {
+    return css => parseRoot(css).nodes
+      .map(node => {
+        assert(guard?.(node));
+        return node;
+      });
+  }
+
+  export const parseRoot = (css: string) => cssSafeParser(css);
+  export const parseRule = parseNode(isCssRule);
+  export const parseAtRule = parseNode(isCssRule);
+  export const parseComment = parseNode(isCssComment);
+
+  export function parseDecl(css: string): CssDecl {
+    const rule = parseRule(`*{${css}}`);
+    const node = rule.nodes.single();
+    assert(isCssDecl(node));
+    return node;
+  }
+
+  export const parseChildNodes = parseNodes(isCssChildNode);
+  export const parseRules = parseNodes(isCssRule);
+  export const parseAtRules = parseNodes(isCssRule);
+  export const parseComments = parseNodes(isCssComment);
+
+  export function parseDecls(css: string): CssDecl[] {
+    return parseRule(`*{${css}}`).nodes.map(node => {
+      assert(isCssDecl(node));
+      return node;
+    });
+  }
 }
 
 export type SelNodeNames = keyof SelNodeTypes;

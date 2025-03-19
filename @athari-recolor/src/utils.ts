@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
-import assert, { AssertionError } from 'node:assert';
+import { AssertionError } from 'node:assert/strict';
+import { InspectOptions, InspectOptionsStylized, CustomInspectFunction, inspect } from 'node:util';
 import { isDate } from 'node:util/types';
 import { regex, pattern as re, InterpolatedValue as RegExpValue } from 'regex';
 import JSON5 from 'json5';
@@ -16,19 +17,29 @@ export type ObjectEntries<T> = {
   [K in keyof T]-?: [K, T[K]];
 }[keyof T][];
 
-type ObjectFromEntries<T extends ReadonlyArray<readonly [PropertyKey, any]>> = {
-  [K in T[number][0]]: Extract<T[number], readonly [K, any]>[1]
+export type ObjectAssignedEntries<T> = {
+  [K in keyof T]-?: [K, Assigned<T[K]>];
+}[keyof T][];
+
+export type ObjectFromEntries<T extends ReadonlyArray<readonly [PropertyKey, any]>> = {
+  [K in T[number][0]]: Extract<T[number], readonly [K, any]>[1];
 };
 
-export type Intersect<T extends any[]> = T extends [infer First, ...infer Rest] ? First & Intersect<Rest>  : {};
+export type ObjectInvert<T extends Record<PropertyKey, PropertyKey>> = {
+  [K in keyof T as T[K]]: K;
+};
+
+export type Intersect<T extends any[]> = T extends [infer First, ...infer Rest] ? First & Intersect<Rest> : {};
 
 export type Guard<T = unknown> = (x: unknown) => x is T;
 
 export type GuardReturnType<T extends Guard> = T extends Guard<infer U> ? U : never;
 
+export type SubUnion<T, U extends T> = T extends U ? T : never;
+
 export type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends ((x: infer I) => void) ? I : never;
 
-export type Assigned<T> = T extends undefined | null ? never : T;
+export type Assigned<T> = T extends undefined ? never : T extends null ? never : T;
 
 export type NotUndefined<T> = T extends undefined ? never : T;
 
@@ -36,27 +47,31 @@ export type NotNull<T> = T extends null ? never : T;
 
 export type ObjectRecord<T> = Record<keyof T, T[keyof T]>;
 
-export type OneOrArray<T> = T | T[];
+export type OneOrArray<T> = Array<T> | T;
 
-export type ArrayElement<T> = T extends readonly (infer U)[] ? U : never;
+export type ArrayElement<T> = T extends ReadonlyArray<infer U> ? U : never;
 
-export type ArrayIfNeeded<T> = T extends readonly (infer U)[] ? U[] : never;
+export type ArrayIfNeeded<T> = T extends ReadonlyArray<infer U> ? Array<U> : never;
 
-export type AssignedArrayIfNeeded<T> = T extends readonly (infer U)[] ? Assigned<U>[] : never;
+export type AssignedArrayIfNeeded<T> = T extends ReadonlyArray<infer U> ? Array<Assigned<U>> : never;
 
 export type ArrayGenerator<T> = Generator<T, void, unknown>;
 
 export type KeyOfAny<T> = T extends any ? keyof T : never;
 
-export type OptionalObject<T> = { [P in keyof T]?: T[P] | undefined } | undefined;
+export type ValueOf<T> = T[keyof T];
 
-export type OptionalArray<T> = (T | undefined)[] | undefined;
+export type ValueOfAny<T> = T extends any ? T[keyof T] : never;
 
-export type OptionalOneOrArray<T> = T | (T | undefined)[] | undefined;
+export type Opt<T> = T | undefined;
 
-export type OptionalPrimitive<T> = T | undefined;
+export type OptObject<T> = { [K in keyof T]?: T[K] | undefined } | undefined;
 
-type ExtractNoArraysNoFunctions<T> = T extends (infer U)[] ? ExtractNoArraysNoFunctions<U> : T extends (...args: any[]) => any ? never : T;
+export type OptArray<T> = Array<T | undefined> | undefined;
+
+export type OptOneOrArray<T> = Array<T | undefined> | T | undefined;
+
+type ExtractNoArraysNoFunctions<T> = T extends Array<infer U> ? ExtractNoArraysNoFunctions<U> : T extends (...args: any[]) => any ? never : T;
 export type EnquirerPrompt = ExtractNoArraysNoFunctions<Parameters<enquirer['prompt']>[0]>;
 
 export type RegExpPattern = ReturnType<typeof re>;
@@ -95,7 +110,7 @@ export class RegExpTemplate extends RawsTemplate<RegExpValue> {
     Object.assign(this, { flags });
   }
 
-  appendText(raw: string): void {
+  appendRawEscaped(raw: string): void {
     this.appendRaw(escapeRegExp(raw));
   }
 
@@ -106,6 +121,28 @@ export class RegExpTemplate extends RawsTemplate<RegExpValue> {
 
 export function escapeRegExp(s: string) {
   return s.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
+}
+
+export class Counter<T> extends Object {
+  #counts = new Map<T, number>();
+
+  get size(): number { return this.#counts.size }
+
+  get total(): number { return [...this.#counts.values()].sum() }
+
+  increment(key: T): void {
+    this.#counts.set(key, (this.#counts.get(key) ?? 0) + 1);
+  }
+
+  getCounts(): Record<string, number> {
+    return this.#counts.entries().reduce(
+      (o, [key, n]) => (o[String(key)] = n, o),
+      <Record<string, number>>{});
+  }
+
+  override toString(): string {
+    return objectEntries(this.getCounts()).join(", ");
+  }
 }
 
 export function assertNever(...values: never[]): never {
@@ -124,26 +161,40 @@ export function objectFromEntries<T extends ReadonlyArray<readonly [PropertyKey,
   return Object.fromEntries(entries) as ObjectFromEntries<T>;
 }
 
-export function objectEntries<T>(o: T): ObjectEntries<T>
-export function objectEntries<T>(o: Partial<T>): ObjectEntries<T>
-export function objectEntries<T>(o: Partial<T>): ObjectEntries<T> {
-  return Object.entries(o) as ObjectEntries<T>;
+export function objectInvert<T extends Record<keyof T, keyof any>>(o: T) {
+  return Object.fromEntries(Object.entries(o).map(([v, k]) => [ String(k), v ])) as ObjectInvert<T>;
 }
 
-export function objectKeys<T>(o: Partial<T>): (keyof T)[] {
-  return Object.keys(o) as (keyof T)[];
+export function objectEntries<T>(o: T) {
+  return Object.entries(o as {}) as ObjectEntries<T>;
 }
 
-export function objectValues<T>(o: Partial<T>): T[keyof T][] {
-  return Object.values(o) as T[keyof T][];
+export function objectAssignedEntries<T>(o: T) {
+  return Object.entries(o as {}).filter(e => isAssigned(e[1])) as ObjectAssignedEntries<T>;
 }
 
-export function toArrayIfNeeded<T>(v: OneOrArray<T> | undefined): T[] {
-  return isNotAssigned(v) ? [] : isArray(v) ? v : [ v ];
+export function objectKeys<T>(o: T) {
+  return Object.keys(o as {}) as (keyof T)[];
 }
 
-export function toAssignedArrayIfNeeded<T>(v: OneOrArray<T> | undefined): Assigned<T>[] {
-  return toArrayIfNeeded(v).filter(isAssigned);
+export function objectValues<T>(o: T) {
+  return Object.values(o as {}) as T[keyof T][];
+}
+
+export function objectAssignedValues<T>(o: T) {
+  return Object.values(o as {}).filter(isAssigned) as Array<Assigned<T[keyof T]>>;
+}
+
+export function toArrayIfNeeded<T>(v: undefined | null): typeof v
+export function toArrayIfNeeded<T>(v: T[] | T): T[]
+export function toArrayIfNeeded<T>(v: T[] | T | undefined | null): T[] | undefined | null {
+  return isNullish(v) || isArray(v) ? v : [ v ];
+}
+
+export function toAssignedArrayIfNeeded<T>(v: Assigned<T>[] | Assigned<T> | undefined | null): Assigned<T>[]
+export function toAssignedArrayIfNeeded<T>(v: T[] | T | undefined | null): Assigned<T>[]
+export function toAssignedArrayIfNeeded<T>(v: T[] | T | undefined | null): Assigned<T>[] {
+  return isNullish(v) ? [] : (isArray(v) ? v : [ v ]).filter(isAssigned);
 }
 
 export function valuesOf<T>() {
@@ -162,7 +213,7 @@ export function isAssigned<T>(v: T): v is Assigned<T> {
   return v !== undefined && v !== null;
 }
 
-export function isNotAssigned(v: unknown): v is undefined | null {
+export function isNullish(v: unknown): v is undefined | null {
   return v === undefined && v === null;
 }
 
@@ -276,8 +327,7 @@ export async function readTextFile(path: string): Promise<string | null> {
   try {
     return await fs.readFile(path, 'utf-8');
   } catch (ex: unknown) {
-    console.log(`Failed to read file "${path}"`);
-    console.log(errorDetail(ex));
+    logError(ex, `Failed to read file "${path}"`);
     return null;
   }
 }
@@ -289,8 +339,7 @@ export async function writeTextFile(path: string, data: WritableFileData): Promi
     await fs.writeFile(path, data, 'utf-8');
     return true;
   } catch (ex: unknown) {
-    console.log(`Failed to write file "${path}"`);
-    console.log(errorDetail(ex));
+    logError(ex, `Failed to write file "${path}"`);
     return false;
   }
 }
@@ -633,4 +682,53 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
   function toPropertyKey(k: unknown): PropertyKey {
     return isString(k) || isNumber(k) || isSymbol(k) ? k : String(k);
   }
+}
+
+export function configureInspect() {
+  inspect.defaultOptions = {
+    ...inspect.defaultOptions,
+    colors: process.stdout.isTTY && process.env.TERM !== 'dumb' && !process.env.NO_COLOR,
+    numericSeparator: true,
+  };
+  const updateBreakLength = () => inspect.defaultOptions.breakLength = process.stdout.columns || 80;
+  updateBreakLength();
+  process.stdout.addListener('resize', updateBreakLength);
+}
+
+export function inspectPretty(o: any, opts?: InspectOptions) {
+  return inspect(o, { ...opts });
+}
+
+export function logError(ex: unknown, message: string | null) {
+  if (message)
+    console.error(message);
+  console.error(inspectPretty(errorDetail(ex)));
+}
+
+type InspectColor = { [0]: number; [1]: number };
+type InspectColorKey =
+  | 'reset'
+  | 'bold' | 'dim' | 'italic' | 'underline' | 'blink' | 'inverse' | 'hidden' | 'strikethrough' | 'doubleunderline' | 'framed' | 'overlined'
+  | 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white'
+  | 'gray' | 'redBright' | 'greenBright' | 'yellowBright' | 'blueBright' | 'magentaBright' | 'cyanBright' | 'whiteBright'
+  | 'bgBlack' | 'bgRed' | 'bgGreen' | 'bgYellow' | 'bgBlue' | 'bgMagenta' | 'bgCyan' | 'bgWhite'
+  | 'bgGray' | 'bgRedBright' | 'bgGreenBright' | 'bgYellowBright' | 'bgBlueBright' | 'bgMagentaBright' | 'bgCyanBright' | 'bgWhiteBright';
+
+// TODO: Play around this this bs later
+function makeInspectPretty() {
+  Object.assign(Object.prototype, {
+    [inspect.custom]: function (this: unknown, depth: number, opts: InspectOptionsStylized, ins: CustomInspectFunction): string {
+      const colors = inspect.colors as unknown as Record<InspectColorKey, InspectColor>;
+      const format = (str: string, ...color: InspectColorKey[]) =>
+        opts.colors ? color.reduce((s, c) => `\x1B[${colors[c][0]}m${s}\x1B[${colors[c][1]}m`, str) : str;
+  
+      const className = format(`${this?.constructor.name ?? '<Null>'}`, 'whiteBright', 'bold');
+      if (depth < 0)
+        return className;
+      const items = Array.isArray(this) || Symbol.iterator in <{}>this
+        ? [ ...<[]>this ]
+        : /*{ ...<{}>this }*/Object.entries(<{}>this);
+      return `${className} { ${inspect(items, { ...opts, depth: (opts.depth ?? 0) - 1 })} }`;
+    }
+  });
 }

@@ -1,4 +1,4 @@
-import { IEnumerable } from "linq-to-typescript";
+import { IEnumerable } from 'linq-to-typescript';
 
 declare global {
   interface Array<T> extends IEnumerable<T> { }
@@ -13,7 +13,7 @@ declare global {
   interface Float64Array extends IEnumerable<number> { }
   interface Map<K, V> extends IEnumerable<[K, V]> { }
   interface Set<T> extends IEnumerable<T> { }
-  interface String extends IEnumerable<string> { }
+  //interface String extends IEnumerable<string> { }
 }
 
 declare module 'linq-to-typescript' {
