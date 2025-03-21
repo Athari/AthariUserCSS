@@ -1,15 +1,21 @@
 {
   options: {
     default: {
-      recolor: { colorFormula: 'dark-full', palette: true },
+      recolor: {
+        enabled: false,
+        mode: 'override',
+        formula: 'dark-full',
+        palette: true,
+        colorVar: "",
+        paletteVar: "c-",
+        renameVar: [
+          { find: '-var-', replace: '-' },
+        ],
+      },
       derandom: { enabled: false },
       merge: { enabled: false },
       remove: { enabled: false },
-      styleAttr: {
-        enabled: true,
-        operator: '*=',
-        insensitive: true,
-      },
+      styleAttr: { enabled: true, operator: '*=', insensitive: true },
       encoding: 'utf-8',
       combine: true,
       refs: true,
@@ -79,7 +85,7 @@
       name: "freepik.com",
       options: {
         recolor: {
-          paletteVarTransforms: [
+          renameVar: [
             {
               find: "                                     \n\
                 - var                                     \n\

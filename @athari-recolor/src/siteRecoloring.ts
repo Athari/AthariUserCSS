@@ -153,7 +153,7 @@ async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: str
   const outputPath = css.path.replace(/\.css$/i, ".out.css");
   const headerLines = [
     "generated",
-    `formula: ${site.options.recolor?.colorFormula ?? 'dark'}`,
+    `formula: ${site.options.recolor?.formula ?? 'dark'}`,
     `site: ${site.name}`,
     ...extraHeaderLines,
   ].map(s => ` * ${s}\n`).join("");

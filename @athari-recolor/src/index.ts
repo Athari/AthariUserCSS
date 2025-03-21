@@ -55,7 +55,7 @@ program
       ]);
     }
     await recolorCss(sites.default, a.inputPath, a.outputPath, {
-      recolor: { colorFormula: a.colorFormula ?? ColorFormula.Dark },
+      recolor: { formula: a.colorFormula ?? ColorFormula.Dark },
       header: "",
       combine: false,
     });
@@ -76,8 +76,8 @@ program
     }
     const site = sites.sites.find(s => s.name == a.siteName) ?? throwError(`Site '${a.siteName}' not found`);
     site.options.recolor ??= {};
-    site.options.recolor.colorFormula ??= o.colorFormula as ColorFormula;
-    if (!site.options.recolor.colorFormula) {
+    site.options.recolor.formula ??= o.colorFormula as ColorFormula;
+    if (!site.options.recolor.formula) {
       await enquirer.prompt([
         questionSelect(site.options.recolor, optionColorFormula.attributeName(), optionColorFormula.description, {
           choices: optionColorFormula.argChoices,

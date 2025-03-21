@@ -721,7 +721,7 @@ function makeInspectPretty() {
       const colors = inspect.colors as unknown as Record<InspectColorKey, InspectColor>;
       const format = (str: string, ...color: InspectColorKey[]) =>
         opts.colors ? color.reduce((s, c) => `\x1B[${colors[c][0]}m${s}\x1B[${colors[c][1]}m`, str) : str;
-  
+
       const className = format(`${this?.constructor.name ?? '<Null>'}`, 'whiteBright', 'bold');
       if (depth < 0)
         return className;

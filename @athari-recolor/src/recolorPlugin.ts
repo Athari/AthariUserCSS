@@ -25,19 +25,38 @@ import {
   compare, objectEntries, objectFromEntries, regexp,
 } from './utils.ts';
 
+export interface RecolorPluginOptions {
+  /**
+   * How to modify original CSS code.
+   * * `append` Add modified color declarations, keep all old declarations.
+   * * `replace` Replace color declarations, keep non-color declarations.
+   * * `override` Remove all non-color declarations, leave only modified color declarations.
+   */
+  mode?: TransformMode;
+  formula?: ColorFormula | undefined;
+  /** Whether to generate palette or to inline color values. */
+  palette?: boolean | undefined;
+  /** Prefix of generated custom properties of the shared colors. */
+  colorVar?: string | undefined;
+  /** Prefix of generated custom properties of the palette. */
+  paletteVar?: string | undefined;
+  /** Find-replace pairs for renaming generated custom properties. */
+  renameVar?: OptArray<RecolorVarTransform>;
+}
+
 interface RecolorVarTransform {
+  /** String to find. */
   find: string;
+  /** String to replace with. */
   replace: string;
+  /** @private */
   reFind?: RegExp;
 }
 
-export interface RecolorPluginOptions {
-  colorFormula?: ColorFormula | undefined;
-  colorVarPrefix?: string | undefined;
-  palette?: boolean | undefined;
-  paletteVarPrefix?: string | undefined;
-  paletteVarTransforms?: OptArray<RecolorVarTransform>;
-}
+type TransformMode =
+  | 'append'
+  | 'replace'
+  | 'override';
 
 type Options = DeepRequired<RecolorPluginOptions>;
 
@@ -151,7 +170,7 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
 
   let paletteColor = palette.uniqueColors[colorUniqueKey];
   if (paletteColor === undefined) {
-    const paletteVar = applyVarTransforms(colorIdent ?? roundStrNumbers(strNode), opts.paletteVarTransforms);
+    const paletteVar = applyVarTransforms(colorIdent ?? roundStrNumbers(strNode), opts.renameVar);
     paletteColor = {
       colorData,
       colorRgb: roundStrNumbers(stringifyCssComp(isColorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
@@ -159,7 +178,7 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
       colorStr: colorIdent ?? strNode,
       expr: "",
       count: 0,
-      name: `--${opts.paletteVarPrefix}${paletteVar}`,
+      name: `--${opts.paletteVar}${paletteVar}`,
     };
     palette.colors.push(paletteColor);
     palette.uniqueColors[colorUniqueKey] = paletteColor;
@@ -173,7 +192,7 @@ function recolorCompColor(node: CompColor, opts: Options): string {
   type cmp = string | boolean | number;
 
   const colorVar = (s: string, i: number) =>
-    `var(--${opts.colorVarPrefix}${String.fromCharCode(s.charCodeAt(0) + i)})`;
+    `var(--${opts.colorVar}${String.fromCharCode(s.charCodeAt(0) + i)})`;
   const colorComp = (c: string, b: cmp) =>
     typeof b === 'string' ? b : b ? `calc(${colorVar(c, 0)} + ${colorVar(c, 1)} * ${c})` : c;
   const colorOkLch = (orig: Comp, l: cmp, c: cmp, h: cmp) =>
@@ -186,7 +205,7 @@ function recolorCompColor(node: CompColor, opts: Options): string {
     get [ColorFormula.DarkFull]() { return colorOkLch(node, 1, 1, 1) },
     get [ColorFormula.DarkAuto]() { return colorAutoTheme(node, this[ColorFormula.Dark]) },
     get [ColorFormula.DarkFullAuto]() { return colorAutoTheme(node, this[ColorFormula.DarkFull]) },
-  }[opts.colorFormula];
+  }[opts.formula];
 }
 
 function buildPaletteRule(palette: Palette): CssRule {
@@ -215,6 +234,7 @@ function recolorCssAtRule(rule: CssAtRule): false | void {
 function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false | void {
   let newDeclProp = '-';
   let newDeclValue: string | null = null;
+  let keepOldDecl = true;
   let isComplexValue = false;
   const newComps = replaceCssComps(parseCssCompCommaList(tokenizeCss(decl.value)), (node: Comp) => {
     isComplexValue ||= isCompFunction(node) && !reColorFunction.test(node.getName());
@@ -234,14 +254,17 @@ function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false |
 
       if (reColorPropSimple.test(decl.prop) || decl.variable || isComplexValue) {
         //console.log(`simple: ${decl.prop} = ${node.toString()}`);
+        keepOldDecl = opts.mode === 'append';
         newDeclProp = decl.prop;
         return parseCssCompStr(resultStr);
       } else if (reColorPropSplit.test(decl.prop)) {
         //console.log(`split: ${decl.prop} = ... ${node.toString()} ...`);
+        keepOldDecl = opts.mode !== 'override';
         newDeclProp = `${decl.prop}-color`;
         newDeclValue = resultStr;
       } else if (reColorPropComplexSplit.test(decl.prop)) {
         // TODO: Split complex values like border( -width | -style | -color )
+        keepOldDecl = opts.mode === 'append';
         newDeclProp = decl.prop;
         return parseCssCompStr(resultStr);
       } else {
@@ -257,19 +280,22 @@ function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false |
       important: decl.important,
     });
   }
-  decl.remove();
+  if (!keepOldDecl) {
+    decl.remove();
+  }
 }
 
 export default declarePostCssPlugin<RecolorPluginOptions>('recolor', {
-  colorFormula: ColorFormula.DarkFull,
-  colorVarPrefix: "",
+  mode: 'replace',
+  formula: ColorFormula.DarkFull,
   palette: true,
-  paletteVarPrefix: "c-",
-  paletteVarTransforms: [
+  colorVar: "",
+  paletteVar: "c-",
+  renameVar: [
     { find: '-var-', replace: '-', reFind: null! },
   ],
 }, (opts: Options) => {
-  for (const transform of opts.paletteVarTransforms)
+  for (const transform of opts.renameVar)
     transform.reFind = regexp(transform.find, 'gi');
   return {
     OnceExit(css: CssRoot) {
