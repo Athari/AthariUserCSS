@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { basename } from 'node:path';
+import paths from 'node:path';
 import postCss from 'postcss';
 import cssSafeParser from 'postcss-safe-parser';
 import cssNanoPlugin from 'cssnano';
@@ -12,7 +12,7 @@ import recolorPlugin from './recolorPlugin.ts';
 import styleAttrPlugin from './styleAttrPlugin.ts';
 import { PluginKeys, Site, SiteCss, SiteOptions } from './siteDownloading.ts';
 import { getSiteDir } from './commonUtils.ts';
-import type { PostCssPlugin, PostCssPluginCreate, PostCssResult } from './domUtils.ts';
+import { PostCss } from './domUtils.ts';
 import { assertHasKeys, deepMerge, downloadText, inspectPretty, objectEntries, readTextFile, throwError } from './utils.ts';
 import { regex } from 'regex';
 
@@ -22,10 +22,10 @@ interface RecolorOptions extends SiteOptions {
 }
 
 type PluginMap = {
-  [K in PluginKeys]?: PostCssPluginCreate<SiteOptions[K]>;
+  [K in PluginKeys]?: PostCss.PluginCreate<SiteOptions[K]>;
 };
 
-async function runPostCss(inputPath: string, css: string, plugins: postCss.AcceptedPlugin[]): Promise<PostCssResult> {
+async function runPostCss(inputPath: string, css: string, plugins: postCss.AcceptedPlugin[]): Promise<PostCss.Result> {
   const result = await postCss(plugins).process(css, { from: inputPath, parser: cssSafeParser });
   const groupedMessages = result.messages
     .groupBy(m => m.plugin ?? "?")
@@ -42,7 +42,7 @@ async function runPostCss(inputPath: string, css: string, plugins: postCss.Accep
   return result;
 }
 
-function optionalPostCssPlugins(opts: SiteOptions, plugins: PluginMap): PostCssPlugin[] {
+function optionalPostCssPlugins(opts: SiteOptions, plugins: PluginMap): PostCss.Plugin[] {
   return objectEntries(plugins)
     .map(([ key, plugin ]) => (opts?.[key]?.enabled ?? true) ? plugin?.(opts?.[key]) : null)
     .filter(p => !!p);
@@ -170,9 +170,10 @@ async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: str
 }
 
 function getCssHeader({ name, path, url, refs }: SiteCss, opts: SiteOptions): string[] {
+  const fileName = path ? paths.basename(path) : null;
   return [
     `name: ${name}`,
-    //!url && path ? `path: ${basename(path)}` : null, // == name
+    !url && path && fileName !== name ? `path: ${fileName}` : null,
     url ? `url: ${url}` : null,
     ...opts.refs ? [...refs.values()].map(r => `ref: ${r}`) : [],
   ].filter(s => s !== null);

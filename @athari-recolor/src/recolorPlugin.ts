@@ -9,20 +9,11 @@ import {
   serializeP3 as serializeDisplayP3,
   colorDataFitsRGB_Gamut as isColorDataFitsRgbGamut,
 } from '@csstools/css-color-parser';
-import {
-  isTokenHash, isTokenIdent, TokenHash, TokenIdent,
-} from '@csstools/css-tokenizer';
 import { ColorFormula } from './commonUtils.ts';
-import {
-  CssRoot, CssAtRule, CssRule, CssDecl, CssComment,
-  Comp, CompFunction, CompToken, CssToken,
-  isCompFunction, isCompToken, isCompTokenType,
-  tokenizeCss, parseCssCompStr, stringifyCssComp, parseCssCompCommaList, stringifyCssComps, replaceCssComps,
-  declarePostCssPlugin,
-} from './domUtils.ts';
+import { PostCss, Css, Ct, Cc } from './domUtils.ts';
 import {
   OptArray,
-  compare, objectEntries, objectFromEntries, regexp,
+  compare, isSome, objectEntries, objectFromEntries, regexp,
 } from './utils.ts';
 
 export interface RecolorPluginOptions {
@@ -32,7 +23,7 @@ export interface RecolorPluginOptions {
    * * `replace` Replace color declarations, keep non-color declarations.
    * * `override` Remove all non-color declarations, leave only modified color declarations.
    */
-  mode?: TransformMode;
+  mode?: TransformMode | undefined;
   formula?: ColorFormula | undefined;
   /** Whether to generate palette or to inline color values. */
   palette?: boolean | undefined;
@@ -50,17 +41,14 @@ interface RecolorVarTransform {
   /** String to replace with. */
   replace: string;
   /** @private */
-  reFind?: RegExp;
+  regex?: RegExp;
 }
 
-type TransformMode =
-  | 'append'
-  | 'replace'
-  | 'override';
+type TransformMode = 'append' | 'replace' | 'override';
 
 type Options = DeepRequired<RecolorPluginOptions>;
 
-type CompColor = CompFunction | CompToken;
+type CompColor = Cc.Function | Cc.Token;
 
 type CssColorName = keyof typeof cssColorsNames | 'transparent';
 
@@ -133,9 +121,7 @@ function roundStrNumbers(s: string): string {
     (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
 }
 
-function isTokenHashOrIdent(x?: CssToken | null): x is TokenHash | TokenIdent {
-  return isTokenHash(x) || isTokenIdent(x)
-}
+const isCompTokenHashOrIdent = Cc.isToken(isSome(Ct.isHash, Ct.isIdent));
 
 function getIdentColorName(color: ColorData): CssColorName | null {
   const [ r, g, b ] = color.channels;
@@ -151,7 +137,7 @@ function applyVarTransforms(name: string, tfs: RecolorVarTransform[]): string {
     .replace(/\./ig, "_").replace(/[^\w\d-]/ig, "-").replace(/-+/g, "-").replace(/^-?(.*?)-?$/, "$1")
     .toLowerCase();
   for (let i = 0; i < tfs.length; i++) {
-    const nameTf = tfs.reduce((r, t) => r.replace(t.reFind!, t.replace), name);
+    const nameTf = tfs.reduce((r, t) => r.replace(t.regex!, t.replace), name);
     if (nameTf == name)
       break;
     name = nameTf;
@@ -164,8 +150,8 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
   const colorUniqueKey = `${colorRgbStr}/${colorOkLchStr}`;
   const colorIdent = getIdentColorName(colorData);
 
-  let strNode = stringifyCssComp(node);
-  if (isCompToken(node))
+  let strNode = Cc.stringify(node);
+  if (Cc.isTokenAny(node))
     strNode = strNode.toLowerCase();
 
   let paletteColor = palette.uniqueColors[colorUniqueKey];
@@ -173,8 +159,8 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
     const paletteVar = applyVarTransforms(colorIdent ?? roundStrNumbers(strNode), opts.renameVar);
     paletteColor = {
       colorData,
-      colorRgb: roundStrNumbers(stringifyCssComp(isColorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
-      colorOkLch: roundStrNumbers(stringifyCssComp(serializeOkLch(colorData))),
+      colorRgb: roundStrNumbers(Cc.stringify(isColorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
+      colorOkLch: roundStrNumbers(Cc.stringify(serializeOkLch(colorData))),
       colorStr: colorIdent ?? strNode,
       expr: "",
       count: 0,
@@ -195,9 +181,9 @@ function recolorCompColor(node: CompColor, opts: Options): string {
     `var(--${opts.colorVar}${String.fromCharCode(s.charCodeAt(0) + i)})`;
   const colorComp = (c: string, b: cmp) =>
     typeof b === 'string' ? b : b ? `calc(${colorVar(c, 0)} + ${colorVar(c, 1)} * ${c})` : c;
-  const colorOkLch = (orig: Comp, l: cmp, c: cmp, h: cmp) =>
+  const colorOkLch = (orig: Cc.Comp, l: cmp, c: cmp, h: cmp) =>
     `oklch(from ${orig.toString()} ${colorComp('l', l)} ${colorComp('c', c)} ${colorComp('h', h)})`;
-  const colorAutoTheme = (orig: Comp, expr: cmp) =>
+  const colorAutoTheme = (orig: Cc.Comp, expr: cmp) =>
     `light-dark(${orig.toString()}, ${expr})`;
 
   return {
@@ -208,21 +194,21 @@ function recolorCompColor(node: CompColor, opts: Options): string {
   }[opts.formula];
 }
 
-function buildPaletteRule(palette: Palette): CssRule {
-  return new CssRule({
+function buildPaletteRule(palette: Palette): Css.Rule {
+  return new Css.Rule({
     selector: ':root',
     nodes: palette.colors
       .orderByDescending(c => c.count, compare)
       .thenBy(c => c.colorRgb, compare)
       .selectMany(c => [
-        new CssComment({ text: `!ath! color ${c.colorStr} n=${c.count} ${c.colorRgb} ${c.colorOkLch}` }),
-        new CssDecl({ prop: c.name, value: c.expr }),
+        new Css.Comment({ text: `!ath! color ${c.colorStr} n=${c.count} ${c.colorRgb} ${c.colorOkLch}` }),
+        new Css.Decl({ prop: c.name, value: c.expr }),
       ])
       .toArray(),
   });
 }
 
-function recolorCssAtRule(rule: CssAtRule): false | void {
+function recolorCssAtRule(rule: Css.AtRule): false | void {
   //console.log(`rule: ${rule.name} = ${rule.params}`);
   // TODO: Support animating colors with @keyframes (parse at-rules with https://github.com/postcss/postcss-at-rule-parser)
   if (rule.name === 'media' && reAtRuleMediaDark.test(rule.params) ||
@@ -231,14 +217,14 @@ function recolorCssAtRule(rule: CssAtRule): false | void {
   }
 }
 
-function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false | void {
+function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false | void {
   let newDeclProp = '-';
   let newDeclValue: string | null = null;
   let keepOldDecl = true;
   let isComplexValue = false;
-  const newComps = replaceCssComps(parseCssCompCommaList(tokenizeCss(decl.value)), (node: Comp) => {
-    isComplexValue ||= isCompFunction(node) && !reColorFunction.test(node.getName());
-    if (isCompFunction(node) && reColorFunction.test(node.getName()) || isCompTokenType(node, isTokenHashOrIdent)) {
+  const newComps = Cc.replaceList(Cc.parseCommaList(decl.value), (node: Cc.Comp) => {
+    isComplexValue ||= Cc.isFunction(node) && !reColorFunction.test(node.getName());
+    if (Cc.isFunction(node) && reColorFunction.test(node.getName()) || isCompTokenHashOrIdent(node)) {
       // TODO: Deal with color parser producing component value in color alpha property, plus other SyntaxFlag values
       const colorData = parseCssColor(node);
       if (!colorData) {
@@ -256,7 +242,7 @@ function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false |
         //console.log(`simple: ${decl.prop} = ${node.toString()}`);
         keepOldDecl = opts.mode === 'append';
         newDeclProp = decl.prop;
-        return parseCssCompStr(resultStr);
+        return Cc.parse(resultStr);
       } else if (reColorPropSplit.test(decl.prop)) {
         //console.log(`split: ${decl.prop} = ... ${node.toString()} ...`);
         keepOldDecl = opts.mode !== 'override';
@@ -266,7 +252,7 @@ function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false |
         // TODO: Split complex values like border( -width | -style | -color )
         keepOldDecl = opts.mode === 'append';
         newDeclProp = decl.prop;
-        return parseCssCompStr(resultStr);
+        return Cc.parse(resultStr);
       } else {
         console.log(`unknown: ${decl.prop} = ${decl.value}`);
       }
@@ -276,7 +262,7 @@ function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false |
   if (newDeclProp !== '-') {
     decl.cloneBefore({
       prop: newDeclProp,
-      value: newDeclValue ?? stringifyCssComps(newComps),
+      value: newDeclValue ?? Cc.stringifyList(newComps),
       important: decl.important,
     });
   }
@@ -285,20 +271,20 @@ function recolorCssDecl(decl: CssDecl, palette: Palette, opts: Options): false |
   }
 }
 
-export default declarePostCssPlugin<RecolorPluginOptions>('recolor', {
+export default PostCss.declarePlugin<RecolorPluginOptions>('recolor', {
   mode: 'replace',
   formula: ColorFormula.DarkFull,
   palette: true,
   colorVar: "",
   paletteVar: "c-",
   renameVar: [
-    { find: '-var-', replace: '-', reFind: null! },
+    { find: '-var-', replace: '-', regex: null! },
   ],
 }, (opts: Options) => {
   for (const transform of opts.renameVar)
-    transform.reFind = regexp(transform.find, 'gi');
+    transform.regex ??= regexp(transform.find, 'gi');
   return {
-    OnceExit(css: CssRoot) {
+    OnceExit(css: Css.Root) {
       const palette: Palette = {
         colors: [],
         uniqueColors: {},

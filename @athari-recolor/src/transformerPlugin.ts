@@ -2,13 +2,7 @@ import { fail } from 'node:assert/strict';
 import { isRegExp } from 'node:util/types';
 import { Optional, SetComplement } from 'utility-types';
 import { cssTokenRegExps } from './commonUtils.ts';
-import {
-  Css, CssChildNode,CssChildNodeNames, CssRoot, CssAnyNode,
-  Sel, SelNode, SelNodeNames, SelRoot,
-  isCssNode, isCssRule, isCssComment,
-  isSelNode, isSelRoot, isSelSelector, isSelAttribute, isSelComment, isSelClass, isSelCombinator, isSelNesting, isSelPseudo, isSelTag, isSelUniversal,
-  declarePostCssPluginOpt,
-} from './domUtils.ts';
+import { PostCss, Css, Sel } from './domUtils.ts';
 import {
   Guard, SubUnion, Opt, OptObject, OneOrArray, KeyOfAny, ArrayGenerator, Counter, RegExpTemplate,
   isSome, isArray, isString, objectAssignedValues, objectEntries, toAssignedArrayIfNeeded, throwError, assertNever, inspectPretty,
@@ -17,7 +11,7 @@ import {
 type MatchProps =
   | 'name' | 'value' | 'operator' | 'text' | 'namespace';
 
-type CssTransNodeNames = SetComplement<CssChildNodeNames, 'rule'>;
+type CssTransNodeNames = SetComplement<Css.ChildNodeNames, 'rule'>;
 type CssMatchPropsOn<N extends CssTransNodeNames, V extends CssTransNodeNames, P extends MatchProps, Else> =
   N extends V ? SubUnion<MatchProps, P> : Else;
 type CssMatchProps<N extends CssTransNodeNames> =
@@ -28,7 +22,7 @@ type CssMatchProps<N extends CssTransNodeNames> =
 
 const cssNodePropMap: {
   [N in CssTransNodeNames]: {
-    [K in MatchProps as CssMatchProps<N>]: KeyOfAny<CssChildNode>;
+    [K in MatchProps as CssMatchProps<N>]: KeyOfAny<Css.ChildNode>;
   }
 } = {
   atrule: { name: 'name', value: 'params' },
@@ -36,7 +30,7 @@ const cssNodePropMap: {
   decl: { name: 'prop', value: 'value' },
 };
 
-type SelTransNodeNames = SetComplement<SelNodeNames, 'string' | 'selector' | 'root'>;
+type SelTransNodeNames = SetComplement<Sel.NodeNames, 'string' | 'selector' | 'root'>;
 type SelMatchPropsOn<N extends SelTransNodeNames, V extends SelTransNodeNames, P extends MatchProps, Else> =
   N extends V ? SubUnion<MatchProps, P> : Else;
 type SelMatchProps<N extends SelTransNodeNames> =
@@ -53,7 +47,7 @@ type SelMatchProps<N extends SelTransNodeNames> =
 
 const selNodePropMap: {
   [N in SelTransNodeNames]: {
-    [K in MatchProps as SelMatchProps<N>]: KeyOfAny<SelNode>;
+    [K in MatchProps as SelMatchProps<N>]: KeyOfAny<Sel.Node>;
   }
 } = {
   attribute: { name: 'attribute', operator: 'operator', value: 'value', namespace: 'namespaceString' },
@@ -67,18 +61,18 @@ const selNodePropMap: {
   universal: {},
 };
 
-type Node = CssChildNode | SelNode;
+type Node = Css.ChildNode | Sel.Node;
 type NodeNames<T extends Node> = keyof NodePropMap<T>;
 type NodePropMap<T extends Node> =
-  T extends CssChildNode ? typeof cssNodePropMap :
-  T extends SelNode ? typeof selNodePropMap : never;
+  T extends Css.ChildNode ? typeof cssNodePropMap :
+  T extends Sel.Node ? typeof selNodePropMap : never;
 
 type CssOp = 'rename' | 'set' | 'replace' | 'remove';
 type SelOp = 'rename' | 'set' | 'replace' | 'remove' | 'removeSelector' | 'removeRule';
 type TransAnyOp = CssOp | SelOp;
 type TransOp<T extends Node> =
-  T extends CssChildNode ? CssOp :
-  T extends SelNode ? SelOp : never;
+  T extends Css.ChildNode ? CssOp :
+  T extends Sel.Node ? SelOp : never;
 
 type TransMatchesOption<T extends Node, N extends NodeNames<T>> = {
   [K in KeyOfAny<NodePropMap<T>[N]>]?: Opt<RegExpMatchOption>;
@@ -117,8 +111,8 @@ type TransformerOptions<T extends Node> = {
 };
 
 export interface RegularTransformerPluginOptions {
-  css?: Opt<TransformerOptions<CssChildNode>>;
-  selector?: Opt<TransformerOptions<SelNode>>;
+  css?: Opt<TransformerOptions<Css.ChildNode>>;
+  selector?: Opt<TransformerOptions<Sel.Node>>;
 }
 
 const enum TransformCode { Matched = 1, MatchedBreak = 2, NotMatched = 3 };
@@ -187,10 +181,10 @@ function getTransformer<T extends Node>(
             return result;
 
           for (const operation of toAssignedArrayIfNeeded(option.operations)) {
-            if (isCssNode(node))
-              result.merge(performCssOperation(node, operation as TransOpOption<CssChildNode>, ctxOp, ctxNode), operation.operation);
-            else if (isSelNode(node))
-              result.merge(performSelOperation(node, operation as TransOpOption<SelNode>, ctxOp, ctxNode), operation.operation);
+            if (Css.isNode(node))
+              result.merge(performCssOperation(node, operation as TransOpOption<Css.ChildNode>, ctxOp, ctxNode), operation.operation);
+            else if (Sel.isNode(node))
+              result.merge(performSelOperation(node, operation as TransOpOption<Sel.Node>, ctxOp, ctxNode), operation.operation);
 
             if (result.code === TransformCode.MatchedBreak)
               return result;
@@ -202,7 +196,7 @@ function getTransformer<T extends Node>(
   }
 
   function performCssOperation(
-    node: CssChildNode, op: TransOpOption<CssChildNode>, ctxOp: OperationContext, ctxNode: NodeContext
+    node: Css.ChildNode, op: TransOpOption<Css.ChildNode>, ctxOp: OperationContext, ctxNode: NodeContext
   ): TransformCode {
     const replace = () => applyReplaceTemplate(op.replace, ctxNode);
 
@@ -212,7 +206,7 @@ function getTransformer<T extends Node>(
         return TransformCode.Matched;
 
       case 'rename':
-        if (isCssComment(node))
+        if (Css.isComment(node))
           node.text = replace();
         else
           setPropertyUnsafe(node, ctxOp.propMap.name, replace());
@@ -223,7 +217,7 @@ function getTransformer<T extends Node>(
         return TransformCode.Matched;
 
       case 'set':
-        if (isCssComment(node))
+        if (Css.isComment(node))
           node.text = replace();
         else
           setPropertyUnsafe(node, ctxOp.propMap.value, replace());
@@ -235,11 +229,11 @@ function getTransformer<T extends Node>(
   }
 
   function performSelOperation(
-    node: SelNode, op: TransOpOption<SelNode>, ctxOp: OperationContext, ctxNode: NodeContext
+    node: Sel.Node, op: TransOpOption<Sel.Node>, ctxOp: OperationContext, ctxNode: NodeContext
   ): TransformCode {
     const replace = () => applyReplaceTemplate(op.replace, ctxNode);
-    const isSelWithName = isSome(isSelAttribute, isSelClass, isSelCombinator, isSelPseudo, isSelTag);
-    const isSelWithoutValue = isSome(isSelNesting, isSelUniversal);
+    const isSelWithName = isSome(Sel.isAttribute, Sel.isClass, Sel.isCombinator, Sel.isPseudo, Sel.isTag);
+    const isSelWithoutValue = isSome(Sel.isNesting, Sel.isUniversal);
 
     switch (op.operation) {
       case 'remove':
@@ -247,13 +241,13 @@ function getTransformer<T extends Node>(
         return TransformCode.Matched;
 
       case 'removeRule':
-        return removeSelParent(node, isSelRoot);
+        return removeSelParent(node, Sel.isRoot);
 
       case 'removeSelector':
-        return removeSelParent(node, isSelSelector);
+        return removeSelParent(node, Sel.isSelector);
 
       case 'rename':
-        if (isSelComment(node))
+        if (Sel.isComment(node))
           node.value = replace();
         else if (isSelWithName(node))
           setPropertyUnsafe(node, ctxOp.propMap.name, replace());
@@ -266,7 +260,7 @@ function getTransformer<T extends Node>(
         return TransformCode.Matched;
 
       case 'set':
-        if (isSelComment(node))
+        if (Sel.isComment(node))
           node.value = replace();
         else if (isSelWithoutValue(node))
           throwError(`Node of type ${node.type} cannot be set`);
@@ -278,8 +272,8 @@ function getTransformer<T extends Node>(
         throwError(`Unknown operation ${op.operation}`);
     }
 
-    function removeSelParent<T extends SelNode>(node: SelNode | undefined, guard: Guard<T>): TransformCode {
-      for (node = node; !!node; node = <SelNode>node?.parent) {
+    function removeSelParent<T extends Sel.Node>(node: Sel.Node | undefined, guard: Guard<T>): TransformCode {
+      for (node = node; !!node; node = <Sel.Node>node?.parent) {
         if (guard(node)) {
           node.remove();
           return TransformCode.MatchedBreak;
@@ -366,7 +360,7 @@ function getTransformer<T extends Node>(
   }
 }
 
-export default declarePostCssPluginOpt<RegularTransformerPluginOptions>('regular-transformer', {
+export default PostCss.declarePluginOpt<RegularTransformerPluginOptions>('regular-transformer', {
   css: {
     atrule: [],
     comment: [],
@@ -388,14 +382,14 @@ export default declarePostCssPluginOpt<RegularTransformerPluginOptions>('regular
   const selTransforms = opts.selector ? objectAssignedValues(getTransformer(opts.selector, selNodePropMap)).flat(1) : [];
 
   return {
-    OnceExit(cssRoot: CssRoot): void {
+    OnceExit(cssRoot: Css.Root): void {
       if (cssTransforms.length === 0 && selTransforms.length === 0)
         return;
 
-      const cssCounter = new Counter<`${NodeNames<CssChildNode>}-${TransAnyOp}`>();
-      const selCounter = new Counter<`${NodeNames<SelNode>}-${TransAnyOp}`>();
+      const cssCounter = new Counter<`${NodeNames<Css.ChildNode>}-${TransAnyOp}`>();
+      const selCounter = new Counter<`${NodeNames<Sel.Node>}-${TransAnyOp}`>();
 
-      cssRoot.walk((cssNode: CssChildNode): false | void => {
+      cssRoot.walk((cssNode: Css.ChildNode): false | void => {
         for (const cssTransform of cssTransforms) {
           const ret = cssTransform.transform(cssNode);
           if (ret.code !== TransformCode.NotMatched)
@@ -404,11 +398,11 @@ export default declarePostCssPluginOpt<RegularTransformerPluginOptions>('regular
             break;
         }
 
-        if (!isCssRule(cssNode) || selTransforms.length === 0)
+        if (!Css.isRule(cssNode) || selTransforms.length === 0)
           return;
 
-        const selRoot: SelRoot = Sel.parseRoot(cssNode);
-        selRoot.walk((selNode: SelNode): false | void => {
+        const selRoot: Sel.Root = Sel.parseRoot(cssNode);
+        selRoot.walk((selNode: Sel.Node): false | void => {
           for (const selTransform of selTransforms) {
             const ret = selTransform.transform(selNode);
             if (ret.code !== TransformCode.NotMatched)

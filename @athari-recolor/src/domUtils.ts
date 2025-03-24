@@ -1,344 +1,212 @@
-// HTML: HTMLParser2
+import * as htmlParser from 'htmlparser2';
+import * as htmlDom from 'domhandler';
+import * as htmlDomUtils from 'domutils';
+import * as htmlCssSelect from 'css-select';
 
-export {
-  parseDocument as parseHtmlDocument,
-} from 'htmlparser2';
+import * as postCss from 'postcss';
+import cssParserSafe from 'postcss-safe-parser';
+import cssSelParser from 'postcss-selector-parser';
 
-import {
-  Element as HtmlElement,
-  Node as HtmlNode,
-} from 'domhandler';
-
-export {
-  CDATA as HtmlCData,
-  Comment as HtmlComment,
-  DataNode as HtmlDataNode, // text|comment|instruction
-  Document as HtmlDocument,
-  Element as HtmlElement,
-  Node as HtmlNode,
-  NodeWithChildren as HtmlContainer, // document|element|cdata
-  ProcessingInstruction as HtmlDirective,
-  Text as HtmlText,
-  cloneNode as cloneHtmlNode,
-  hasChildren as hasHtmlChildren,
-  isCDATA as isHtmlCData,
-  isComment as isHtmlComment,
-  isDirective as isHtmlDirective,
-  isDocument as isHtmlDocument,
-  isTag as isHtmlTag,
-  isText as isHtmlText,
-} from 'domhandler';
-
-export type {
-  AnyNode as HtmlAnyNode,
-  ChildNode as HtmlChildNode,
-  ParentNode as HtmlParentNode,
-} from 'domhandler';
-
-export {
-  textContent as getHtmlAllInnerText,
-  innerText as getHtmlInnerText,
-} from 'domutils';
-
-import {
-  selectOne as htmlSelectOne,
-  selectAll as htmlSelectAll,
-  is as htmlSelectIs,
-  compile as htmlSelectCompile,
-} from 'css-select';
-
-// CSS: PostCSS
-
-import postCss, {
-  AnyNode as CssAnyNode,
-  AtRule as CssAtRule,
-  ChildNode as CssChildNode,
-  Comment as CssComment,
-  Container as CssContainer,
-  Declaration as CssDecl,
-  Document as CssDocument,
-  Node as CssNode,
-  Plugin as PostCssPlugin,
-  Root as CssRoot,
-  Rule as CssRule,
-} from 'postcss';
-
-export type {
-  AnyNode as CssAnyNode,
-  ChildNode as CssChildNode,
-  Helpers as PostCssHelpers,
-} from 'postcss';
-
-export {
-  AtRule as CssAtRule,
-  Comment as CssComment,
-  Container as CssContainer,
-  Declaration as CssDecl,
-  Document as CssDocument,
-  Node as CssNode,
-  Plugin as PostCssPlugin,
-  PluginCreator as PostCssPluginCreator,
-  Processor as PostCssProcessor,
-  Result as PostCssResult,
-  Root as CssRoot,
-  Rule as CssRule,
-  Warning as PostCssWarning,
-} from 'postcss';
-
-import cssSafeParser from 'postcss-safe-parser';
-
-import cssSelectorParser from 'postcss-selector-parser';
-
-import type {
-  AttributeOptions as SelAttributeOptions,
-  Attribute as SelAttribute,
-  AttributeOperator as SelAttributeOperator,
-  ClassName as SelClassName,
-  Combinator as SelCombinator,
-  Comment as SelComment,
-  ContainerOptions as SelContainerOptions,
-  Container as SelContainerBase,
-  Identifier as SelIdentifier,
-  Nesting as SelNesting,
-  Node as SelNode,
-  NodeTypes as SelNodeTypes,
-  Pseudo as SelPseudo,
-  QuoteMark as SelQuoteMark,
-  Root as SelRoot,
-  Selector as SelSelector,
-  String as SelString,
-  Tag as SelTag,
-  Universal as SelUniversal,
-} from 'postcss-selector-parser';
-
-const {
-  isAttribute: isSelAttribute,
-  isClassName: isSelClass,
-  isCombinator: isSelCombinator,
-  isComment: isSelComment,
-  isContainer: isSelContainer,
-  isIdentifier: isSelIdentifier,
-  isNamespace: isSelNamespace,
-  isNesting: isSelNesting,
-  isNode: isSelNode,
-  isPseudo: isSelPseudo,
-  isPseudoClass: isSelPseudoClass,
-  isPseudoElement: isSelPseudoElement,
-  isRoot: isSelRoot,
-  isSelector: isSelSelector,
-  isString: isSelString,
-  isTag: isSelTag,
-  isUniversal: isSelUniversal,
-} = cssSelectorParser;
-
-export {
-  isSelAttribute,
-  isSelClass,
-  isSelCombinator,
-  isSelComment,
-  isSelContainer,
-  isSelIdentifier,
-  isSelNamespace,
-  isSelNesting,
-  isSelNode,
-  isSelPseudo,
-  isSelPseudoClass,
-  isSelPseudoElement,
-  isSelRoot,
-  isSelSelector,
-  isSelString,
-  isSelTag,
-  isSelUniversal,
-  cssSelectorParser,
-};
-
-export type {
-  Attribute as SelAttribute,
-  AttributeOperator as SelAttributeOperator,
-  ClassName as SelClassName,
-  Combinator as SelCombinator,
-  Comment as SelComment,
-  //Container as SelContainer,
-  Identifier as SelIdentifier,
-  Nesting as SelNesting,
-  Node as SelNode,
-  NodeTypes as SelNodeTypes,
-  Pseudo as SelPseudo,
-  QuoteMark as SelQuoteMark,
-  Root as SelRoot,
-  Selector as SelSelector,
-  String as SelString,
-  Tag as SelTag,
-  Universal as SelUniversal,
-} from 'postcss-selector-parser';
-
-// CSS: CSSTools
-
-import {
-  isTokenNode as isCompToken,
-  parseComponentValue as parseCssComp,
-} from '@csstools/css-parser-algorithms';
-
-import type {
-  ComponentValue as Comp,
-  TokenNode as CompToken,
-} from '@csstools/css-parser-algorithms';
-
-export {
-  ContainerNode as CompContainer,
-  CommentNode as CompComment,
-  ContainerNodeBaseClass as CompContainerBase,
-  FunctionNode as CompFunction,
-  SimpleBlockNode as CompBlock,
-  TokenNode as CompToken,
-  WhitespaceNode as CompWhitespace,
-  isCommentNode as isCompComment,
-  isFunctionNode as isCompFunction,
-  isSimpleBlockNode as isCompBlock,
-  isTokenNode as isCompToken,
-  isWhiteSpaceOrCommentNode as isCompWhiteSpaceOrComment,
-  isWhitespaceNode as isCompWhitespace,
-  parseComponentValue as parseCssComp,
-  parseCommaSeparatedListOfComponentValues as parseCssCompCommaList,
-  parseListOfComponentValues as parseCssCompList,
-  replaceComponentValues as replaceCssComps,
-  stringify as stringifyCssComps,
-} from '@csstools/css-parser-algorithms';
-
-export type {
-  ComponentValue as Comp,
-} from '@csstools/css-parser-algorithms';
-
-export {
-  selectorSpecificity as getSelSpecificity,
-  compare as compareSelSpecificity,
-} from '@csstools/selector-specificity';
-
-export type {
-  Specificity as SelSpecificity,
-} from '@csstools/selector-specificity';
-
-import {
-  CSSToken as CssToken,
-  tokenize as tokenizeCssProc,
-  stringify as stringifyCss,
-  HashType as CssHashType,
-  NumberType as CssNumberType,
-  TokenDelim, TokenIdent, TokenHash, TokenAtKeyword, TokenFunction, TokenDimension, TokenNumber, TokenPercentage, TokenString, TokenURL,
-} from '@csstools/css-tokenizer';
-
-export {
-  HashType as CssHashType,
-  NumberType as CssNumberType,
-} from '@csstools/css-tokenizer';
-
-export type {
-  CSSToken as CssToken,
-  Token as CssTokenT,
-  stringify as stringifyCss,
-} from '@csstools/css-tokenizer';
-
-// Utils
+import * as cssCt from '@csstools/css-tokenizer';
+import * as cssComp from '@csstools/css-parser-algorithms';
+import * as cssSelSpec from '@csstools/selector-specificity';
 
 import assert from 'node:assert/strict';
-
-import {
-  DeepRequired, NonUndefined,
-} from 'utility-types';
-
+import { DeepRequired, NonUndefined } from 'utility-types';
 import {
   Assigned, Guard,
-  deepMerge, isSome, throwError,
+  deepMerge, isArray, isSome, isUndefined, logError, throwError,
 } from './utils.ts';
 
-// HTML: Functions
+// MARK: Html
 
-type HtmlCompiledQuery<T extends HtmlElement> = ReturnType<typeof htmlSelectCompile<HtmlNode, T>>;
+// Html: Declarations
 
-type HtmlSelector<T extends HtmlElement> = Parameters<typeof htmlSelectOne<HtmlNode, T>>[0];
-
-type HtmlSimpleSelector = Parameters<typeof htmlSelectCompile<HtmlNode, HtmlElement>>[0];
-
-export function htmlQuerySelector<T extends HtmlElement>(node: HtmlNode, selector: HtmlSelector<T>): T | null {
-  return htmlSelectOne<HtmlNode, T>(selector, node);
+declare module 'domhandler' {
+  type Element_ = htmlDom.Element;
+  interface Node {
+    querySelector(this: Node, selector: string): Element_ | null;
+    querySelectorAll(this: Node, selector: string): Element_[];
+    matches(this: Node, selector: string): boolean;
+    readonly innerText: string;
+    readonly innerTextAll: string;
+  }
 }
 
-export function htmlQuerySelectorAll<T extends HtmlElement>(node: HtmlNode, selector: HtmlSelector<T>): T[] {
-  return htmlSelectAll<HtmlNode, T>(selector, node);
+export namespace Html {
+
+  // Html: Types
+
+  export import CData = htmlDom.CDATA;
+  export import Comment = htmlDom.Comment;
+  export import DataNode = htmlDom.DataNode; // text|comment|instruction
+  export import Document = htmlDom.Document;
+  export import Element = htmlDom.Element;
+  export import NodeBase = htmlDom.Node;
+  export import Container = htmlDom.NodeWithChildren; // document|element|cdata
+  export import Directive = htmlDom.ProcessingInstruction;
+  export import Text = htmlDom.Text;
+
+  export type Node = htmlDom.AnyNode;
+  export type ChildNode = htmlDom.ChildNode;
+  export type ParentNode = htmlDom.ParentNode;
+
+  export type CompiledQuery<T extends Element> = ReturnType<typeof htmlCssSelect.compile<NodeBase, T>>;
+  export type Selector<T extends Element> = Parameters<typeof htmlCssSelect.selectOne<NodeBase, T>>[0];
+  export type SimpleSelector = Parameters<typeof htmlCssSelect.compile<NodeBase, Element>>[0];
+
+  // Html: Guards
+
+  export import isCData = htmlDom.isCDATA;
+  export import isComment = htmlDom.isComment;
+  export import isDirective = htmlDom.isDirective;
+  export import isDocument = htmlDom.isDocument;
+  export import isElement = htmlDom.isTag;
+  export import isText = htmlDom.isText;
+
+  export import hasChildren = htmlDom.hasChildren;
+
+  // Html: Clone
+
+  export import clone = htmlDom.cloneNode;
+
+  // Html: Parse
+
+  export import parseDocument = htmlParser.parseDocument;
+
+  // Html: Utils
+
+  export import getInnerTextAll = htmlDomUtils.textContent;
+  export import getInnerText = htmlDomUtils.innerText;
+
+  // Html: Query
+
+  export function querySelector<T extends Element>(node: NodeBase, selector: Selector<T>): T | null {
+    return htmlCssSelect.selectOne<NodeBase, T>(selector, node);
+  }
+
+  export function querySelectorAll<T extends Element>(node: NodeBase, selector: Selector<T>): T[] {
+    return htmlCssSelect.selectAll<NodeBase, T>(selector, node);
+  }
+
+  export function matches<T extends Element>(node: T, selector: Selector<T>): boolean {
+    return htmlCssSelect.is<NodeBase, T>(node, selector);
+  }
+
+  export function compileQuery<T extends Element>(selector: SimpleSelector): CompiledQuery<T> {
+    return htmlCssSelect.compile<NodeBase, T>(selector);
+  }
+
+  // Html: Prototype
+
+  export function extendPrototype() {
+    Object.assign(NodeBase.prototype, {
+      querySelector(this: NodeBase, selector: string) { return querySelector(this, selector) },
+      querySelectorAll(this: NodeBase, selector: string) { return querySelectorAll(this, selector) },
+      matches(this: NodeBase, selector: string): boolean { return isElement(this) && matches<Element>(this, selector) },
+    });
+    Object.defineProperties(NodeBase.prototype, {
+      innerText: { get: function (this: NodeBase) { return getInnerText(this as Node) } },
+      innerTextAll: { get: function (this: NodeBase) { return getInnerTextAll(this as Node) } },
+    });
+  }
 }
 
-export function htmlMatches<T extends HtmlElement>(node: T, selector: HtmlSelector<T>): boolean {
-  return htmlSelectIs<HtmlNode, T>(node, selector);
-}
+// MARK: PostCss
 
-export function htmlCompileQuery<T extends HtmlElement>(selector: HtmlSimpleSelector): HtmlCompiledQuery<T> {
-  return htmlSelectCompile<HtmlNode, T>(selector);
-}
+export namespace PostCss {
 
-// CSS: Functions
+  // PostCss: Types
 
-export type CssNodeNames = CssAnyNode['type'];
+  export import Processor = postCss.Processor;
+  export import Result = postCss.Result;
+  export import Warning = postCss.Warning;
 
-export type CssChildNodeNames = CssChildNode['type'];
+  export type Plugin = postCss.Plugin;
+  export type Processors = ReturnType<NonUndefined<Plugin['prepare']>>;
+  export type PluginCreate<O> = ((opts?: O) => Plugin) & { postcss: true };
 
-export type CssNodeTypes = {
-  [K in CssNodeNames]: Extract<CssAnyNode, { type: K }>;
-};
+  // PostCss: Plugins
 
-export const isCssAtRule = (n: unknown): n is CssAtRule => n instanceof CssAtRule;
-export const isCssComment = (n: unknown): n is CssComment => n instanceof CssComment;
-export const isCssContainer = (n: unknown): n is CssContainer => n instanceof CssContainer;
-export const isCssDecl = (n: unknown): n is CssDecl => n instanceof CssDecl;
-export const isCssDocument = (n: unknown): n is CssDocument => n instanceof CssDocument;
-export const isCssNode = (n: unknown): n is CssNode => n instanceof CssNode;
-export const isCssRoot = (n: unknown): n is CssRoot => n instanceof CssRoot;
-export const isCssRule = (n: unknown): n is CssRule => n instanceof CssRule;
-export const isCssChildNode = (n: unknown): n is CssChildNode => isSome(isCssAtRule, isCssComment, isCssDecl, isCssRule)(n);
-
-export type PostCssProcessors = ReturnType<NonUndefined<PostCssPlugin['prepare']>>;
-
-export type PostCssPluginCreate<O> = ((opts?: O) => PostCssPlugin) & { postcss: true };
-
-export function declarePostCssPlugin<O>(
-  name: string,
-  defaultOpts: DeepRequired<O>,
-  processors: (opts: DeepRequired<O>) => PostCssProcessors,
-): PostCssPluginCreate<O> {
-  return Object.assign(
-    (opts?: O): PostCssPlugin => ({
-      postcssPlugin: name,
-      prepare() {
-        const actualOpts = deepMerge(null, {}, defaultOpts, opts) as DeepRequired<O>;
-        return processors(actualOpts);
+  export function declarePlugin<O>(
+    name: string,
+    defaultOpts: DeepRequired<O>,
+    processors: (opts: DeepRequired<O>) => Processors,
+  ): PluginCreate<O> {
+    return Object.assign(
+      (opts?: O): Plugin => ({
+        postcssPlugin: name,
+        prepare() {
+          const actualOpts = deepMerge(null, {}, defaultOpts, opts) as DeepRequired<O>;
+          return processors(actualOpts);
+        },
+      }),
+      {
+        postcss: true as const,
       },
-    }),
-    {
-      postcss: true as const,
-    },
-  );
+    );
+  }
+
+  export function declarePluginOpt<O>(
+    name: string,
+    defaultOptions: O,
+    processors: (opts: O) => Processors,
+  ): PluginCreate<O> {
+    return Object.assign(
+      (opts?: O): Plugin => ({
+        postcssPlugin: name,
+        prepare() {
+          const actualOpts = Object.assign({}, defaultOptions, opts) as O;
+          return processors(actualOpts);
+        },
+      }),
+      {
+        postcss: true as const,
+      },
+    );
+  }
 }
 
-export function declarePostCssPluginOpt<O>(
-  name: string,
-  defaultOptions: O,
-  processors: (opts: O) => PostCssProcessors,
-): PostCssPluginCreate<O> {
-  return Object.assign(
-    (opts?: O): PostCssPlugin => ({
-      postcssPlugin: name,
-      prepare() {
-        const actualOpts = Object.assign({}, defaultOptions, opts) as O;
-        return processors(actualOpts);
-      },
-    }),
-    {
-      postcss: true as const,
-    },
-  );
-}
+// MARK: Css
 
 export namespace Css {
-  function parseNode<T extends CssAnyNode>(guard: Guard<T>): (css: string) => T {
+
+  // Css: Types
+
+  export import AtRule = postCss.AtRule;
+  export import Comment = postCss.Comment;
+  export import Container = postCss.Container;
+  export import Decl = postCss.Declaration;
+  export import Document = postCss.Document;
+  export import NodeBase = postCss.Node;
+  export import Root = postCss.Root;
+  export import Rule = postCss.Rule;
+
+  export type Node = postCss.AnyNode;
+  export type ChildNode = postCss.ChildNode;
+
+  export type NodeNames = Node['type'];
+  export type ChildNodeNames = ChildNode['type'];
+
+  export type NodeTypes = {
+    [K in NodeNames]: Extract<Node, { type: K }>;
+  };
+
+  // Css: Guards
+
+  export const isAtRule = (n: unknown): n is AtRule => n instanceof AtRule;
+  export const isComment = (n: unknown): n is Comment => n instanceof Comment;
+  export const isContainer = (n: unknown): n is Container => n instanceof Container;
+  export const isDecl = (n: unknown): n is Decl => n instanceof Decl;
+  export const isDocument = (n: unknown): n is Document => n instanceof Document;
+  export const isNode = (n: unknown): n is Node => n instanceof NodeBase;
+  export const isRoot = (n: unknown): n is Root => n instanceof Root;
+  export const isRule = (n: unknown): n is Rule => n instanceof Rule;
+  export const isChildNode = isSome(isAtRule, isComment, isDecl, isRule);
+
+  // Css: Parse
+
+  function parseNode<T extends Node>(guard: Guard<T>): (css: string) => T {
     return css => {
       const node = parseRoot(css).nodes.single();
       assert(guard(node));
@@ -346,7 +214,7 @@ export namespace Css {
     };
   }
 
-  function parseNodes<T extends CssAnyNode>(guard?: Guard<T>): (css: string) => T[] {
+  function parseNodes<T extends Node>(guard?: Guard<T>): (css: string) => T[] {
     return css => parseRoot(css).nodes
       .map(node => {
         assert(guard?.(node));
@@ -354,170 +222,398 @@ export namespace Css {
       });
   }
 
-  export const parseRoot = (css: string) => cssSafeParser(css);
-  export const parseRule = parseNode(isCssRule);
-  export const parseAtRule = parseNode(isCssRule);
-  export const parseComment = parseNode(isCssComment);
+  export const parseRoot = (css: string) => cssParserSafe(css);
+  export const parseRule = parseNode(isRule);
+  export const parseAtRule = parseNode(isRule);
+  export const parseComment = parseNode(isComment);
 
-  export function parseDecl(css: string): CssDecl {
+  export function parseDecl(css: string): Decl {
     const rule = parseRule(`*{${css}}`);
     const node = rule.nodes.single();
-    assert(isCssDecl(node));
+    assert(isDecl(node));
     return node;
   }
 
-  export const parseChildNodes = parseNodes(isCssChildNode);
-  export const parseRules = parseNodes(isCssRule);
-  export const parseAtRules = parseNodes(isCssRule);
-  export const parseComments = parseNodes(isCssComment);
+  export const parseChildNodes = parseNodes(isChildNode);
+  export const parseRules = parseNodes(isRule);
+  export const parseAtRules = parseNodes(isRule);
+  export const parseComments = parseNodes(isComment);
 
-  export function parseDecls(css: string): CssDecl[] {
+  export function parseDecls(css: string): Decl[] {
     return parseRule(`*{${css}}`).nodes.map(node => {
-      assert(isCssDecl(node));
+      assert(isDecl(node));
       return node;
     });
   }
 }
 
-export type SelNodeNames = keyof SelNodeTypes;
+// MARK: Ct
 
-export type SelParseOptions = Assigned<Parameters<ReturnType<typeof cssSelectorParser>['astSync']>[1]>;
+export namespace Ct {
 
-export type SelContainer = SelRoot | SelSelector | SelPseudo;
+  // Tok: Types
 
-export function tokenizeCss(css: string): CssToken[] {
-  return tokenizeCssProc({ css });
-}
+  export type Token = cssCt.CSSToken;
+  export type NumericToken = cssCt.NumericToken;
+  export type TokenT<T extends Type, U> = cssCt.Token<T, U>;
+  export type AtKeyword = cssCt.TokenAtKeyword;
+  export type BadString = cssCt.TokenBadString;
+  export type BadUrl = cssCt.TokenBadURL;
+  export type CDC = cssCt.TokenCDC;
+  export type CDO = cssCt.TokenCDO;
+  export type CloseCurly = cssCt.TokenCloseCurly;
+  export type CloseParen = cssCt.TokenCloseParen;
+  export type CloseSquare = cssCt.TokenCloseSquare;
+  export type Colon = cssCt.TokenColon;
+  export type Comma = cssCt.TokenComma;
+  export type Comment = cssCt.TokenComment;
+  export type Delim = cssCt.TokenDelim;
+  export type Dimension = cssCt.TokenDimension;
+  export type Eof = cssCt.TokenEOF;
+  export type Function = cssCt.TokenFunction;
+  export type Hash = cssCt.TokenHash;
+  export type Ident = cssCt.TokenIdent;
+  export type Number = cssCt.TokenNumber;
+  export type OpenCurly = cssCt.TokenOpenCurly;
+  export type OpenParen = cssCt.TokenOpenParen;
+  export type OpenSquare = cssCt.TokenOpenSquare;
+  export type Percentage = cssCt.TokenPercentage;
+  export type Semicolon = cssCt.TokenSemicolon;
+  export type String = cssCt.TokenString;
+  export type Url = cssCt.TokenURL;
+  export type UnicodeRange = cssCt.TokenUnicodeRange;
+  export type Space = cssCt.TokenWhitespace;
 
-export function stringifyCssComp(node: Comp): string {
-  return stringifyCss(...node.tokens());
-}
+  export import HashType = cssCt.HashType;
+  export import NumberType = cssCt.NumberType;
+  export import Type = cssCt.TokenType;
 
-export function parseCssCompStr(css: string): Comp {
-  return parseCssComp(tokenizeCss(css)) ?? throwError("Failed to parse CSS comp");
-}
+  export type WithValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
+  export type ValueType = string | number;
 
-type TokenWithValue = TokenAtKeyword | TokenDelim | TokenFunction | TokenHash | TokenIdent | TokenDimension | TokenNumber | TokenPercentage | TokenString | TokenURL;
-type TokenValueType = string | number;
-type TokenWithType = TokenDimension | TokenHash | TokenNumber;
-type TokenTypeType = CssNumberType | CssHashType;
+  export type WithType = Dimension | Hash | Number;
+  export type TypeType = NumberType | HashType;
 
-export function isCompTokenType<T extends CssToken>(
-  comp: Comp, isTokenType: (x: CssToken) => x is T)
-  : comp is CompToken & { value: T } {
-  return isCompToken(comp) && isTokenType(comp.value);
-}
+  // Tok: Guards
 
-export function isCompTokenTypeValue<TToken extends TokenWithValue, TValue extends TokenValueType>(
-  comp: Comp, isTokenType: (x: CssToken) => x is TToken, value: TValue)
-  : comp is CompToken & { value: TToken & { [4]: { value: TValue } } } {
-  return isCompToken(comp) && isTokenType(comp.value) && comp.value[4].value === value;
-}
+  export import isToken = cssCt.isToken;
+  export import isAtKeyword = cssCt.isTokenAtKeyword;
+  export import isBadString = cssCt.isTokenBadString;
+  export import isBadUrl = cssCt.isTokenBadURL;
+  export import isCDC = cssCt.isTokenCDC;
+  export import isCDO = cssCt.isTokenCDO;
+  export import isCloseCurly = cssCt.isTokenCloseCurly;
+  export import isCloseParen = cssCt.isTokenCloseParen;
+  export import isCloseSquare = cssCt.isTokenCloseSquare;
+  export import isColon = cssCt.isTokenColon;
+  export import isComma = cssCt.isTokenComma;
+  export import isComment = cssCt.isTokenComment;
+  export import isDelim = cssCt.isTokenDelim;
+  export import isDimension = cssCt.isTokenDimension;
+  export import isEOF = cssCt.isTokenEOF;
+  export import isFunction = cssCt.isTokenFunction;
+  export import isHash = cssCt.isTokenHash;
+  export import isIdent = cssCt.isTokenIdent;
+  export import isNumber = cssCt.isTokenNumber;
+  export import isNumeric = cssCt.isTokenNumeric;
+  export import isOpenCurly = cssCt.isTokenOpenCurly;
+  export import isOpenParen = cssCt.isTokenOpenParen;
+  export import isOpenSquare = cssCt.isTokenOpenSquare;
+  export import isPercentage = cssCt.isTokenPercentage;
+  export import isSemicolon = cssCt.isTokenSemicolon;
+  export import isString = cssCt.isTokenString;
+  export import isUrl = cssCt.isTokenURL;
+  export import isUnicodeRange = cssCt.isTokenUnicodeRange;
+  export import isSpaceOrComment = cssCt.isTokenWhiteSpaceOrComment;
+  export import isSpace = cssCt.isTokenWhitespace;
 
-export function isCompTokenTypeType<TToken extends TokenWithType, TType extends TokenTypeType>(
-  comp: Comp, isTokenType: (x: CssToken) => x is TToken, type: TType)
-  : comp is CompToken & { value: TToken & { [4]: { type: TType } } } {
-  return isCompToken(comp) && isTokenType(comp.value) && comp.value[4].type === type;
-}
+  // Tok: Parse
 
-export function areSelNodesEqual(a: SelNode, b: SelNode): boolean {
-  return a.toString() === b.toString();
-}
-
-export function areSelNodeHeadersEqual(a: SelNode, b: SelNode): boolean {
-  return cloneSelNodeHeader(a).toString() === cloneSelNodeHeader(b).toString();
-}
-
-export function cloneSelNode<T extends SelNode>(node: T): T {
-  return node.clone() as T;
-}
-
-export function cloneSelNodeHeader<T extends SelNode>(node: T): T {
-  if (isSelRoot(node))
-    return Sel.root() as T;
-  if (isSelSelector(node))
-    return Sel.selector() as T;
-  if (isSelPseudoClass(node))
-    return Sel.pseudoClass(node.value) as T;
-  return cloneSelNode(node);
-}
-
-export namespace Sel {
-  export function parseRoot(selectors: string | CssRule, opts?: SelParseOptions): SelRoot {
-    return cssSelectorParser().astSync(selectors, Object.assign(<SelParseOptions>{ lossless: false }, opts));
+  export function parse(css: string): Ct.Token[] {
+    return cssCt.tokenize({ css });
   }
 
-  export function parseSelector(selector: string | CssRule, opts?: SelParseOptions): SelSelector {
+  export function stringify(tokens: Ct.Token[]): string {
+    return cssCt.stringify(...tokens);
+  }
+}
+
+// MARK: Comp
+
+export namespace Cc {
+
+  // Comp: Types
+
+  export import Comment = cssComp.CommentNode;
+  export import ContainerBase = cssComp.ContainerNodeBaseClass;
+  export import Function = cssComp.FunctionNode;
+  export import Block = cssComp.SimpleBlockNode;
+  export import Token = cssComp.TokenNode;
+  export import Space = cssComp.WhitespaceNode;
+
+  export type Comp = cssComp.ComponentValue;
+  export type Container = cssComp.ContainerNode;
+  export type Type = cssComp.ComponentValueType;
+
+  // Comp: Guards
+
+  export import isComment = cssComp.isCommentNode;
+  export import isFunction = cssComp.isFunctionNode;
+  export import isBlock = cssComp.isSimpleBlockNode;
+  export import isTokenAny = cssComp.isTokenNode;
+  export import isSpaceOrComment = cssComp.isWhiteSpaceOrCommentNode;
+  export import isSpace = cssComp.isWhitespaceNode;
+
+  export function isToken<T extends Ct.Token>(
+    isTokenType: (x: Ct.Token) => x is T, comp: Comp
+  ): comp is Token & { value: T };
+  export function isToken<T extends Ct.Token>(
+    isTokenType: (x: Ct.Token) => x is T
+  ): (comp: Comp) => comp is Token & { value: T };
+  export function isToken<T extends Ct.Token>(
+    isTokenType: (x: Ct.Token) => x is T, comp?: Comp
+  ): any {
+    const guard = (comp: Comp) => isTokenAny(comp) && isTokenType(comp.value);
+    return isUndefined(comp) ? guard : guard(comp);
+  }
+
+  export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
+    isTokenType: (x: Ct.Token) => x is T, value: TValue, comp: Comp
+  ): comp is Token & { value: T & { [4]: { value: TValue } } };
+  export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
+    isTokenType: (x: Ct.Token) => x is T, value: TValue
+  ): (comp: Comp) => comp is Token & { value: T & { [4]: { value: TValue } } };
+  export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
+    isTokenType: (x: Ct.Token) => x is T, value: TValue, comp?: Comp
+  ): any {
+    const guard = (comp: Comp) => isTokenAny(comp) && isTokenType(comp.value) && comp.value[4].value === value;
+    return isUndefined(comp) ? guard : guard(comp);
+  }
+
+  export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
+    isTokenType: (x: Ct.Token) => x is T, type: TType, comp: Comp
+  ): comp is Token & { value: T & { [4]: { type: TType } } };
+  export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
+    isTokenType: (x: Ct.Token) => x is T, type: TType
+  ): (comp: Comp) => comp is Token & { value: T & { [4]: { type: TType } } };
+  export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
+    isTokenType: (x: Ct.Token) => x is T, type: TType, comp?: Comp
+  ): any {
+    const guard = (comp: Comp) => isTokenAny(comp) && isTokenType(comp.value) && comp.value[4].type === type;
+    return isUndefined(comp) ? guard : guard(comp);
+  }
+
+  // Comp: Parse
+
+  function toTokens(source: string | Ct.Token[]): Ct.Token[] {
+    return isArray(source) ? source : Ct.parse(source);
+  }
+
+  function onParseError(ex: cssCt.ParseError): void {
+    logError(ex, "Failed to parse CSS component");
+  }
+
+  export function parse(source: string | Ct.Token[]): Comp {
+    return cssComp.parseComponentValue(toTokens(source), { onParseError }) ?? throwError("Failed to parse CSS comp");
+  }
+
+  export function parseCommaList(source: string | Ct.Token[]): Comp[][] {
+    return cssComp.parseCommaSeparatedListOfComponentValues(toTokens(source), { onParseError });
+  }
+
+  export function parseList(source: string | Ct.Token[]): Comp[] {
+    return cssComp.parseListOfComponentValues(toTokens(source), { onParseError });
+  }
+
+  export function stringify(node: Comp): string {
+    return cssCt.stringify(...node.tokens());
+  }
+
+  export import stringifyList = cssComp.stringify;
+
+  export import forEach = cssComp.forEach;
+  export import gatherParents = cssComp.gatherNodeAncestry;
+  export import replaceList = cssComp.replaceComponentValues;
+  export import walk = cssComp.walk;
+}
+
+// MARK: Sel
+
+export namespace Sel {
+
+  // Sel: Types
+
+  export type AsyncProcessor = cssSelParser.AsyncProcessor;
+  export type Attribute = cssSelParser.Attribute;
+  export type AttributeOperator = cssSelParser.AttributeOperator;
+  export type AttributeOptions = cssSelParser.AttributeOptions;
+  export type Base = cssSelParser.Base;
+  export type Class = cssSelParser.ClassName;
+  export type Combinator = cssSelParser.Combinator;
+  export type CombinatorRaws = cssSelParser.CombinatorRaws;
+  export type Comment = cssSelParser.Comment;
+  export type ContainerBase = cssSelParser.Container;
+  export type ContainerOptions = cssSelParser.ContainerOptions;
+  export type ErrorOptions = cssSelParser.ErrorOptions;
+  export type Identifier = cssSelParser.Identifier;
+  export type Namespace = cssSelParser.Namespace;
+  export type NamespaceOptions = cssSelParser.NamespaceOptions;
+  export type Nesting = cssSelParser.Nesting;
+  export type Node = cssSelParser.Node;
+  export type NodeOptions = cssSelParser.NodeOptions;
+  export type NodeSource = cssSelParser.NodeSource;
+  export type NodeTypes = cssSelParser.NodeTypes;
+  export type Options = cssSelParser.Options;
+  export type ParserOptions = cssSelParser.ParserOptions;
+  export type PreferredQuoteMarkOptions = cssSelParser.PreferredQuoteMarkOptions;
+  export type Pseudo = cssSelParser.Pseudo;
+  export type Root = cssSelParser.Root;
+  export type Selector = cssSelParser.Selector;
+  export type SmartQuoteMarkOptions = cssSelParser.SmartQuoteMarkOptions;
+  export type SpaceAround = cssSelParser.SpaceAround;
+  export type Spaces = cssSelParser.Spaces;
+  export type String = cssSelParser.String;
+  export type Tag = cssSelParser.Tag;
+  export type Universal = cssSelParser.Universal;
+
+  export type Container = Root | Selector | Pseudo;
+  export type NodeNames = keyof NodeTypes;
+  export type ParseOptions = Assigned<Parameters<ReturnType<typeof cssSelParser>['astSync']>[1]>;
+
+  // Sel: Guards
+
+  export import isAttribute = cssSelParser.isAttribute;
+  export import isClass = cssSelParser.isClassName;
+  export import isCombinator = cssSelParser.isCombinator;
+  export import isComment = cssSelParser.isComment;
+  export import isContainer = cssSelParser.isContainer;
+  export import isIdentifier = cssSelParser.isIdentifier;
+  export import isNamespace = cssSelParser.isNamespace;
+  export import isNesting = cssSelParser.isNesting;
+  export import isNode = cssSelParser.isNode;
+  export import isPseudo = cssSelParser.isPseudo;
+  export import isPseudoClass = cssSelParser.isPseudoClass;
+  export import isPseudoElement = cssSelParser.isPseudoElement;
+  export import isRoot = cssSelParser.isRoot;
+  export import isSelector = cssSelParser.isSelector;
+  export import isString = cssSelParser.isString;
+  export import isTag = cssSelParser.isTag;
+  export import isUniversal = cssSelParser.isUniversal;
+
+  // Sel: Parse
+
+  export import parser = cssSelParser;
+
+  export function parseRoot(selectors: string | Css.Rule, opts?: ParseOptions): Root {
+    return cssSelParser().astSync(selectors, Object.assign(<ParseOptions>{ lossless: false }, opts));
+  }
+
+  export function parseSelector(selector: string | Css.Rule, opts?: ParseOptions): Selector {
     return parseRoot(selector, opts).nodes.single();
   }
 
-  export function attribute(attribute: string, operator?: SelAttributeOperator, value?: string, insensitive?: boolean): SelAttribute {
-    const opts: SelAttributeOptions = {
+  // Sel: Compare
+
+  export function areEqual(a: Node, b: Node): boolean {
+    return a.toString() === b.toString();
+  }
+
+  export function areHeadersEqual(a: Node, b: Node): boolean {
+    return cloneHeader(a).toString() === cloneHeader(b).toString();
+  }
+
+  // Sel: Clone
+
+  export function clone<T extends Node>(node: T): T {
+    return node.clone() as T;
+  }
+
+  export function cloneHeader<T extends Node>(node: T): T {
+    if (isRoot(node))
+      return root() as T;
+    if (isSelector(node))
+      return selector() as T;
+    if (isPseudoClass(node))
+      return pseudoClass(node.value) as T;
+    return clone(node);
+  }
+
+  // Sel: Create
+
+  export function attribute(attribute: string, operator?: AttributeOperator, value?: string, insensitive?: boolean): Attribute {
+    const opts: AttributeOptions = {
       attribute, value, quoteMark: null,
       insensitive: insensitive ?? false,
       raws: {},
     };
     if (operator !== undefined)
       opts.operator = operator;
-    const ret = cssSelectorParser.attribute(opts);
+    const ret = cssSelParser.attribute(opts);
     ret.quoteMark = ret.smartQuoteMark({ quoteMark: "'" });
     return ret;
   }
 
-  export function className(className: string): SelClassName {
-    return cssSelectorParser.className({ value: className });
+  export function className(className: string): Class {
+    return cssSelParser.className({ value: className });
   }
 
-  export function combinator(combinator: string): SelCombinator {
-    return cssSelectorParser.combinator({ value: combinator });
+  export function combinator(combinator: string): Combinator {
+    return cssSelParser.combinator({ value: combinator });
   }
 
-  export function comment(comment: string): SelComment {
-    return cssSelectorParser.comment({ value: `/*${comment}*/` });
+  export function comment(comment: string): Comment {
+    return cssSelParser.comment({ value: `/*${comment}*/` });
   }
 
-  export function id(id: string): SelIdentifier {
-    return cssSelectorParser.id({ value: id });
+  export function id(id: string): Identifier {
+    return cssSelParser.id({ value: id });
   }
 
-  export function nesting(): SelNesting {
-    return cssSelectorParser.nesting();
+  export function nesting(): Nesting {
+    return cssSelParser.nesting();
   }
 
-  export function pseudoClass(pseudoClass: string, nodes?: SelSelector[]): SelPseudo {
-    const opts: SelContainerOptions = { value: pseudoClass.startsWith(':') ? pseudoClass : `:${pseudoClass}` };
+  export function pseudoClass(pseudoClass: string, nodes?: Selector[]): Pseudo {
+    const opts: ContainerOptions = { value: pseudoClass.startsWith(':') ? pseudoClass : `:${pseudoClass}` };
     if (nodes)
       opts.nodes = nodes;
-    return cssSelectorParser.pseudo(opts);
+    return cssSelParser.pseudo(opts);
   }
 
-  export function pseudoElement(pseudoElement: string): SelPseudo {
-    return cssSelectorParser.pseudo({ value: pseudoElement.startsWith(':') ? pseudoElement : `::${pseudoElement}` });
+  export function pseudoElement(pseudoElement: string): Pseudo {
+    return cssSelParser.pseudo({ value: pseudoElement.startsWith(':') ? pseudoElement : `::${pseudoElement}` });
   }
 
-  export function root(nodes?: SelSelector[]): SelRoot {
-    const opts: SelContainerOptions = { value: "" };
+  export function root(nodes?: Selector[]): Root {
+    const opts: ContainerOptions = { value: "" };
     if (nodes)
       opts.nodes = nodes;
-    return cssSelectorParser.root(opts);
+    return cssSelParser.root(opts);
   }
 
-  export function selector(nodes?: SelNode[]): SelSelector {
-    const opts: SelContainerOptions = { value: "" };
+  export function selector(nodes?: Node[]): Selector {
+    const opts: ContainerOptions = { value: "" };
     if (nodes)
       opts.nodes = nodes;
-    return cssSelectorParser.selector(opts);
+    return cssSelParser.selector(opts);
   }
 
-  export function string(str: string): SelString {
-    return cssSelectorParser.string({ value: str });
+  export function string(str: string): String {
+    return cssSelParser.string({ value: str });
   }
 
-  export function tag(tag: string): SelTag {
-    return cssSelectorParser.tag({ value: tag });
+  export function tag(tag: string): Tag {
+    return cssSelParser.tag({ value: tag });
   }
 
-  export function universal(): SelUniversal {
-    return cssSelectorParser.universal();
+  export function universal(): Universal {
+    return cssSelParser.universal();
   }
+
+  // Sel: Specificity
+
+  export import getSpecificity = cssSelSpec.selectorSpecificity;
+  export import compareSpecificity = cssSelSpec.compare;
+
+  export type Specificity = cssSelSpec.Specificity;
 }

@@ -6,10 +6,11 @@ import { regex, pattern as re, InterpolatedValue as RegExpValue } from 'regex';
 import JSON5 from 'json5';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
 import enquirer from 'enquirer';
+import supportsColor from 'supports-color';
 import makeFetchCookie from 'fetch-cookie';
 import { CookieJar, MemoryCookieStore } from 'tough-cookie';
-import NetscapeCookieStore from './toughCookieNetscapeStore.ts';
 import { isPrimitive, Primitive } from 'utility-types';
+import NetscapeCookieStore from './toughCookieNetscapeStore.ts';
 
 const downloadTimeout = 30000;
 
@@ -29,11 +30,17 @@ export type ObjectInvert<T extends Record<PropertyKey, PropertyKey>> = {
   [K in keyof T as T[K]]: K;
 };
 
+export type LiteralUnion<T extends U, U = string> = T | (Pick<U, never> & { _?: never | undefined });
+
 export type Intersect<T extends any[]> = T extends [infer First, ...infer Rest] ? First & Intersect<Rest> : {};
 
-export type Guard<T = unknown> = (x: unknown) => x is T;
+export type Guard<T = unknown> = (x: any) => x is T;
+
+//export type GuardT<A = unknown, T extends A = A> = (x: A) => x is T;
 
 export type GuardReturnType<T extends Guard> = T extends Guard<infer U> ? U : never;
+
+//export type GuardReturnTypeT<A, T extends A, G extends GuardT<A, T>> = G extends GuardT<A, infer U> ? U : never;
 
 export type SubUnion<T, U extends T> = T extends U ? T : never;
 
@@ -205,8 +212,10 @@ export function isValueIn<K, U extends K>(value: K, values: readonly U[]): value
   return values.includes(value as U);
 }
 
-export function isSome<TGuard extends Guard[]>(...guards: TGuard): Guard<GuardReturnType<TGuard[number]>> {
-  return (x: unknown): x is GuardReturnType<TGuard[number]> => guards.some(g => g(x));
+//export function isSome<T, G extends Guard<T>[]>(...guards: G): Guard<GuardReturnType<G[number]>>;
+//export function isSome<A, T extends A, G extends GuardT<A, T>[]>(...guards: G): GuardT<A, GuardReturnTypeT<A, T, G[number]>>;
+export function isSome<T, G extends Guard<T>[]>(...guards: G): Guard<GuardReturnType<G[number]>> {
+  return (x: unknown): x is GuardReturnType<G[number]> => guards.some(g => g(x));
 }
 
 export function isAssigned<T>(v: T): v is Assigned<T> {
@@ -687,10 +696,14 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
 export function configureInspect() {
   inspect.defaultOptions = {
     ...inspect.defaultOptions,
-    colors: process.stdout.isTTY && process.env.TERM !== 'dumb' && !process.env.NO_COLOR,
+    colors: supportsColor.stdout && supportsColor.stdout.hasBasic,
     numericSeparator: true,
   };
-  const updateBreakLength = () => inspect.defaultOptions.breakLength = process.stdout.columns || 80;
+  const updateBreakLength = () => {
+    const lineLength = process.stdout.columns || 80;
+    inspect.defaultOptions.breakLength = lineLength;
+    inspect.defaultOptions.maxStringLength = lineLength * 2;
+  };
   updateBreakLength();
   process.stdout.addListener('resize', updateBreakLength);
 }

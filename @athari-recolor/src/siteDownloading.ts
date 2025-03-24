@@ -1,16 +1,12 @@
 import fs from 'node:fs/promises';
-import { basename } from 'node:path';
+import paths from 'node:path';
 import vm from 'node:vm';
 import { Exclude, Type } from 'class-transformer';
 import { WritableKeys } from 'utility-types';
 import { regex } from 'regex';
 import { format as prettifyCode, Options as PrettierOptions } from 'prettier';
 import { getSiteDir } from './commonUtils.ts';
-import {
-  HtmlDocument, HtmlElement,
-  Sel,
-  parseHtmlDocument, htmlQuerySelectorAll, htmlQuerySelector, getHtmlAllInnerText,
-} from './domUtils.ts';
+import { Html, Sel } from './domUtils.ts';
 import {
   Assigned, OptObject,
   assertHasKeys, compare, deepMerge, downloadText, isArray, isString, logError, objectEntries, objectKeys, objectValues, readTextFile, throwError,
@@ -209,8 +205,8 @@ async function prettifyOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
   console.log(`Prettier HTML written to ${pathPretty}`);
 }
 
-async function parseLinkedCss(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
-  for (const elLinkCss of htmlQuerySelectorAll(doc, 'link[rel="stylesheet"][href]')) {
+async function parseLinkedCss(site: Site, doc: Html.Document, html: SiteHtml): Promise<void> {
+  for (const elLinkCss of doc.querySelectorAll('link[rel="stylesheet"][href]')) {
     const cssUrl = new URL(elLinkCss.attribs.href!, html.url).toString();
     let cssName = cssUrl.match(/.*\/([^#]+)/)?.[1] ?? '';
     cssName = cssName.replace(/[^\w\d\._-]/ig, "");
@@ -221,10 +217,10 @@ async function parseLinkedCss(site: Site, doc: HtmlDocument, html: SiteHtml): Pr
   }
 }
 
-async function parseEmbeddedCss(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
+async function parseEmbeddedCss(site: Site, doc: Html.Document, html: SiteHtml): Promise<void> {
   let iEmbedStyle = 1;
-  for (const elStyle of htmlQuerySelectorAll(doc, 'style:is([type="text/css"], [type=""], :not([type]))')) {
-    const cssText = getHtmlAllInnerText(elStyle).trim();
+  for (const elStyle of doc.querySelectorAll('style:is([type="text/css"], [type=""], :not([type]))')) {
+    const cssText = elStyle.innerTextAll.trim();
     const cssName = html.name.replace(/\.html$/i, `.embed${iEmbedStyle}.css`);
     const cssPath = `${site.dir}/${cssName}`;
     await fs.writeFile(cssPath, cssText);
@@ -234,7 +230,7 @@ async function parseEmbeddedCss(site: Site, doc: HtmlDocument, html: SiteHtml): 
   }
 }
 
-async function parseStyleAttributes(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
+async function parseStyleAttributes(site: Site, doc: Html.Document, html: SiteHtml): Promise<void> {
   const skipSelAttrs = new Set([ 'id', 'class', 'style' ]);
   const obsoleteAttrs = { color: 'color', bgcolor: 'background-color', bordercolor: 'border-color' };
   const reIdent = regex('i')`
@@ -244,12 +240,12 @@ async function parseStyleAttributes(site: Site, doc: HtmlDocument, html: SiteHtm
     $ `;
 
   const styleDecls: string[] = [];
-  for (const el of htmlQuerySelectorAll(doc, '[style]')) {
+  for (const el of doc.querySelectorAll('[style]')) {
     const attrStyle = el.attribs.style ?? throwError("missing style attribute");
     styleDecls.push(`${buildTagSelector(el)}[style] {\n  ${attrStyle}\n}`);
   }
 
-  for (const el of htmlQuerySelectorAll(doc, objectKeys(obsoleteAttrs).map(a => `[${a}]`).join(", "))) {
+  for (const el of doc.querySelectorAll(objectKeys(obsoleteAttrs).map(a => `[${a}]`).join(", "))) {
     for (const [ attrName, ruleName ] of objectEntries(obsoleteAttrs)) {
       const attrValue = el.attribs[attrName];
       if (!attrValue)
@@ -265,7 +261,7 @@ async function parseStyleAttributes(site: Site, doc: HtmlDocument, html: SiteHtm
   site.inlineCss.refs.add(html.asRef);
   return;
 
-  function buildTagSelector(el: HtmlElement) {
+  function buildTagSelector(el: Html.Element) {
     const sel = Sel.selector([ Sel.tag(el.tagName) ]);
     if (el.attribs.id)
       sel.append(Sel.id(el.attribs.id));
@@ -280,8 +276,8 @@ async function parseStyleAttributes(site: Site, doc: HtmlDocument, html: SiteHtm
   }
 }
 
-async function parseNextJSBuildManifest(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
-  const elBuildManifest = htmlQuerySelector(doc, 'script[src$="buildManifest.js" i]');
+async function parseNextJSBuildManifest(site: Site, doc: Html.Document, html: SiteHtml): Promise<void> {
+  const elBuildManifest = doc.querySelector('script[src$="buildManifest.js" i]');
   if (!elBuildManifest)
     return;
 
@@ -336,8 +332,8 @@ interface WebpackMinifyCss extends Record<string, unknown> {
   miniCssF(index: number): string;
 }
 
-async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: SiteHtml): Promise<void> {
-  const elWebpack = htmlQuerySelector(doc, 'script[src*="webpack" i][src$=".js" i]');
+async function parseWebpackMiniCssChunks(site: Site, doc: Html.Document, html: SiteHtml): Promise<void> {
+  const elWebpack = doc.querySelector('script[src*="webpack" i][src$=".js" i]');
   if (!elWebpack)
     return;
 
@@ -374,7 +370,7 @@ async function parseWebpackMiniCssChunks(site: Site, doc: HtmlDocument, html: Si
       continue;
     }
     emptyUrlCount = 0;
-    const cssName = basename(cssUrl);
+    const cssName = paths.basename(cssUrl);
     if (site.addCss(new SiteCss({ name: cssName, url: cssUrl }, `[webpack] chunk (#${iChunk}) ${html.asRef}`)))
       console.log(`Found Next.js CSS chunk #${iChunk} '${cssName}' ${cssUrl}`);
   }
@@ -390,7 +386,7 @@ export async function downloadSiteHtml(site: Site): Promise<void> {
 
   for (const html of site.html.filter(c => c.text)) {
     assertHasKeys(html, 'text');
-    const doc = parseHtmlDocument(html.text);
+    const doc = Html.parseDocument(html.text);
     await parseLinkedCss(site, doc, html);
     await parseEmbeddedCss(site, doc, html);
     await parseStyleAttributes(site, doc, html);
