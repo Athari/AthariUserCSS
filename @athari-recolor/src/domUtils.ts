@@ -14,9 +14,10 @@ import * as cssSelSpec from '@csstools/selector-specificity';
 import assert from 'node:assert/strict';
 import { DeepRequired } from 'utility-types';
 import {
-  Assigned, Guard,
-  Opt,
-  deepMerge, isArray, isSome, isUndefined, logError, throwError,
+  Assigned, Guard, GuardAny, Opt, MostSpecific,
+  deepMerge, isAssigned, isArray, isSome, isUndefined, logError, throwError,
+  isString as isStringPrimitive,
+  isNumber as isNumberPrimitive,
 } from './utils.ts';
 
 // MARK: Html
@@ -215,7 +216,7 @@ export namespace Css {
 
   // Css: Parse
 
-  function parseNode<T extends Node>(guard: Guard<T>): (css: string) => T {
+  function parseNode<T extends Node>(guard: GuardAny<T>): (css: string) => T {
     return css => {
       const node = parseRoot(css).nodes.single();
       assert(guard(node));
@@ -223,7 +224,7 @@ export namespace Css {
     };
   }
 
-  function parseNodes<T extends Node>(guard?: Guard<T>): (css: string) => T[] {
+  function parseNodes<T extends Node>(guard?: GuardAny<T>): (css: string) => T[] {
     return css => parseRoot(css).nodes
       .map(node => {
         assert(guard?.(node));
@@ -260,7 +261,7 @@ export namespace Css {
 
 export namespace Ct {
 
-  // Tok: Types
+  // Ct: Types
 
   export type Token = cssCt.CSSToken;
   export type NumericToken = cssCt.NumericToken;
@@ -303,13 +304,22 @@ export namespace Ct {
 
   export type ParseErrorCallback = (error: ParseError) => void;
 
-  export type WithValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
+  export type WithAnyValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
   export type ValueType = string | number;
+  export type WithValue<T extends WithAnyValue, V extends ValueType> = T & { [4]: { value: V } };
 
-  export type WithType = Dimension | Hash | Number;
+  export type WithAnyType = Dimension | Hash | Number;
   export type TypeType = NumberType | HashType;
+  export type WithType<T extends WithAnyType, V extends TypeType> = T & { [4]: { type: V } };
 
-  // Tok: Guards
+  export type UnitType = string;
+  export type WithUnit<V extends UnitType> = Dimension & { [4]: { unit: V } };
+
+  export type IdentOf<T extends Token> = T extends TokenT<infer U, any> ? U : never;
+  export type ValueOf<T extends WithAnyValue> = T[4]['value'];
+  export type TypeOf<T extends WithAnyType> = T[4]['type'];
+
+  // Ct: Guards
 
   export import isToken = cssCt.isToken;
   export import isAtKeyword = cssCt.isTokenAtKeyword;
@@ -342,9 +352,45 @@ export namespace Ct {
   export import isRaw = cssCt.isTokenWhiteSpaceOrComment;
   export import isSpace = cssCt.isTokenWhitespace;
 
-  // Tok: Parse
+  type CtGuard<T extends Token> = Guard<Token, T>;
 
-  interface Parser {
+  const keywordComparer = Intl.Collator('en-US', { usage: 'search', sensitivity: 'variant', ignorePunctuation: false });
+
+  export function keywordEquals<A extends Opt<string>, B extends string>(a: A, b: B): a is MostSpecific<A, B> {
+    return isAssigned(a) && isAssigned(b) && !keywordComparer.compare(a, b);
+  }
+
+  export function keywordEqualsOneOf<A extends Opt<string>, B extends string>(a: A, b: readonly B[]): a is MostSpecific<A, B> {
+    return b.some(v => keywordEquals(a, v));
+  }
+
+  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: CtGuard<T>, value: readonly V[] | V, ct: Token): ct is WithValue<T, V>;
+  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: CtGuard<T>, value: readonly V[] | V): CtGuard<WithValue<T, V>>;
+  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: CtGuard<T>, value: readonly V[] | V, ct: Token | null = null): any {
+    const guard = (ct: Token) => g(ct) &&
+      (isStringPrimitive(ct[4].value)
+        ? (isStringPrimitive(value) ? keywordEquals(ct[4].value, value) : keywordEqualsOneOf(ct[4].value, value as readonly string[]))
+        : (isNumberPrimitive(value) ? ct[4].value === value : (value as readonly number[]).includes(ct[4].value)));
+    return ct === null ? guard : guard(ct);
+  }
+
+  export function isIdentValue<V extends string>(value: readonly V[] | V, ct: Token): ct is WithValue<Ident, V>;
+  export function isIdentValue<V extends string>(value: readonly V[] | V): CtGuard<WithValue<Ident, V>>;
+  export function isIdentValue<V extends string>(value: readonly V[] | V, ct: Token | null = null): any {
+    const guard = (ct: Token) => isIdent(ct) && (isStringPrimitive(value) ? keywordEquals(ct[4].value, value) : keywordEqualsOneOf(ct[4].value, value));
+    return ct === null ? guard : guard(ct);
+  }
+
+  export function isDimensionUnit<U extends string>(value: readonly U[] | U, ct: Token): ct is WithUnit<U>;
+  export function isDimensionUnit<U extends string>(value: readonly U[] | U): CtGuard<WithUnit<U>>;
+  export function isDimensionUnit<U extends string>(value: readonly U[] | U, ct: Token | null = null): any {
+    const guard = (ct: Token) => isDimension(ct) && (isStringPrimitive(value) ? keywordEquals(ct[4].unit, value) : keywordEqualsOneOf(ct[4].unit, value));
+    return ct === null ? guard : guard(ct);
+  }
+
+  // Ct: Parse
+
+  export interface Parser {
     readonly lastError: Opt<ParseError | ParseErrorWithToken>;
     readonly lastErrorToken: Opt<Token>;
     onParseError?: Opt<ParseErrorCallback>;
@@ -462,26 +508,26 @@ export namespace Cn {
     return isUndefined(node) ? guard : guard(node);
   }
 
-  export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
+  export function isTokenValue<T extends Ct.WithAnyValue, TValue extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, value: TValue, node: Node
   ): node is Token & { value: T & { [4]: { value: TValue } } };
-  export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
+  export function isTokenValue<T extends Ct.WithAnyValue, TValue extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, value: TValue
   ): (node: Node) => node is Token & { value: T & { [4]: { value: TValue } } };
-  export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
+  export function isTokenValue<T extends Ct.WithAnyValue, TValue extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, value: TValue, node?: Node
   ): any {
     const guard = (node: Node) => isTokenAny(node) && isTokenType(node.value) && node.value[4].value === value;
     return isUndefined(node) ? guard : guard(node);
   }
 
-  export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
+  export function isTokenType<T extends Ct.WithAnyType, TType extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, type: TType, node: Node
   ): node is Token & { value: T & { [4]: { type: TType } } };
-  export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
+  export function isTokenType<T extends Ct.WithAnyType, TType extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, type: TType
   ): (node: Node) => node is Token & { value: T & { [4]: { type: TType } } };
-  export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
+  export function isTokenType<T extends Ct.WithAnyType, TType extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, type: TType, node?: Node
   ): any {
     const guard = (node: Node) => isTokenAny(node) && isTokenType(node.value) && node.value[4].type === type;
@@ -523,11 +569,11 @@ export namespace Cn {
   export import replaceList = cssCn.replaceComponentValues;
   export import walk = cssCn.walk;
 
-  export function getValue<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.WithValue>(cn: Token & { value: C }): C[4]['value'] {
+  export function getValue<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.WithAnyValue>(cn: Token & { value: C }): C[4]['value'] {
     return cn.value[4].value;
   }
 
-  export function getType<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.WithType>(cn: Token & { value: C }): C[4]['type'] {
+  export function getType<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.WithAnyType>(cn: Token & { value: C }): C[4]['type'] {
     return cn.value[4].type;
   }
 }

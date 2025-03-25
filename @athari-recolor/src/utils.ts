@@ -32,15 +32,17 @@ export type ObjectInvert<T extends Record<PropertyKey, PropertyKey>> = {
 
 export type LiteralUnion<T extends U, U = string> = T | (Pick<U, never> & { _?: never | undefined });
 
+export type MostSpecific<A, B> = A extends B ? A : B extends A ? B : never;
+
 export type Intersect<T extends any[]> = T extends [infer First, ...infer Rest] ? First & Intersect<Rest> : {};
 
-export type Guard<T = unknown> = (x: any) => x is T;
+export type GuardAny<T = unknown> = (x: any) => x is T;
 
-//export type GuardT<A = unknown, T extends A = A> = (x: A) => x is T;
+export type Guard<A, T> = (a: A) => a is Extract<T, A>;
 
-export type GuardReturnType<T extends Guard> = T extends Guard<infer U> ? U : never;
+export type GuardParam<G> = G extends Guard<infer A, any> ? A : never;
 
-//export type GuardReturnTypeT<A, T extends A, G extends GuardT<A, T>> = G extends GuardT<A, infer U> ? U : never;
+export type GuardReturnType<G> = G extends Guard<any, infer T> ? T : never;
 
 export type SubUnion<T, U extends T> = T extends U ? T : never;
 
@@ -214,7 +216,7 @@ export function isValueIn<K, U extends K>(value: K, values: readonly U[]): value
 
 //export function isSome<T, G extends Guard<T>[]>(...guards: G): Guard<GuardReturnType<G[number]>>;
 //export function isSome<A, T extends A, G extends GuardT<A, T>[]>(...guards: G): GuardT<A, GuardReturnTypeT<A, T, G[number]>>;
-export function isSome<T, G extends Guard<T>[]>(...guards: G): Guard<GuardReturnType<G[number]>> {
+export function isSome<T, G extends GuardAny<T>[]>(...guards: G): GuardAny<GuardReturnType<G[number]>> {
   return (x: unknown): x is GuardReturnType<G[number]> => guards.some(g => g(x));
 }
 

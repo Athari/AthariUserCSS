@@ -4,7 +4,7 @@ import { Optional, SetComplement } from 'utility-types';
 import { cssTokenRegExps } from './commonUtils.ts';
 import { PostCss, Css, Sel } from './domUtils.ts';
 import {
-  Guard, SubUnion, Opt, OptObject, OneOrArray, KeyOfAny, ArrayGenerator, Counter, RegExpTemplate,
+  GuardAny, SubUnion, Opt, OptObject, OneOrArray, KeyOfAny, ArrayGenerator, Counter, RegExpTemplate,
   isSome, isArray, isString, objectAssignedValues, objectEntries, toAssignedArrayIfNeeded, throwError, assertNever, inspectPretty,
 } from './utils.ts';
 
@@ -272,7 +272,7 @@ function getTransformer<T extends Node>(
         throwError(`Unknown operation ${op.operation}`);
     }
 
-    function removeSelParent<T extends Sel.Node>(node: Opt<Sel.Node>, guard: Guard<T>): TransformCode {
+    function removeSelParent<T extends Sel.Node>(node: Opt<Sel.Node>, guard: GuardAny<T>): TransformCode {
       for (node = node; !!node; node = <Sel.Node>node?.parent) {
         if (guard(node)) {
           node.remove();

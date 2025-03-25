@@ -1,74 +1,26 @@
-import { match, P } from 'ts-pattern';
-import { Ct, Cn } from './domUtils.ts';
+import assert from 'node:assert';
+import { Ct } from './domUtils.ts';
 import {
-  Guard, LiteralUnion, Opt, ValueOf,
-  deepMerge, isArray, isDefined, isNull, isNumber, isSome, isString, throwError,
+  Guard, LiteralUnion, Opt,
+  isNull, isNumber, isString, logError, throwError,
 } from './utils.ts';
-;
-const { select: val, when: is, instanceOf: ctr, any } = P;
-const z = <T>(a: T) => a;
-const noop = () => {};
 
-class Val<T, V extends { type: T }> {
-  t: T;
-  #v: V;
-  v() { return this.#v }
-  constructor(v: V) {
-    this.t = v.type;
-    this.#v = v;
-  }
-}
-
-//function w<V extends { type: unknown }>(v: Record<PropertyKey, V>): Record<PropertyKey, Val<V['type'], V>>;
-function w<V extends { type: unknown }>(v: V[][]): Val<V['type'], V>[][];
-function w<V extends { type: unknown }>(v: V[]): Val<V['type'], V>[];
-function w<V extends { type: unknown }>(v: V): Val<V['type'], V>;
-function w<V extends { type: unknown }>(v: V[][] | V[] | V): Val<V['type'], V>[][] | Val<V['type'], V>[] | Val<V['type'], V> {
-  return isArray(v) ? (v as any).map(w) : new Val(v);
-}
-
-//function u<T, V extends { type: T }>(v: Record<PropertyKey, Val<T, V>>): Record<PropertyKey, V>;
-function u<T, V extends { type: T }>(v: Val<T, V>[][]): V[][];
-function u<T, V extends { type: T }>(v: Val<T, V>[]): V[];
-function u<T, V extends { type: T }>(v: Val<T, V>): V;
-function u<T, V extends { type: T }>(v: Val<T, V>[][] | Val<T, V>[] | Val<T, V>): V[][] | V[][] | V {
-  return v instanceof Val ? v.v() : isArray(v) ? (v as any).map(u) : v;
-}
-
-function wg<W extends V, V extends { type: T }, T>(g: (v: V) => v is W) {
-  return (val: Val<T, V>): val is Val<W['type'], W> => g(val.v());
+interface Context {
+  isFontFaceRule: boolean;
+  // TODO: Remove value checks in non-strict mode
+  strict: boolean;
 }
 
 export class CssFontParser {
-  // [
-  //   [
-  //     || <'font-style'>
-  //     || <font-variant-css2>
-  //     || <'font-weight'>
-  //     || <font-width-css3>
-  //   ]?
-  //   <'font-size'>
-  //   [
-  //     / <'line-height'>
-  //   ]?
-  //   <'font-family'>#
-  // ]
-  // | <system-family-name>
-  parseFont(source: string | Ct.Token[]): CssFont {
-    const [ cnsMain, ...cnsFamilies ] = Cn.parseCommaList(source);
-    const fontFamilies: CssFontFamilies = [];
-    for (const cnsFamily of cnsFamilies)
-      fontFamilies.push(this.#parseFamily(cnsFamily));
-    ;
-    return {
-      family: [ { value: 'Segoe UI' }, { value: 'sans-serif' }, { scriptSpecific: true, value: 'kai' } ],
-      size: { value: 10, unit: 'rem', type: Ct.NumberType.Number },
-      stretch: { keyword: "condensed" },
-      style: { keyword: 'oblique', value: 14, unit: 'deg', type: Ct.NumberType.Integer },
-      variant: { keyword: 'small-caps' },
-      weight: { keyword: 'revert' },
-      lineHeight: { value: 2, unit: null, type: Ct.NumberType.Number },
-    };
+  getZero(): CssNumericValue<null> {
+    return { value: 0, unit: null, type: Ct.NumberType.Integer };
+  }
+
+  parseFont(source: string): Opt<CssFont> {
+    const parser = Ct.parser(source);
+    parser.onParseError = ex => logError(ex, "Failed to parse font");
+    const font = <CssFont>{};
+    return parseFontShorthand(parser, { isFontFaceRule: false, strict: false }, font) ? font : undefined;
   }
 
   tokenizeFont(font: CssFont): Ct.Token[] {
@@ -78,112 +30,390 @@ export class CssFontParser {
   stringifyFont(font: CssFont): string {
     return Ct.stringify(this.tokenizeFont(font));
   }
-
-  #parseFamily(cnsFamily: Cn.Node[]): CssFontFamily {
-    const { value, raws } = this.#splitCnValueAndRaws(cnsFamily);
-    return match(w(value)).returnType<CssFontFamily>()
-      .with(
-        [ val(is(c => wg(Cn.isFunction)(c) && u(c).getName() == 'generic')) ],
-        c => {
-          const { value: keyword, raws: valueRaws } = this.#parseIdent(u(c).tokens(), keywords.font.family.scriptSpecific);
-          return <CssFontFamilyScriptSpecificKeywordValue>{
-            keyword,
-            scriptSpecific: true,
-            raws: deepMerge(null, {}, raws, { value: valueRaws }),
-          };
-        })
-      .with(
-        [ val(is(wg(Cn.isToken(Ct.isIdent)))) ],
-        c => isCssFontFamilyGeneric(Cn.getValue(u(c)))
-          ? <CssKeywordValue<CssFontFamilyGenericString>>{
-            keyword: Cn.getValue(u(c)),
-            raws,
-          }
-          : <CssStringValue>{
-            value: Cn.getValue(u(c)),
-            raws,
-          })
-      .with(
-        [ val(is(wg(Cn.isToken(Ct.isString)))) ],
-        c => <CssStringValue>{
-          value: Cn.getValue(u(c)),
-          raws,
-        })
-      .otherwise(
-        cs => <CssStringValue>{
-          value: Cn.stringifyList([ u(cs) ]),
-          raws,
-        });
-  }
-
-  #parseIdent<T extends string>(cts: Ct.Token[], keywords: readonly T[]): ValueWithRaws<LiteralUnion<T>> {
-    const { value, raws } = this.#splitCtValueAndRaws(cts);
-    const id = match<Ct.Token[], LiteralUnion<T>>(value)
-      .with(
-        [ [ Ct.Type.Ident as const, any, any, any, { value: val() } ] ],
-        v => v.toString())
-      .otherwise(
-        ts => Ct.stringify(ts));
-    return this.#withRaws(id, raws?.before, raws?.after);
-  }
-
-  // #CtMatch<T extends Ct.Token>(type: T[0], value?: object) {
-  //   return P.shape([ type, any, any, any, value ?? any ]);
-  // }
-
-  #splitCtValueAndRaws(cts: Ct.Token[]): ValueWithRaws<Ct.Token[]> {
-    if (cts.every(Ct.isRaw))
-      return this.#withRaws([], getCtsRaws(cts), undefined);
-    const before = getCtsRaws(cts.takeWhile(Ct.isRaw));
-    const after = getCtsRaws(cts.toReversed().takeWhile(Ct.isRaw));
-    const value = cts.slice(before.length, cts.length - after.length);
-    return this.#withRaws(value, before, after);
-
-    function getCtsRaws(cts: Iterable<Ct.Token>): CtRaw[] {
-      // TODO: Fix signature of IEnumerable.where to make it behave like Array.filter, then remove redundant filter call. Same below.
-      return [...cts].filter(isSome(Ct.isSpace, Ct.isComment)).toArray();
-    }
-  }
-
-  #splitCnValueAndRaws(cns: Cn.Node[]): ValueWithRaws<Cn.Node[]> {
-    if (cns.every(Cn.isSpaceOrComment))
-      return this.#withRaws([], getCnsRaws(cns), undefined);
-    const before = getCnsRaws(cns.takeWhile(Cn.isSpaceOrComment));
-    const after = getCnsRaws(cns.toReversed().takeWhile(Cn.isSpaceOrComment));
-    const value = cns.slice(before.length, cns.length - after.length);
-    return this.#withRaws(value, before, after);
-
-    function getCnsRaws(cns: Iterable<Cn.Node>): CtRaw[] {
-      return [...cns]
-        .flatMap((cn: Cn.Node) =>
-          match(w(cn)).returnType<Ct.Token[]>()
-            .with(is(wg(Cn.isSpace)), c => u(c).value)
-            .with(is(wg(Cn.isComment)), c => [ u(c).value ])
-            .otherwise(_ => []))
-        .filter(Ct.isRaw);
-    }
-  }
-
-  #withRaws<T>(value: T, before: Opt<CtRaw[]>, after: Opt<CtRaw[]>): ValueWithRaws<T> {
-    const ret = <ValueWithRaws<T>>{ value };
-    if (before)
-      (ret.raws ??= {}).before = before;
-    if (after)
-      (ret.raws ??= {}).after = after;
-    return ret;
-  }
 }
 
-interface ValueWithRaws<T> {
-  value: T;
+// MARK: Parse font props
+
+function parseFontShorthand(p: Ct.Parser, ctx: Context, font: CssFont): boolean {
+  p.consumeSpace();
+  const ct = p.peek();
+  if (Ct.isIdentValue(keywords.font.family.system)(ct))
+    return consumeSystemFont(p, font);
+  return consumeFont(p, ctx, font);
+}
+
+function consumeSystemFont(p: Ct.Parser, font: CssFont): boolean {
+  const ct = p.consume();
+  assert(Ct.isIdent(ct));
+  font.family = [ { keyword: ct[4].value } ];
+  return true;
+}
+
+function consumeFont(p: Ct.Parser, ctx: Context, font: CssFont): boolean {
+  let fontStyle: Opt<CssFontStyle>;
+  let fontVariant: Opt<CssFontVariant>;
+  let fontWeight: Opt<CssFontWeight>;
+  let fontStretch: Opt<CssFontStretch>;
+
+  for (let i = 0; i < 4 && !p.isEof(); i++) {
+    const ct = p.peek();
+    const ident = Ct.isIdent(ct) ? ct[4].value : undefined;
+
+    if (Ct.keywordEqualsOneOf(ident, keywords.normal)) {
+      p.consume();
+      continue;
+    }
+    if (!fontStyle && Ct.keywordEqualsOneOf(ident, keywords.font.style.all)) {
+      fontStyle = consumeFontStyle(p, ctx);
+      if (!fontStyle)
+        return false;
+      continue;
+    }
+    if (!fontVariant && Ct.keywordEqualsOneOf(ident, keywords.font.variantCss21)) {
+      fontVariant = consumeFontVariantCSS21(p);
+      if (fontVariant)
+        continue;
+    }
+    if (!fontWeight) {
+      fontWeight = consumeFontWeight(p, ctx);
+      if (fontWeight)
+        continue;
+    }
+    if (!fontStretch) {
+      fontStretch = consumeFontStretchKeywordOnly(p, ctx);
+      if (fontStretch)
+        continue;
+    }
+    break;
+  }
+
+  if (p.isEof())
+    return false;
+
+  font.style = fontStyle || { keyword: keywords.normal[0] };
+  font.variant = fontVariant || { keyword: keywords.normal[0] };
+  font.weight = fontWeight || { keyword: keywords.normal[0] };
+  font.stretch = fontStretch || { keyword: keywords.normal[0] };
+
+  const fontSize = consumeFontSize(p, ctx);
+  if (!fontSize || p.isEof())
+    return false;
+  font.size = fontSize;
+
+  if (consumeSlashWithSpace(p)) {
+    const lineHeight = consumeLineHeight(p, ctx);
+    if (!lineHeight)
+      return false;
+    font.lineHeight = lineHeight;
+  }
+
+  const fontFamily = consumeFontFamily(p);
+  if (!fontFamily)
+    return false;
+  font.family = fontFamily;
+
+  return true;
+}
+
+function consumeFontSize(p: Ct.Parser, ctx: Context, unitless?: boolean): Opt<CssFontSize> {
+  const ct = p.peek();
+  if (Ct.isIdentValue(keywords.font.size.all)(ct))
+    return consumeIdent(p);
+  return consumeLengthOrPercent(p, ValueRange.NonNegative, unitless);
+}
+
+function consumeLineHeight(p: Ct.Parser, ctx: Context): Opt<CssFontLineHeight> {
+  const ct = p.peek();
+  if (Ct.isIdentValue(keywords.font.lineHeight)(ct))
+    return consumeIdent(p);
+
+  const lineHeight = consumeNumber(p, ValueRange.NonNegative);
+  if (lineHeight)
+    return lineHeight;
+  return consumeLengthOrPercent(p, ValueRange.NonNegative, undefined);
+}
+
+function consumeFontFamily(p: Ct.Parser): Opt<CssFontFamilies> {
+  const list: CssFontFamily[] = [];
+  do {
+    const genericFamily = consumeGenericFamily(p);
+    if (genericFamily) {
+      list.push(genericFamily);
+    } else {
+      const familyName = consumeFamilyName(p);
+      if (familyName)
+        list.push(familyName);
+      else
+        return;
+    }
+  } while (consumeCommaWithSpace(p));
+  return list;
+}
+
+function consumeNonGenericFamilyNameList(p: Ct.Parser): Opt<CssFontFamilies> {
+  const list: CssFontFamily[] = [];
+  do {
+    const parsedValue = consumeGenericFamily(p);
+    if (parsedValue)
+      return;
+    const familyName = consumeFamilyName(p);
+    if (familyName)
+      list.push(familyName);
+    else
+      return;
+  } while (consumeCommaWithSpace(p));
+  return list;
+}
+
+function consumeGenericFamily(p: Ct.Parser): Opt<CssFontFamily> {
+  return consumeIdent(p, keywords.font.family.generic.all);
+}
+
+function consumeFamilyName(p: Ct.Parser): Opt<CssFontFamily> {
+  const ct = p.peek();
+  if (Ct.isString(ct)) {
+    p.consume();
+    return { value: ct[4].value };
+  }
+  if (!Ct.isIdent(ct))
+    return;
+  const familyName = concatenateFamilyName(p);
+  if (!familyName)
+    return;
+  return { value: familyName };
+}
+
+function concatenateFamilyName(p: Ct.Parser): Opt<string> {
+  const builder: string[] = [];
+  let addedSpace = false;
+  const ct0 = p.peek();
+
+  let ct: Ct.Token;
+  while (Ct.isIdent(ct = p.peek())) {
+    if (builder.length > 0) {
+      builder.push(" ");
+      addedSpace = true;
+    }
+    p.consume();
+    builder.push(ct[4].value);
+  }
+
+  if (!addedSpace && (Ct.isIdentValue(keywords.global)(ct0) || Ct.isIdentValue(keywords.default)(ct0)))
+    return;
+  return builder.join("");
+}
+
+function consumeFontStyle(p: Ct.Parser, ctx: Context): Opt<CssFontStyle> {
+  const ct = p.peek();
+  if (Ct.isIdentValue(keywords.font.style.generic)(ct))
+    return consumeIdent(p);
+  if (Ct.isIdentValue(keywords.auto)(ct) && ctx.isFontFaceRule)
+    return consumeIdent(p);
+  if (!Ct.isIdentValue(keywords.font.style.oblique)(ct))
+    return;
+
+  const idOblique = consumeIdent(p, keywords.font.style.oblique)!;
+  const startAngle = consumeAngle(p);
+  if (!startAngle)
+    return idOblique;
+
+  if (!ctx.isFontFaceRule || p.isEof())
+    return { keyword: idOblique.keyword, value: startAngle.value };
+
+  const endAngle = consumeAngle(p);
+  if (!endAngle)
+    return;
+
+  return { keyword: idOblique.keyword, start: startAngle, end: endAngle };
+}
+
+function consumeFontStretchKeywordOnly(p: Ct.Parser, ctx: Context): Opt<CssFontStretch> {
+  const ct = p.peek();
+  if (Ct.isIdentValue(keywords.font.stretch.all)(ct))
+    return consumeIdent(p);
+  if (Ct.isIdentValue(keywords.auto)(ct) && ctx.isFontFaceRule)
+    return consumeIdent(p);
+  return;
+}
+
+function consumeFontStretch(p: Ct.Parser, ctx: Context): Opt<CssFontStretch> {
+  const parsedKeyword = consumeFontStretchKeywordOnly(p, ctx);
+  if (parsedKeyword)
+    return parsedKeyword;
+
+  const startPercent = consumePercent(p, ValueRange.NonNegative);
+  if (!startPercent)
+    return;
+
+  if (!ctx.isFontFaceRule || p.isEof())
+    return startPercent;
+
+  const endPercent = consumePercent(p, ValueRange.NonNegative);
+  if (!endPercent)
+    return;
+
+  return { start: startPercent, end: endPercent };
+}
+
+function consumeFontWeight(p: Ct.Parser, ctx: Context): Opt<CssFontWeight> {
+  const ct = p.peek();
+  if (Ct.isIdent(ct)) {
+    const id = ct[4].value;
+    if (!ctx.isFontFaceRule) {
+      if (Ct.keywordEqualsOneOf(id, keywords.font.weight.all))
+        return consumeIdent(p);
+    } else {
+      if (Ct.keywordEqualsOneOf(id, [ ...keywords.font.weight.absolute, ...keywords.auto ]))
+        return consumeIdent(p);
+    }
+  }
+
+  if (Ct.isNumber(ct)) {
+    const value = ct[4].value;
+    if (value < 1 || value > 1000)
+      return;
+  }
+
+  const startWeight = consumeNumber(p, ValueRange.NonNegative);
+  if (!startWeight || startWeight.value < 1 || startWeight.value > 1000)
+    return;
+
+  if (!ctx.isFontFaceRule || p.isEof())
+    return startWeight;
+
+  const endWeight = consumeNumber(p, ValueRange.NonNegative);
+  if (!endWeight || endWeight.value < 1 || endWeight.value > 1000)
+    return;
+
+  return { start: startWeight, end: endWeight };
+}
+
+function consumeFontVariantCSS21(p: Ct.Parser): Opt<CssFontVariant> {
+  return consumeIdent(p, keywords.font.variantCss21);
+}
+
+// MARK: Parse values
+
+function consumeIdent<T extends string>(p: Ct.Parser, values: readonly T[] = []): Opt<CssKeywordValue<T>> {
+  const ct = p.peek();
+  if (values.length === 0 && Ct.isIdent(ct) || Ct.isIdentValue(values)(ct)) {
+    const { raws } = p.consumeWithSpace();
+    return withRaws<CssKeywordValue<T>>({ keyword: ct[4].value.toLowerCase() as T }, raws);
+  }
+  return;
+}
+
+function consumeLengthOrPercent(p: Ct.Parser, range: ValueRange, unitless?: boolean): Opt<CssNumericValueLaxOpt<CssLengthUnit | CssPercentUnit>> {
+  const ct = p.peek();
+  if (Ct.isDimension(ct) || Ct.isNumber(ct))
+    return consumeLength(p, range, unitless);
+  if (Ct.isPercentage(ct))
+    return consumePercent(p, range);
+  return;
+}
+
+function consumeLength(p: Ct.Parser, range: ValueRange, unitless?: boolean): Opt<CssNumericValueLaxOpt<CssLengthUnit>> {
+  const ct = p.peek();
+  if (Ct.isDimension(ct)) {
+    if (!Ct.isDimensionUnit(keywords.unit.length.all)(ct))
+      return;
+    const value = ct[4].value;
+    if (range == ValueRange.NonNegative && value < 0)
+      return;
+    const { raws } = p.consumeWithSpace();
+    return withRaws<CssNumericValue<CssLengthUnit>>({ ...ct[4] }, raws);
+  }
+  if (Ct.isNumber(ct)) {
+    const value = ct[4].value;
+    if (value != 0 && !unitless)
+      return;
+    if (range == ValueRange.NonNegative && value < 0)
+      return;
+    const { raws } = p.consumeWithSpace();
+    return withRaws<CssNumericValue<null>>({ ...ct[4], unit: null }, raws);
+  }
+  return;
+}
+
+function consumePercent(p: Ct.Parser, range: ValueRange): Opt<CssNumericValueLaxOpt<CssPercentUnit>> {
+  const ct = p.peek();
+  if (Ct.isPercentage(ct)) {
+    const value = ct[4].value;
+    if (range == ValueRange.NonNegative && value < 0)
+      return;
+    const { raws } = p.consumeWithSpace();
+    return withRaws<CssNumericValue<CssPercentUnit>>({ ...ct[4], unit: '%', type: Ct.NumberType.Number }, raws);
+  }
+  return;
+}
+
+function consumeNumber(p: Ct.Parser, range: ValueRange): Opt<CssNumericValue<null>> {
+  const ct = p.peek();
+  if (Ct.isNumber(ct)) {
+    const value = ct[4].value;
+    if (range == ValueRange.NonNegative && value < 0)
+      return;
+    const { raws } = p.consumeWithSpace();
+    return withRaws<CssNumericValue<null>>({ ...ct[4], unit: null, type: Ct.NumberType.Number }, raws);
+  }
+  return;
+}
+
+function consumeAngle(p: Ct.Parser): Opt<CssNumericValueLax<CssAngleUnit>> {
+  const ct = p.peek();
+  if (Ct.isDimensionUnit(keywords.unit.angle)(ct)) {
+    const { raws } = p.consumeWithSpace();
+    return withRaws<CssNumericValue<CssAngleUnit>>({ ...ct[4] }, raws);
+  }
+  if (Ct.isNumber(ct) && ct[4].value == 0) {
+    const { raws } = p.consumeWithSpace();
+    return withRaws<CssNumericValue<CssAngleUnit>>({ ...ct[4], unit: 'deg' }, raws);
+  }
+  return;
+}
+
+function consumeSlashWithSpace(p: Ct.Parser): boolean {
+  const ct = p.peek();
+  if (Ct.isTokenValue(Ct.isDelim, '/')(ct)) {
+    p.consume();
+    p.consumeSpace();
+    return true;
+  }
+  return false;
+}
+
+function consumeCommaWithSpace(p: Ct.Parser): boolean {
+  const ct = p.peek();
+  if (Ct.isComma(ct)) {
+    p.consume();
+    p.consumeSpace();
+    return true;
+  }
+  return false;
+}
+
+function withRaws<T extends WithRaws>(value: T, after: Opt<Ct.Raw[]>): T {
+  if (after)
+    (value.raws ??= {}).after = after;
+  return value;
+}
+
+// MARK: Value types
+
+const enum ValueRange { All, NonNegative, Integer, NonNegativeInteger, PositiveInteger };
+
+interface CssValueRaws {
+  before?: Ct.Raw[];
+  after?: Ct.Raw[];
+}
+
+interface WithRaws {
   raws?: Opt<CssValueRaws>;
 }
 
-type CtRaw = Ct.Space | Ct.Comment;
-
 interface CssValueRaws {
-  before?: CtRaw[];
-  after?: CtRaw[];
+  before?: Ct.Raw[];
+  after?: Ct.Raw[];
 }
 
 interface CssKeywordValue<T> {
@@ -204,14 +434,24 @@ interface CssNumericValue<T> {
   raws?: CssValueRaws;
 }
 
-interface CssFontStyleObliqueValue extends CssKeywordValue<CssFontStyleObliqueKeyword>, CssNumericValue<CssAngleUnit> { }
-
-interface CssFontFamilyScriptSpecificKeywordValue extends CssKeywordValue<LiteralUnion<CssFontFamilyScritSpecificString>> {
-  scriptSpecific: true; // wrapped in `generic()` function
+interface CssNumericValueRange<T> {
+  start: CssNumericValue<T>;
+  end: CssNumericValue<T>;
 }
+
+type CssKeywordValueLax<T extends string> = CssKeywordValue<LiteralUnion<T>>;
+type CssNumericValueLax<T extends string> = CssNumericValue<LiteralUnion<T>>;
+type CssNumericValueLaxOpt<T extends string> = CssNumericValue<LiteralUnion<T> | null>;
+type CssNumericValueRangeLax<T extends string> = CssNumericValueRange<LiteralUnion<T>>;
+type CssNumericValueRangeLaxOpt<T extends string> = CssNumericValueRange<LiteralUnion<T> | null>;
+
+// MARK: Keywords
 
 const keywords = new class {
   readonly global = [ 'inherit', 'initial', 'revert', 'revert-layer', 'unset' ] as const;
+  readonly normal = [ 'normal' ] as const;
+  readonly default = [ 'default' ] as const;
+  readonly auto = [ 'auto' ] as const;
   readonly unit = new class {
     readonly angle = [ 'deg', 'grad', 'rad', 'turn' ] as const;
     readonly length = new class {
@@ -259,7 +499,7 @@ const keywords = new class {
       readonly all = [ ...this.generic, ...this.oblique ] as const;
     };
     // small subset of values supported in the `font` shorthand
-    readonly variant = [ 'normal', 'small-caps' ] as const;
+    readonly variantCss21 = [ 'normal', 'small-caps' ] as const;
     readonly weight = new class {
       readonly absolute = [ 'normal', 'bold' ] as const;
       readonly relative = [ 'lighter', 'bolder' ] as const;
@@ -303,13 +543,15 @@ type CssFontStyleGenericKeyword = typeof keywords.font.style.generic[number];
 type CssFontStyleObliqueKeyword = typeof keywords.font.style.oblique[number];
 type CssFontStyleKeyword = typeof keywords.font.style.all[number];
 
-type CssFontVariantKeyword = typeof keywords.font.variant[number];
+type CssFontVariantKeyword = typeof keywords.font.variantCss21[number];
 
 type CssFontWeightAbsoluteKeyword = typeof keywords.font.weight.absolute[number];
 type CssFontWeightRelativeKeyword = typeof keywords.font.weight.relative[number];
 type CssFontWeightKeyword = typeof keywords.font.weight.all[number];
 
 type CssFontLineHeightKeyword = typeof keywords.font.lineHeight[number];
+
+// MARK: Font types
 
 interface CssFont {
   family: CssFontFamilies;
@@ -318,55 +560,58 @@ interface CssFont {
   style: CssFontStyle;
   variant: CssFontVariant;
   weight: CssFontWeight;
-  lineHeight: CssFontLineHeight;
+  lineHeight?: Opt<CssFontLineHeight>;
+}
+
+interface CssFontStyleObliqueValue extends
+  CssKeywordValue<CssFontStyleObliqueKeyword>,
+  CssNumericValueLax<CssAngleUnit> { }
+interface CssFontStyleObliqueValueRange extends
+  CssKeywordValue<CssFontStyleObliqueKeyword>,
+  CssNumericValueRangeLax<CssAngleUnit> { }
+interface CssFontFamilyScriptSpecificKeywordValue extends
+  CssKeywordValueLax<CssFontFamilyScritSpecificString> {
+  scriptSpecific: true;
 }
 
 type CssFontFamily =
   | CssStringValue
   | CssFontFamilyScriptSpecificKeywordValue
-  | CssKeywordValue<LiteralUnion<CssFontFamilyGenericString | CssFontFamilySystemString>>;
+  | CssKeywordValueLax<CssFontFamilyGenericString | CssFontFamilySystemString>;
 
 type CssFontFamilies =
-  | CssKeywordValue<LiteralUnion<CssGlobalValueKeyword>>
+  | CssKeywordValueLax<CssGlobalValueKeyword>
   | Array<CssFontFamily>;
 
 type CssFontSize =
-  | CssKeywordValue<LiteralUnion<CssFontSizeKeyword | CssGlobalValueKeyword>>
-  | CssNumericValue<LiteralUnion<CssLengthUnit | CssPercentUnit> | null>;
+  | CssKeywordValueLax<CssFontSizeKeyword | CssGlobalValueKeyword>
+  | CssNumericValueLaxOpt<CssLengthUnit | CssPercentUnit>;
 
 type CssFontStretch =
-  | CssKeywordValue<LiteralUnion<CssFontStretchKeyword | CssGlobalValueKeyword>>
-  | CssNumericValue<LiteralUnion<CssPercentUnit> | null>;
+  | CssKeywordValueLax<CssFontStretchKeyword | CssGlobalValueKeyword>
+  | CssNumericValueLaxOpt<CssPercentUnit>
+  | CssNumericValueRangeLaxOpt<CssPercentUnit>;
 
 type CssFontStyle =
-  | CssKeywordValue<LiteralUnion<CssFontStyleGenericKeyword | CssGlobalValueKeyword>>
-  | CssFontStyleObliqueValue;
+  | CssKeywordValueLax<CssFontStyleGenericKeyword | CssGlobalValueKeyword>
+  | CssFontStyleObliqueValue
+  | CssFontStyleObliqueValueRange;
 
 type CssFontVariant =
-  | CssKeywordValue<LiteralUnion<CssFontVariantKeyword | CssGlobalValueKeyword>>;
+  | CssKeywordValueLax<CssFontVariantKeyword | CssGlobalValueKeyword>;
 
 type CssFontWeight =
-  | CssKeywordValue<LiteralUnion<CssFontWeightKeyword | CssGlobalValueKeyword>>
-  | CssNumericValue<null>;
+  | CssKeywordValueLax<CssFontWeightKeyword | CssGlobalValueKeyword>
+  | CssNumericValue<null>
+  | CssNumericValueRange<null>;
 
 type CssFontLineHeight =
-  | CssKeywordValue<LiteralUnion<CssFontLineHeightKeyword | CssGlobalValueKeyword>>
-  | CssNumericValue<LiteralUnion<CssLengthUnit | CssPercentUnit> | null>;
+  | CssKeywordValueLax<CssFontLineHeightKeyword | CssGlobalValueKeyword>
+  | CssNumericValueLaxOpt<CssLengthUnit | CssPercentUnit>;
 
-const stringComparer = Intl.Collator('en-US', { sensitivity: 'base' });
+// MARK: CSS value utils
 
-// function isStringAnyOf<T extends string, U extends T>(value: T | Uppercase<T>, values: readonly U[]): value is U | Uppercase<U> {
-//   return isDefined(value) && values.some(v => stringComparer.compare(v, value) === 0);
-// }
-function isStringAnyOf<T extends string, U extends T>(value: T, values: readonly U[]): value is U {
-  return isDefined(value) && values.some(v => stringComparer.compare(v, value) === 0);
-}
-
-export const isCssUnitLengthAbsolute = (v: string) => isStringAnyOf(v, keywords.unit.length.absolute);
-
-const isCssFontFamilyGeneric = (v: string) => isStringAnyOf(v, keywords.font.family.generic.all);
-const isCssFontFamilySystem = (v: string) => isStringAnyOf(v, keywords.font.family.system);
-const isCssFontFamilyScriptSpecific = (v: string) => isStringAnyOf(v, keywords.font.family.scriptSpecific);
+export const isCssUnitLengthAbsolute = (v: string) => Ct.keywordEqualsOneOf(v, keywords.unit.length.absolute);
 
 export function isCssValueAnyNumeric(v: CssKeywordValue<unknown> | CssNumericValue<unknown>): v is CssNumericValue<unknown> {
   return true
@@ -375,7 +620,7 @@ export function isCssValueAnyNumeric(v: CssKeywordValue<unknown> | CssNumericVal
     && 'type' in v && (v.type === Ct.NumberType.Integer || v.type === Ct.NumberType.Number);
 }
 
-export function isCssValueNumeric<T>(v: CssKeywordValue<T> | CssNumericValue<T>, guard: Guard<T>): v is CssNumericValue<T> {
+export function isCssValueNumeric<T extends string>(v: CssKeywordValue<T> | CssNumericValue<T>, guard: Guard<string, T>): v is CssNumericValue<T> {
   return isCssValueAnyNumeric(v) && guard(v.unit);
 }
 
@@ -387,7 +632,7 @@ export function isCssValueAnyKeyword(v: CssKeywordValue<unknown> | CssNumericVal
   return 'keyword' in v && isString(v.keyword);
 }
 
-export function isValueKeyword<T>(v: CssKeywordValue<T> | CssNumericValue<T>, guard: Guard<T>): v is CssKeywordValue<T> {
+export function isValueKeyword<T extends string>(v: CssKeywordValue<T> | CssNumericValue<T>, guard: Guard<string, T>): v is CssKeywordValue<T> {
   return isCssValueAnyKeyword(v) && guard(v.keyword);
 }
 
@@ -402,16 +647,16 @@ const cssAbsoluteLengthMult: Record<CssAbsoluteLengthUnit, number> = {
 };
 
 export function convertCssAbsoluteLength(
-  value: CssNumericValue<CssAbsoluteLengthUnit>, toUnit: CssAbsoluteLengthUnit
+  from: CssNumericValue<CssAbsoluteLengthUnit>, toUnit: CssAbsoluteLengthUnit
 ): CssNumericValue<CssAbsoluteLengthUnit> {
   return {
-    ...value,
-    value: value.value * getMult(value.unit, "Source") / getMult(toUnit, "Target"),
+    ...from,
+    value: from.value * getMult(from.unit, "Source") / getMult(toUnit, "Target"),
     unit: toUnit,
   };
 
   function getMult(unit: CssAbsoluteLengthUnit, msg: string) {
-    if (!isCssUnitLengthAbsolute(value.unit))
+    if (!isCssUnitLengthAbsolute(from.unit))
       throwError(`${msg} unit must be absolute, ${unit} provided`);
     return cssAbsoluteLengthMult[unit.toLowerCase() as CssAbsoluteLengthUnit];
   }
