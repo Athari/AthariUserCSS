@@ -8,12 +8,12 @@ import { format as prettifyCode, Options as PrettierOptions } from 'prettier';
 import { getSiteDir } from './commonUtils.ts';
 import { Html, Sel } from './domUtils.ts';
 import {
-  Assigned, OptObject,
+  Assigned, Opt, OptObject,
   assertHasKeys, compare, deepMerge, downloadText, isArray, isString, logError, objectEntries, objectKeys, objectValues, readTextFile, throwError,
 } from './utils.ts';
 
 export interface OptionalPlugin {
-  enabled?: boolean | undefined;
+  enabled?: Opt<boolean>;
 };
 
 export type PluginOptions<T> = OptObject<T & OptionalPlugin>;
@@ -28,15 +28,15 @@ export class SiteOptions {
   merge?: PluginOptions<import('./mergeSelectorsPlugin.ts').MergeSelectorsPluginOptions>;
   remove?: PluginOptions<import('./transformerPlugin.ts').RegularTransformerPluginOptions>;
   styleAttr?: PluginOptions<import('./styleAttrPlugin.ts').StyleAttrPluginOptions>;
-  encoding?: string | undefined = 'utf-8';
-  combine?: boolean | undefined = true;
-  refs?: boolean | undefined = false;
+  encoding?: Opt<string> = 'utf-8';
+  combine?: Opt<boolean> = true;
+  refs?: Opt<boolean> = false;
 }
 
 export class SiteFormat {
-  default?: PrettierOptions | undefined;
-  html?: PrettierOptions | undefined;
-  css?: PrettierOptions | undefined;
+  default?: Opt<PrettierOptions>;
+  html?: Opt<PrettierOptions>;
+  css?: Opt<PrettierOptions>;
 }
 
 export class SiteHtml {

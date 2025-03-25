@@ -272,7 +272,7 @@ function getTransformer<T extends Node>(
         throwError(`Unknown operation ${op.operation}`);
     }
 
-    function removeSelParent<T extends Sel.Node>(node: Sel.Node | undefined, guard: Guard<T>): TransformCode {
+    function removeSelParent<T extends Sel.Node>(node: Opt<Sel.Node>, guard: Guard<T>): TransformCode {
       for (node = node; !!node; node = <Sel.Node>node?.parent) {
         if (guard(node)) {
           node.remove();
@@ -301,10 +301,10 @@ function getTransformer<T extends Node>(
   }
 
   function* getAllRegexes(
-    propMap: PropMap, option: Optional<Record<MatchProps, RegExpMatchOption>>, flagsDefault: string | undefined
+    propMap: PropMap, option: Optional<Record<MatchProps, RegExpMatchOption>>, flagsDefault: Opt<string>
   ): ArrayGenerator<RegExpMatch<T>> {
     for (const [ matcherProp, nodeProp ] of objectEntries(propMap)) {
-      const matcher: RegExpMatchOption | undefined = option[matcherProp];
+      const matcher: Opt<RegExpMatchOption> = option[matcherProp];
       if (!matcher)
         continue;
 
@@ -348,7 +348,7 @@ function getTransformer<T extends Node>(
     return tpl.formatRegExp();
   }
 
-  function applyReplaceTemplate(replace: string | undefined, ctxNode: NodeContext): string {
+  function applyReplaceTemplate(replace: Opt<string>, ctxNode: NodeContext): string {
     return (replace ?? throwError("Operation's replace not set")).template(ctxNode.matchGroups, "$<", ">");
   }
 

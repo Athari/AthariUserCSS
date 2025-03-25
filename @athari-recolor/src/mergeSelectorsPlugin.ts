@@ -3,7 +3,7 @@ import JSON5 from 'json5';
 import { regex } from 'regex';
 import { Brand, DeepRequired } from 'utility-types';
 import { PostCss, Css, Sel } from './domUtils.ts';
-import { isArray, isSome } from './utils.ts';
+import { Opt, isArray, isSome } from './utils.ts';
 
 const defaultPrintHeadWidth = 40;
 const defaultPrintCssWidth = 80;
@@ -15,8 +15,8 @@ type FormatTrieField = 'nextTries' | 'nextVariants';
 type FormatTrieFields = FormatTrieField[];
 
 export interface MergeSelectorsPluginOptions {
-  pseudo?: MergeSelectorsPseudo | undefined;
-  mergeMode?: MergeSelectorsMode | undefined;
+  pseudo?: Opt<MergeSelectorsPseudo>;
+  mergeMode?: Opt<MergeSelectorsMode>;
 }
 
 type Options = DeepRequired<MergeSelectorsPluginOptions>;
@@ -149,7 +149,7 @@ function formatTrie(trie: TrieNode | TrieVariant, fields: FormatTrieFields = [ '
   return JSON5.stringify(trie, {
     quote: null,
     space: "  ",
-    replacer: function(key: string, value: unknown): unknown | undefined {
+    replacer: function(key: string, value: unknown): Opt<unknown> {
       if (value == null || isArray(value) && value.length == 0 || value instanceof Set && value.size == 0)
         return undefined;
 

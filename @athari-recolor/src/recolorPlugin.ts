@@ -10,9 +10,9 @@ import {
   colorDataFitsRGB_Gamut as isColorDataFitsRgbGamut,
 } from '@csstools/css-color-parser';
 import { ColorFormula } from './commonUtils.ts';
-import { PostCss, Css, Ct, Cc } from './domUtils.ts';
+import { PostCss, Css, Ct, Cn } from './domUtils.ts';
 import {
-  OptArray,
+  Opt, OptArray,
   compare, isSome, objectEntries, objectFromEntries, regexp,
 } from './utils.ts';
 
@@ -23,14 +23,14 @@ export interface RecolorPluginOptions {
    * * `replace` Replace color declarations, keep non-color declarations.
    * * `override` Remove all non-color declarations, leave only modified color declarations.
    */
-  mode?: TransformMode | undefined;
-  formula?: ColorFormula | undefined;
+  mode?: Opt<TransformMode>;
+  formula?: Opt<ColorFormula>;
   /** Whether to generate palette or to inline color values. */
-  palette?: boolean | undefined;
+  palette?: Opt<boolean>;
   /** Prefix of generated custom properties of the shared colors. */
-  colorVar?: string | undefined;
+  colorVar?: Opt<string>;
   /** Prefix of generated custom properties of the palette. */
-  paletteVar?: string | undefined;
+  paletteVar?: Opt<string>;
   /** Find-replace pairs for renaming generated custom properties. */
   renameVar?: OptArray<RecolorVarTransform>;
 }
@@ -48,7 +48,7 @@ type TransformMode = 'append' | 'replace' | 'override';
 
 type Options = DeepRequired<RecolorPluginOptions>;
 
-type CompColor = Cc.Function | Cc.Token;
+type CnColor = Cn.Function | Cn.Token;
 
 type CssColorName = keyof typeof cssColorsNames | 'transparent';
 
@@ -121,7 +121,7 @@ function roundStrNumbers(s: string): string {
     (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
 }
 
-const isCompTokenHashOrIdent = Cc.isToken(isSome(Ct.isHash, Ct.isIdent));
+const isCnTokenHashOrIdent = Cn.isToken(isSome(Ct.isHash, Ct.isIdent));
 
 function getIdentColorName(color: ColorData): CssColorName | null {
   const [ r, g, b ] = color.channels;
@@ -145,13 +145,13 @@ function applyVarTransforms(name: string, tfs: RecolorVarTransform[]): string {
   return name;
 }
 
-function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor, opts: Options): PaletteColor {
+function getPaletteColor(colorData: ColorData, palette: Palette, node: CnColor, opts: Options): PaletteColor {
   const [ colorRgbStr, colorOkLchStr ] = [ serializeRgb(colorData), serializeDisplayP3(colorData) ];
   const colorUniqueKey = `${colorRgbStr}/${colorOkLchStr}`;
   const colorIdent = getIdentColorName(colorData);
 
-  let strNode = Cc.stringify(node);
-  if (Cc.isTokenAny(node))
+  let strNode = Cn.stringify(node);
+  if (Cn.isTokenAny(node))
     strNode = strNode.toLowerCase();
 
   let paletteColor = palette.uniqueColors[colorUniqueKey];
@@ -159,8 +159,8 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
     const paletteVar = applyVarTransforms(colorIdent ?? roundStrNumbers(strNode), opts.renameVar);
     paletteColor = {
       colorData,
-      colorRgb: roundStrNumbers(Cc.stringify(isColorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
-      colorOkLch: roundStrNumbers(Cc.stringify(serializeOkLch(colorData))),
+      colorRgb: roundStrNumbers(Cn.stringify(isColorDataFitsRgbGamut(colorData) ? colorRgbStr : colorOkLchStr)),
+      colorOkLch: roundStrNumbers(Cn.stringify(serializeOkLch(colorData))),
       colorStr: colorIdent ?? strNode,
       expr: "",
       count: 0,
@@ -174,16 +174,16 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CompColor
   return paletteColor;
 }
 
-function recolorCompColor(node: CompColor, opts: Options): string {
-  type cmp = string | boolean | number;
+function recolorCnColor(node: CnColor, opts: Options): string {
+  type ColorComp = string | boolean | number;
 
   const colorVar = (s: string, i: number) =>
     `var(--${opts.colorVar}${String.fromCharCode(s.charCodeAt(0) + i)})`;
-  const colorComp = (c: string, b: cmp) =>
+  const colorComp = (c: string, b: ColorComp) =>
     typeof b === 'string' ? b : b ? `calc(${colorVar(c, 0)} + ${colorVar(c, 1)} * ${c})` : c;
-  const colorOkLch = (orig: Cc.Comp, l: cmp, c: cmp, h: cmp) =>
+  const colorOkLch = (orig: Cn.Node, l: ColorComp, c: ColorComp, h: ColorComp) =>
     `oklch(from ${orig.toString()} ${colorComp('l', l)} ${colorComp('c', c)} ${colorComp('h', h)})`;
-  const colorAutoTheme = (orig: Cc.Comp, expr: cmp) =>
+  const colorAutoTheme = (orig: Cn.Node, expr: ColorComp) =>
     `light-dark(${orig.toString()}, ${expr})`;
 
   return {
@@ -222,9 +222,9 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
   let newDeclValue: string | null = null;
   let keepOldDecl = true;
   let isComplexValue = false;
-  const newComps = Cc.replaceList(Cc.parseCommaList(decl.value), (node: Cc.Comp) => {
-    isComplexValue ||= Cc.isFunction(node) && !reColorFunction.test(node.getName());
-    if (Cc.isFunction(node) && reColorFunction.test(node.getName()) || isCompTokenHashOrIdent(node)) {
+  const newCns = Cn.replaceList(Cn.parseCommaList(decl.value), (node: Cn.Node) => {
+    isComplexValue ||= Cn.isFunction(node) && !reColorFunction.test(node.getName());
+    if (Cn.isFunction(node) && reColorFunction.test(node.getName()) || isCnTokenHashOrIdent(node)) {
       // TODO: Deal with color parser producing component value in color alpha property, plus other SyntaxFlag values
       const colorData = parseCssColor(node);
       if (!colorData) {
@@ -234,7 +234,7 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
 
       const paletteColor: PaletteColor = getPaletteColor(colorData, palette, node, opts);
       const paletteStr = `var(${paletteColor.name})`;
-      const recolorStr = recolorCompColor(node, opts);
+      const recolorStr = recolorCnColor(node, opts);
       paletteColor.expr = recolorStr;
       const resultStr = opts.palette ? paletteStr : recolorStr;
 
@@ -242,7 +242,7 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
         //console.log(`simple: ${decl.prop} = ${node.toString()}`);
         keepOldDecl = opts.mode === 'append';
         newDeclProp = decl.prop;
-        return Cc.parse(resultStr);
+        return Cn.parse(resultStr);
       } else if (reColorPropSplit.test(decl.prop)) {
         //console.log(`split: ${decl.prop} = ... ${node.toString()} ...`);
         keepOldDecl = opts.mode !== 'override';
@@ -252,7 +252,7 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
         // TODO: Split complex values like border( -width | -style | -color )
         keepOldDecl = opts.mode === 'append';
         newDeclProp = decl.prop;
-        return Cc.parse(resultStr);
+        return Cn.parse(resultStr);
       } else {
         console.log(`unknown: ${decl.prop} = ${decl.value}`);
       }
@@ -262,7 +262,7 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
   if (newDeclProp !== '-') {
     decl.cloneBefore({
       prop: newDeclProp,
-      value: newDeclValue ?? Cc.stringifyList(newComps),
+      value: newDeclValue ?? Cn.stringifyList(newCns),
       important: decl.important,
     });
   }

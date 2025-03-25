@@ -358,8 +358,8 @@ export function validateRequired(name: string): (input: string) => true | string
 }
 
 export interface QuestionOptions {
-  initial?: () => string | undefined;
-  choices?: string[] | undefined;
+  initial?: () => Opt<string>;
+  choices?: Opt<string[]>;
 }
 
 export function question(
@@ -420,7 +420,7 @@ netscapeCookies.export(memoryCookies);
 const fetchCookie = makeFetchCookie(fetch, new CookieJar(memoryCookies));
 
 export interface DownloadInit extends RequestInit {
-  encoding?: string | undefined;
+  encoding?: Opt<string>;
 }
 
 export async function downloadText(url: string, init: DownloadInit = {}): Promise<string | null> {

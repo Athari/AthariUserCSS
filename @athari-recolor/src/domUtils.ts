@@ -8,13 +8,14 @@ import cssParserSafe from 'postcss-safe-parser';
 import cssSelParser from 'postcss-selector-parser';
 
 import * as cssCt from '@csstools/css-tokenizer';
-import * as cssComp from '@csstools/css-parser-algorithms';
+import * as cssCn from '@csstools/css-parser-algorithms';
 import * as cssSelSpec from '@csstools/selector-specificity';
 
 import assert from 'node:assert/strict';
-import { DeepRequired, NonUndefined } from 'utility-types';
+import { DeepRequired } from 'utility-types';
 import {
   Assigned, Guard,
+  Opt,
   deepMerge, isArray, isSome, isUndefined, logError, throwError,
 } from './utils.ts';
 
@@ -23,11 +24,19 @@ import {
 // Html: Declarations
 
 declare module 'domhandler' {
-  type Element_ = htmlDom.Element;
+  interface CompiledQuery<T> {
+    (node: T): boolean;
+    shouldTestNextSiblings?: boolean;
+  }
+
+  type Query<T extends Element> = string | CompiledQuery<T> | import('css-what').Selector[][];
+
+  interface Element { }
+
   interface Node {
-    querySelector(this: Node, selector: string): Element_ | null;
-    querySelectorAll(this: Node, selector: string): Element_[];
-    matches(this: Node, selector: string): boolean;
+    querySelector(this: Node, selector: Query<Element>): Element | null;
+    querySelectorAll(this: Node, selector: Query<Element>): Element[];
+    matches(this: Node, selector: Query<Element>): boolean;
     readonly innerText: string;
     readonly innerTextAll: string;
   }
@@ -52,7 +61,7 @@ export namespace Html {
   export type ParentNode = htmlDom.ParentNode;
 
   export type CompiledQuery<T extends Element> = ReturnType<typeof htmlCssSelect.compile<NodeBase, T>>;
-  export type Selector<T extends Element> = Parameters<typeof htmlCssSelect.selectOne<NodeBase, T>>[0];
+  export type Query<T extends Element> = Parameters<typeof htmlCssSelect.selectOne<NodeBase, T>>[0];
   export type SimpleSelector = Parameters<typeof htmlCssSelect.compile<NodeBase, Element>>[0];
 
   // Html: Guards
@@ -81,29 +90,29 @@ export namespace Html {
 
   // Html: Query
 
-  export function querySelector<T extends Element>(node: NodeBase, selector: Selector<T>): T | null {
-    return htmlCssSelect.selectOne<NodeBase, T>(selector, node);
+  export function querySelector(node: NodeBase, selector: Query<Element>): Element | null {
+    return htmlCssSelect.selectOne<NodeBase, Element>(selector, node);
   }
 
-  export function querySelectorAll<T extends Element>(node: NodeBase, selector: Selector<T>): T[] {
-    return htmlCssSelect.selectAll<NodeBase, T>(selector, node);
+  export function querySelectorAll(node: NodeBase, selector: Query<Element>): Element[] {
+    return htmlCssSelect.selectAll<NodeBase, Element>(selector, node);
   }
 
-  export function matches<T extends Element>(node: T, selector: Selector<T>): boolean {
-    return htmlCssSelect.is<NodeBase, T>(node, selector);
+  export function matches(node: Element, selector: Query<Element>): boolean {
+    return htmlCssSelect.is<NodeBase, Element>(node, selector);
   }
 
-  export function compileQuery<T extends Element>(selector: SimpleSelector): CompiledQuery<T> {
-    return htmlCssSelect.compile<NodeBase, T>(selector);
+  export function compileQuery(selector: SimpleSelector): CompiledQuery<Element> {
+    return htmlCssSelect.compile<NodeBase, Element>(selector);
   }
 
   // Html: Prototype
 
   export function extendPrototype() {
     Object.assign(NodeBase.prototype, {
-      querySelector(this: NodeBase, selector: string) { return querySelector(this, selector) },
-      querySelectorAll(this: NodeBase, selector: string) { return querySelectorAll(this, selector) },
-      matches(this: NodeBase, selector: string): boolean { return isElement(this) && matches<Element>(this, selector) },
+      querySelector(this: NodeBase, selector: Query<Element>) { return querySelector(this, selector) },
+      querySelectorAll(this: NodeBase, selector: Query<Element>) { return querySelectorAll(this, selector) },
+      matches(this: NodeBase, selector: Query<Element>): boolean { return isElement(this) && matches(this, selector) },
     });
     Object.defineProperties(NodeBase.prototype, {
       innerText: { get: function (this: NodeBase) { return getInnerText(this as Node) } },
@@ -123,7 +132,7 @@ export namespace PostCss {
   export import Warning = postCss.Warning;
 
   export type Plugin = postCss.Plugin;
-  export type Processors = ReturnType<NonUndefined<Plugin['prepare']>>;
+  export type Processors = ReturnType<Assigned<Plugin['prepare']>>;
   export type PluginCreate<O> = ((opts?: O) => Plugin) & { postcss: true };
 
   // PostCss: Plugins
@@ -284,9 +293,15 @@ export namespace Ct {
   export type UnicodeRange = cssCt.TokenUnicodeRange;
   export type Space = cssCt.TokenWhitespace;
 
+  export type Raw = Space | Comment;
+
+  export import ParseError = cssCt.ParseError;
+  export import ParseErrorWithToken = cssCt.ParseErrorWithToken;
   export import HashType = cssCt.HashType;
   export import NumberType = cssCt.NumberType;
   export import Type = cssCt.TokenType;
+
+  export type ParseErrorCallback = (error: ParseError) => void;
 
   export type WithValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
   export type ValueType = string | number;
@@ -324,10 +339,75 @@ export namespace Ct {
   export import isString = cssCt.isTokenString;
   export import isUrl = cssCt.isTokenURL;
   export import isUnicodeRange = cssCt.isTokenUnicodeRange;
-  export import isSpaceOrComment = cssCt.isTokenWhiteSpaceOrComment;
+  export import isRaw = cssCt.isTokenWhiteSpaceOrComment;
   export import isSpace = cssCt.isTokenWhitespace;
 
   // Tok: Parse
+
+  interface Parser {
+    readonly lastError: Opt<ParseError | ParseErrorWithToken>;
+    readonly lastErrorToken: Opt<Token>;
+    onParseError?: Opt<ParseErrorCallback>;
+    peek(): Token;
+    consume(): Token;
+    consumeSpace(): Raw[];
+    consumeWithSpace(): { ct: Token; raws: Raw[] };
+    isEof(): boolean;
+  }
+
+  export function parser(css: string, unicodeRangesAllowed?: Opt<boolean>): Parser {
+    let nextToken: Opt<Token>;
+    let lastError: Opt<ParseError>;
+
+    const tokenizer = cssCt.tokenizer({
+      css,
+      unicodeRangesAllowed: unicodeRangesAllowed ?? false,
+    }, {
+      onParseError(error: ParseError) {
+        lastError = error;
+        parser.onParseError?.(error);
+      }
+    });
+
+    const parser = new class CtParser {
+      get lastError() {
+        return lastError;
+      }
+      get lastErrorToken() {
+        return lastError instanceof ParseErrorWithToken ? lastError.token : undefined;
+      }
+      onParseError: Opt<ParseErrorCallback>;
+      peek() {
+        lastError = undefined;
+        return nextToken ??= tokenizer.nextToken();
+      }
+      consume() {
+        if (nextToken) {
+          const currentToken = nextToken;
+          nextToken = undefined;
+          return currentToken;
+        } else {
+          lastError = undefined;
+          nextToken = undefined;
+          return tokenizer.nextToken();
+        }
+      }
+      consumeSpace() {
+        const spaceTokens: Raw[] = [];
+        while (isRaw(this.peek()))
+          spaceTokens.push(this.consume() as Raw);
+        return spaceTokens;
+      }
+      consumeWithSpace() {
+        return { ct: this.consume(), raws: this.consumeSpace() };
+      }
+      isEof() {
+        return !nextToken && tokenizer.endOfFile();
+      }
+    };
+
+    return parser;
+  }
 
   export function parse(css: string): Ct.Token[] {
     return cssCt.tokenize({ css });
@@ -336,105 +416,120 @@ export namespace Ct {
   export function stringify(tokens: Ct.Token[]): string {
     return cssCt.stringify(...tokens);
   }
+
+  // Ct: Mutate
+
+  export import setIdent = cssCt.mutateIdent;
+  export import setDimensionUnit = cssCt.mutateUnit;
 }
 
-// MARK: Comp
+// MARK: Cn
 
-export namespace Cc {
+export namespace Cn {
 
-  // Comp: Types
+  // Cn: Types
 
-  export import Comment = cssComp.CommentNode;
-  export import ContainerBase = cssComp.ContainerNodeBaseClass;
-  export import Function = cssComp.FunctionNode;
-  export import Block = cssComp.SimpleBlockNode;
-  export import Token = cssComp.TokenNode;
-  export import Space = cssComp.WhitespaceNode;
+  export import Comment = cssCn.CommentNode;
+  export import ContainerBase = cssCn.ContainerNodeBaseClass; // function|block
+  export import Function = cssCn.FunctionNode;
+  export import Block = cssCn.SimpleBlockNode;
+  export import Token = cssCn.TokenNode;
+  export import Space = cssCn.WhitespaceNode;
 
-  export type Comp = cssComp.ComponentValue;
-  export type Container = cssComp.ContainerNode;
-  export type Type = cssComp.ComponentValueType;
+  export type Node = cssCn.ComponentValue;
+  export type Container = cssCn.ContainerNode;
+  export type Type = cssCn.ComponentValueType;
 
-  // Comp: Guards
+  // Cn: Guards
 
-  export import isComment = cssComp.isCommentNode;
-  export import isFunction = cssComp.isFunctionNode;
-  export import isBlock = cssComp.isSimpleBlockNode;
-  export import isTokenAny = cssComp.isTokenNode;
-  export import isSpaceOrComment = cssComp.isWhiteSpaceOrCommentNode;
-  export import isSpace = cssComp.isWhitespaceNode;
+  export import isComment = cssCn.isCommentNode;
+  export import isFunction = cssCn.isFunctionNode;
+  export import isBlock = cssCn.isSimpleBlockNode;
+  export import isTokenAny = cssCn.isTokenNode;
+  export import isSpaceOrComment = cssCn.isWhiteSpaceOrCommentNode;
+  export import isSpace = cssCn.isWhitespaceNode;
 
   export function isToken<T extends Ct.Token>(
-    isTokenType: (x: Ct.Token) => x is T, comp: Comp
-  ): comp is Token & { value: T };
+    isTokenType: (x: Ct.Token) => x is T, node: Node
+  ): node is Token & { value: T };
   export function isToken<T extends Ct.Token>(
     isTokenType: (x: Ct.Token) => x is T
-  ): (comp: Comp) => comp is Token & { value: T };
+  ): (node: Node) => node is Token & { value: T };
   export function isToken<T extends Ct.Token>(
-    isTokenType: (x: Ct.Token) => x is T, comp?: Comp
+    isTokenType: (x: Ct.Token) => x is T, node?: Node
   ): any {
-    const guard = (comp: Comp) => isTokenAny(comp) && isTokenType(comp.value);
-    return isUndefined(comp) ? guard : guard(comp);
+    const guard = (node: Node) => isTokenAny(node) && isTokenType(node.value);
+    return isUndefined(node) ? guard : guard(node);
   }
 
   export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
-    isTokenType: (x: Ct.Token) => x is T, value: TValue, comp: Comp
-  ): comp is Token & { value: T & { [4]: { value: TValue } } };
+    isTokenType: (x: Ct.Token) => x is T, value: TValue, node: Node
+  ): node is Token & { value: T & { [4]: { value: TValue } } };
   export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, value: TValue
-  ): (comp: Comp) => comp is Token & { value: T & { [4]: { value: TValue } } };
+  ): (node: Node) => node is Token & { value: T & { [4]: { value: TValue } } };
   export function isTokenValue<T extends Ct.WithValue, TValue extends Ct.ValueType>(
-    isTokenType: (x: Ct.Token) => x is T, value: TValue, comp?: Comp
+    isTokenType: (x: Ct.Token) => x is T, value: TValue, node?: Node
   ): any {
-    const guard = (comp: Comp) => isTokenAny(comp) && isTokenType(comp.value) && comp.value[4].value === value;
-    return isUndefined(comp) ? guard : guard(comp);
+    const guard = (node: Node) => isTokenAny(node) && isTokenType(node.value) && node.value[4].value === value;
+    return isUndefined(node) ? guard : guard(node);
   }
 
   export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
-    isTokenType: (x: Ct.Token) => x is T, type: TType, comp: Comp
-  ): comp is Token & { value: T & { [4]: { type: TType } } };
+    isTokenType: (x: Ct.Token) => x is T, type: TType, node: Node
+  ): node is Token & { value: T & { [4]: { type: TType } } };
   export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, type: TType
-  ): (comp: Comp) => comp is Token & { value: T & { [4]: { type: TType } } };
+  ): (node: Node) => node is Token & { value: T & { [4]: { type: TType } } };
   export function isTokenType<T extends Ct.WithType, TType extends Ct.ValueType>(
-    isTokenType: (x: Ct.Token) => x is T, type: TType, comp?: Comp
+    isTokenType: (x: Ct.Token) => x is T, type: TType, node?: Node
   ): any {
-    const guard = (comp: Comp) => isTokenAny(comp) && isTokenType(comp.value) && comp.value[4].type === type;
-    return isUndefined(comp) ? guard : guard(comp);
+    const guard = (node: Node) => isTokenAny(node) && isTokenType(node.value) && node.value[4].type === type;
+    return isUndefined(node) ? guard : guard(node);
   }
 
-  // Comp: Parse
+  // Cn: Parse
 
   function toTokens(source: string | Ct.Token[]): Ct.Token[] {
     return isArray(source) ? source : Ct.parse(source);
   }
 
   function onParseError(ex: cssCt.ParseError): void {
-    logError(ex, "Failed to parse CSS component");
+    logError(ex, "Failed to parse CSS node");
   }
 
-  export function parse(source: string | Ct.Token[]): Comp {
-    return cssComp.parseComponentValue(toTokens(source), { onParseError }) ?? throwError("Failed to parse CSS comp");
+  export function parse(source: string | Ct.Token[]): Node {
+    return cssCn.parseComponentValue(toTokens(source), { onParseError }) ?? throwError("Failed to parse CSS node");
   }
 
-  export function parseCommaList(source: string | Ct.Token[]): Comp[][] {
-    return cssComp.parseCommaSeparatedListOfComponentValues(toTokens(source), { onParseError });
+  export function parseCommaList(source: string | Ct.Token[]): Node[][] {
+    return cssCn.parseCommaSeparatedListOfComponentValues(toTokens(source), { onParseError });
   }
 
-  export function parseList(source: string | Ct.Token[]): Comp[] {
-    return cssComp.parseListOfComponentValues(toTokens(source), { onParseError });
+  export function parseList(source: string | Ct.Token[]): Node[] {
+    return cssCn.parseListOfComponentValues(toTokens(source), { onParseError });
   }
 
-  export function stringify(node: Comp): string {
+  export function stringify(node: Node): string {
     return cssCt.stringify(...node.tokens());
   }
 
-  export import stringifyList = cssComp.stringify;
+  export import stringifyList = cssCn.stringify;
 
-  export import forEach = cssComp.forEach;
-  export import gatherParents = cssComp.gatherNodeAncestry;
-  export import replaceList = cssComp.replaceComponentValues;
-  export import walk = cssComp.walk;
+  // Cn: Modify
+
+  export import forEach = cssCn.forEach;
+  export import gatherParents = cssCn.gatherNodeAncestry;
+  export import replaceList = cssCn.replaceComponentValues;
+  export import walk = cssCn.walk;
+
+  export function getValue<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.WithValue>(cn: Token & { value: C }): C[4]['value'] {
+    return cn.value[4].value;
+  }
+
+  export function getType<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.WithType>(cn: Token & { value: C }): C[4]['type'] {
+    return cn.value[4].type;
+  }
 }
 
 // MARK: Sel
