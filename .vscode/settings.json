@@ -1,6 +1,9 @@
 {
     "files.associations": {
-        "*.user.css": "less",
+        "DerpiBooru-Tweaks.user.css": "less",
+        "e621-TrickstaEsix.user.css": "less",
+        "FurAffinity-Tweaks.user.css": "less",
+        "InkBunny-CompactDark.user.css": "less",
         "sites.json": "json5"
     },
     "git.inputValidation": false
