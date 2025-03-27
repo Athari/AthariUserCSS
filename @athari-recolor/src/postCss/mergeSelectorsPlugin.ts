@@ -5,6 +5,8 @@ import { Brand, DeepRequired } from 'utility-types';
 import { PostCss, Css, Sel } from '../domUtils.ts';
 import { Opt, isArray, isSome } from '../utils.ts';
 
+// MARK: Types
+
 const defaultPrintHeadWidth = 40;
 const defaultPrintCssWidth = 80;
 const debug = false;
@@ -52,6 +54,8 @@ class TrieVariant {
   }
 }
 
+// MARK: Utils
+
 const reIsValue = regex('i')`
   ^ :
   ( - ( webkit | moz | ms ) - )?
@@ -72,6 +76,8 @@ function removeSelectorComments(root: Sel.Root): void {
     comment.remove();
   });
 }
+
+// MARK: Debug print
 
 function formatNodeHead(node: Sel.Node): string {
   if (node.value === undefined)
@@ -95,6 +101,47 @@ function formatNode(root: Sel.Node, headWidth = defaultPrintHeadWidth, cssWidth 
   ].join("\n");
   return printNodeProc(root);
 }
+
+function formatTrie(trie: TrieNode | TrieVariant, fields: FormatTrieFields = [ 'nextTries', 'nextVariants' ]): string {
+  const hasNextTries = fields.includes('nextTries');
+  const hasNextVariants = fields.includes('nextVariants');
+
+  const formatVariant = (v: TrieVariant) => `${v.node}`;
+  const formatNodeVariants = (n: TrieNode) => n.variants.map(formatVariant).join(" | ");
+
+  return JSON5.stringify(trie, {
+    quote: null,
+    space: "  ",
+    replacer: function(key: string, value: unknown): Opt<unknown> {
+      if (value == null || isArray(value) && value.length == 0 || value instanceof Set && value.size == 0)
+        return undefined;
+
+      if (Sel.isNode(value))
+        return key !== 'selector' ? formatNodeHeadFull(value) : undefined;
+
+      if (value instanceof TrieVariant &&
+        (value.nextTries.size == 0 || !hasNextTries) &&
+        (value.nextVariants.size == 0 || !hasNextVariants)
+      )
+        return formatNodeHeadFull(value.node);
+
+      if (this instanceof TrieVariant) {
+        if (key == 'nextTries' && hasNextTries)
+          return [...value as Set<TrieNode>].map(formatNodeVariants).join(" || ");
+        if (key == 'nextVariants' && hasNextVariants)
+          return [...value as Set<TrieVariant>].map(formatVariant).join(" | ");
+        return undefined;
+      }
+
+      if (key === 'type' || isArray(value) && value.length === 0)
+        return undefined;
+
+      return value;
+    },
+  });
+}
+
+// MARK: Compat
 
 type SelNodeCompatType = 'spec' | 'value' | 'never';
 
@@ -142,44 +189,7 @@ function areNodesCompatible(a: Sel.Node, b: Sel.Node, mergeMode: MergeSelectorsM
   return console.debug(`cmp: ${formatCmp(a)} ${cmp ? "==" : "!="} ${formatCmp(b)}`), cmp;
 }
 
-function formatTrie(trie: TrieNode | TrieVariant, fields: FormatTrieFields = [ 'nextTries', 'nextVariants' ]): string {
-  const hasNextTries = fields.includes('nextTries');
-  const hasNextVariants = fields.includes('nextVariants');
-
-  const formatVariant = (v: TrieVariant) => `${v.node}`;
-  const formatNodeVariants = (n: TrieNode) => n.variants.map(formatVariant).join(" | ");
-
-  return JSON5.stringify(trie, {
-    quote: null,
-    space: "  ",
-    replacer: function(key: string, value: unknown): Opt<unknown> {
-      if (value == null || isArray(value) && value.length == 0 || value instanceof Set && value.size == 0)
-        return undefined;
-
-      if (Sel.isNode(value))
-        return key !== 'selector' ? formatNodeHeadFull(value) : undefined;
-
-      if (value instanceof TrieVariant &&
-        (value.nextTries.size == 0 || !hasNextTries) &&
-        (value.nextVariants.size == 0 || !hasNextVariants)
-      )
-        return formatNodeHeadFull(value.node);
-
-      if (this instanceof TrieVariant) {
-        if (key == 'nextTries' && hasNextTries)
-          return [...value as Set<TrieNode>].map(formatNodeVariants).join(" || ");
-        if (key == 'nextVariants' && hasNextVariants)
-          return [...value as Set<TrieVariant>].map(formatVariant).join(" | ");
-        return undefined;
-      }
-
-      if (key === 'type' || isArray(value) && value.length === 0)
-        return undefined;
-
-      return value;
-    },
-  });
-}
+// MARK: Build tries
 
 function buildTrie(node: Sel.Node, trie: TrieNode, mergeMode: MergeSelectorsModeInternal): void {
   const isLinear = mergeMode === 'unsafe-linear';
@@ -236,6 +246,8 @@ function buildTrie(node: Sel.Node, trie: TrieNode, mergeMode: MergeSelectorsMode
     fail(`Container expected, got ${node.type}`);
   }
 }
+
+// MARK: Merge nodes
 
 function buildMergedNode(trieNode: TrieNode, pseudo: MergeSelectorsPseudo): Exclude<Sel.Node, Sel.Selector> {
   const nodes: Sel.Node[] = trieNode.variants.map(v => Sel.cloneHeader(v.node));
@@ -302,6 +314,8 @@ function unwrapSimplePseudoIs(root: Sel.Root) {
   )
     root.at(0).replaceWith(...(root.at(0).at(0) as Sel.Pseudo).nodes);
 }
+
+// MARK: Plugin
 
 export default PostCss.declarePlugin<MergeSelectorsPluginOptions>('merge-selectors', {
   pseudo: 'is',

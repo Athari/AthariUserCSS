@@ -8,6 +8,8 @@ import {
   isSome, isArray, isString, objectAssignedValues, objectEntries, toAssignedArrayIfNeeded, throwError, assertNever, inspectPretty,
 } from '../utils.ts';
 
+// MARK: Types: CSS
+
 type MatchProps =
   | 'name' | 'value' | 'operator' | 'text' | 'namespace';
 
@@ -29,6 +31,8 @@ const cssNodePropMap: {
   comment: { text: 'text' },
   decl: { name: 'prop', value: 'value' },
 };
+
+// MARK: Types: Selector
 
 type SelTransNodeNames = SetComplement<Sel.NodeNames, 'string' | 'selector' | 'root'>;
 type SelMatchPropsOn<N extends SelTransNodeNames, V extends SelTransNodeNames, P extends MatchProps, Else> =
@@ -60,6 +64,8 @@ const selNodePropMap: {
   tag: { name: 'value', namespace: 'namespaceString' },
   universal: {},
 };
+
+// MARK: Types: Options
 
 type Node = Css.ChildNode | Sel.Node;
 type NodeNames<T extends Node> = keyof NodePropMap<T>;
@@ -116,6 +122,8 @@ export interface RegularTransformerPluginOptions {
 }
 
 const enum TransformCode { Matched = 1, MatchedBreak = 2, NotMatched = 3 };
+
+// MARK: Create transforms
 
 class TransformResult {
   code!: TransformCode;
@@ -359,6 +367,8 @@ function getTransformer<T extends Node>(
     a[k] = v;
   }
 }
+
+// MARK: Plugin
 
 export default PostCss.declarePluginOpt<RegularTransformerPluginOptions>('regular-transformer', {
   css: {

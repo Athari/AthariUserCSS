@@ -12,6 +12,8 @@ import {
   assertHasKeys, compare, deepMerge, downloadText, isArray, isString, logError, objectEntries, objectKeys, objectValues, readTextFile, throwError,
 } from './utils.ts';
 
+// MARK: Types: Options
+
 export interface OptionalPlugin {
   enabled?: Opt<boolean>;
 };
@@ -38,6 +40,8 @@ export class SiteFormat {
   html?: Opt<PrettierOptions>;
   css?: Opt<PrettierOptions>;
 }
+
+// MARK: Types: Links
 
 export class SiteHtml {
   name: string = "";
@@ -84,6 +88,8 @@ export class SiteCss {
     ].filter(s => !!s).join(", ")})`;
   }
 }
+
+// MARK: Types: Site
 
 export class Site {
   name: string = "";
@@ -148,6 +154,8 @@ export class Site {
   }
 }
 
+// MARK: Types: Sites Config
+
 export class SitesConfigOptions {
   @Type(() => SiteOptions)
   default: SiteOptions = new SiteOptions();
@@ -171,6 +179,8 @@ export class SitesConfig {
       site.hydrate(this);
   }
 }
+
+// MARK: Download: HTML
 
 async function downloadOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
   assertHasKeys(html, 'url');
@@ -204,6 +214,8 @@ async function prettifyOneSiteHtml(site: Site, html: SiteHtml): Promise<void> {
   await fs.writeFile(pathPretty, textPretty);
   console.log(`Prettier HTML written to ${pathPretty}`);
 }
+
+// MARK: Download: CSS
 
 async function parseLinkedCss(site: Site, doc: Html.Document, html: SiteHtml): Promise<void> {
   for (const elLinkCss of doc.querySelectorAll('link[rel="stylesheet"][href]')) {
@@ -276,6 +288,8 @@ async function parseStyleAttributes(site: Site, doc: Html.Document, html: SiteHt
   }
 }
 
+// MARK: Download: Next.JS
+
 async function parseNextJSBuildManifest(site: Site, doc: Html.Document, html: SiteHtml): Promise<void> {
   const elBuildManifest = doc.querySelector('script[src$="buildManifest.js" i]');
   if (!elBuildManifest)
@@ -328,6 +342,8 @@ async function parseNextJSBuildManifest(site: Site, doc: Html.Document, html: Si
       console.log(`Found Next.js CSS chunk '${css.name}' ${css.url}`);
 }
 
+// MARK: Download: WebPack
+
 interface WebpackMinifyCss extends Record<string, unknown> {
   miniCssF(index: number): string;
 }
@@ -375,6 +391,8 @@ async function parseWebpackMiniCssChunks(site: Site, doc: Html.Document, html: S
       console.log(`Found Next.js CSS chunk #${iChunk} '${cssName}' ${cssUrl}`);
   }
 }
+
+// MARK: Download: Site
 
 export async function downloadSiteHtml(site: Site): Promise<void> {
   site.dir = await getSiteDir(site.name);

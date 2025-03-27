@@ -1,12 +1,16 @@
 import fs from 'node:fs/promises';
 import { regex } from "regex";
 
+// MARK: Types
+
 export enum ColorFormula {
   Dark = 'dark',
   DarkFull = 'dark-full',
   DarkAuto = 'dark-auto',
   DarkFullAuto = 'dark-full-auto',
 }
+
+// MARK: Regex
 
 // https://www.w3.org/TR/2021/CRD-css-syntax-3-20211224/#token-diagrams
 export const cssTokenRegExps = new class CssTokenRegExps {
@@ -113,6 +117,8 @@ export const cssTokenRegExps = new class CssTokenRegExps {
     ${this.number} %
   `;
 }();
+
+// MARK: Utils
 
 export async function getSiteDir(siteName: string): Promise<string> {
   const siteDir = `./sites/${siteName}`;

@@ -3,21 +3,28 @@ import { Cookie, Store, canonicalDomain, permuteDomain, permutePath } from 'toug
 
 // Based on https://www.npmjs.com/package/@root/file-cookie-store (MIT)
 
+// MARK: Constants
+
 const NetscapeHeader = `# Netscape HTTP Cookie File
 # https://everything.curl.dev/http/cookies/fileformat.html
 # This is a generated file!  Do not edit.
 
 `;
 
+// MARK: Options
+
 type PickByValue<T, V> = Pick<T, {
   [K in keyof T]-?: T[K] extends V ? K : never;
 }[keyof T]>;
+
 type NetscapeCookieStoreInit = Partial<Omit<
   PickByValue<NetscapeCookieStore, string | number | boolean>,
   keyof Store | 'path'
 >>;
 
-class NetscapeCookieStore extends Store {
+// MARK: Init
+
+export default class NetscapeCookieStore extends Store {
   path: string;
   writeMode: number = 0o666;
   forceParse: boolean = false;
@@ -37,6 +44,8 @@ class NetscapeCookieStore extends Store {
   inspect(): string {
     return `{ idx: ${JSON.stringify(this.#cookies, null, 2)} }`;
   }
+
+  // MARK: Load/save
 
   async readFile(): Promise<void> {
     try {
@@ -72,6 +81,8 @@ class NetscapeCookieStore extends Store {
     updateFn();
     await this.#writeFileIfNeeded();
   }
+
+  // MARK: (De)serialize
 
   serialize(): string {
     const boolStr = (b: boolean): string => b ? 'TRUE' : 'FALSE';
@@ -134,6 +145,8 @@ class NetscapeCookieStore extends Store {
     }
   }
 
+  // MARK: Query
+
   override async findCookie(domain?: string, path?: string, key?: string): Promise<Cookie | undefined> {
     await this.#readFileIfNeeded();
     return this.#cookies[canonicalDomain(domain) ?? domain ?? ""]?.[path ?? ""]?.[key ?? ""];
@@ -172,6 +185,8 @@ class NetscapeCookieStore extends Store {
     }
     return results;
   }
+
+  // MARK: Modify
 
   #addCookie(cookie: Cookie): void {
     const domain = cookie.canonicalizedDomain() ?? "";
@@ -216,6 +231,8 @@ class NetscapeCookieStore extends Store {
     return cookies;
   }
 
+  // MARK: Extras
+
   async export(cookieStore: Store): Promise<Store>
   async export(cookieStore?: Cookie[]): Promise<Cookie[]>
   async export(cookieStore: Cookie[] | Store = []): Promise<Cookie[] | Store> {
@@ -234,5 +251,3 @@ class NetscapeCookieStore extends Store {
     return cookieStore;
   }
 }
-
-export default NetscapeCookieStore;

@@ -7,6 +7,8 @@ import { recolorCss, recolorSiteCss } from './siteRecoloring.ts';
 import { ColorFormula } from './commonUtils.ts';
 import { configureInspect, deepMerge, inspectPretty, loadJson, logError, objectValues, questionInput, questionSelect, saveJson, throwError } from './utils.ts';
 
+// MARK: Types
+
 class NpmPackage {
   version: string = "";
   description: string = "";
@@ -23,10 +25,14 @@ interface RecolorSiteCssCommandOptions {
   siteName: string;
 }
 
+// MARK: Init
+
 const npmPackage: NpmPackage = await loadJson(NpmPackage, "./package.json") ?? throwError("Missing JSON package metadata");
 const sites: SitesConfig = await loadJson(SitesConfig, "./sites.json") ?? throwError("Missing JSON site metadata");
 
 configureInspect();
+
+// MARK: Commands
 
 const program = new Command();
 const optionColorFormula = new Option('-c, --color-formula', "Color transform formula")
@@ -96,6 +102,8 @@ program
   .action(() => {
     console.log(npmPackage.version);
   });
+
+// MARK: Main
 
 try {
   if (process.argv[2] == undefined) {

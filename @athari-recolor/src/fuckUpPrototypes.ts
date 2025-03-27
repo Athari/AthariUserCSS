@@ -1,7 +1,9 @@
 import S from 'string';
 import { initializeLinq } from 'linq-to-typescript';
 import { installIntoGlobal as installIteratorHelpersIntoGlobal } from 'iterator-helpers-polyfill';
-import { Html } from './domUtils.ts'
+import { Html } from './domUtils.ts';
+
+// MARK: Hardcore prototype sex
 
 initializeLinq();
 S.extendPrototype();

@@ -16,6 +16,8 @@ import {
   compare, isSome, objectEntries, objectFromEntries, regexp,
 } from '../utils.ts';
 
+// MARK: Types
+
 export interface RecolorPluginOptions {
   /**
    * How to modify original CSS code.
@@ -67,6 +69,8 @@ interface PaletteColor {
   name: string;
 }
 
+// MARK: Syntax
+
 const identifiableColorNotations = new Set([ ColorNotation.HEX, ColorNotation.RGB, ColorNotation.HSL, ColorNotation.HWB ]);
 
 const cssColorMap = objectFromEntries(objectEntries(cssColorsNames).map(([name, [r, g, b]]) => [ `${r}|${g}|${b}` as const, name ]));
@@ -116,12 +120,16 @@ const reAtRuleMediaDark = regex('i')`
 const reAtRuleMediaNameAllowed = regex('i')`
   ^ ( container | media | scope | starting-style | supports ) $ `;
 
+// MARK: Utils
+
 function roundStrNumbers(s: string): string {
   return s.replace(/(\d+\.\d+|\d+\.|\.\d+)/g,
     (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
 }
 
 const isCnTokenHashOrIdent = Cn.isToken(isSome(Ct.isHash, Ct.isIdent));
+
+// MARK: Palette
 
 function getIdentColorName(color: ColorData): CssColorName | null {
   const [ r, g, b ] = color.channels;
@@ -174,6 +182,8 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CnColor, 
   return paletteColor;
 }
 
+// MARK: Recolor
+
 function recolorCnColor(node: CnColor, opts: Options): string {
   type ColorComp = string | boolean | number;
 
@@ -193,6 +203,8 @@ function recolorCnColor(node: CnColor, opts: Options): string {
     get [ColorFormula.DarkFullAuto]() { return colorAutoTheme(node, this[ColorFormula.DarkFull]) },
   }[opts.formula];
 }
+
+// MARK: Generate CSS
 
 function buildPaletteRule(palette: Palette): Css.Rule {
   return new Css.Rule({
@@ -270,6 +282,8 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
     decl.remove();
   }
 }
+
+// MARK: Plugin
 
 export default PostCss.declarePlugin<RecolorPluginOptions>('recolor', {
   mode: 'replace',

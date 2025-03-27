@@ -16,6 +16,8 @@ import { PostCss } from './domUtils.ts';
 import { assertHasKeys, deepMerge, downloadText, inspectPretty, objectEntries, readTextFile, throwError } from './utils.ts';
 import { regex } from 'regex';
 
+// MARK: Types: Options
+
 interface RecolorOptions extends SiteOptions {
   header: string;
   combine: boolean;
@@ -24,6 +26,8 @@ interface RecolorOptions extends SiteOptions {
 type PluginMap = {
   [K in PluginKeys]?: PostCss.PluginCreate<SiteOptions[K]>;
 };
+
+// MARK: PostCss
 
 async function runPostCss(inputPath: string, css: string, plugins: postCss.AcceptedPlugin[]): Promise<PostCss.Result> {
   const result = await postCss(plugins).process(css, { from: inputPath, parser: cssSafeParser });
@@ -95,6 +99,8 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
   console.log(`Recolored CSS written to ${outputPath}`);
 }
 
+// MARK: Download CSS
+
 async function prettifyOneSiteCss(site: Site, css: SiteCss): Promise<void> {
   assertHasKeys(css, 'path', 'text');
   const pathPretty = css.path.replace(/\.css$/i, ".pretty.css");
@@ -147,6 +153,8 @@ async function transformInlineSiteCss(site: Site, css: SiteCss, opts: SiteOption
   console.log(`Transformed style attributes CSS written to ${css.path}`);
   return css;
 }
+
+// MARK: Recolor Site
 
 async function recolorOneSiteCss(site: Site, css: SiteCss, extraHeaderLines: string[]): Promise<void> {
   assertHasKeys(css, 'path');

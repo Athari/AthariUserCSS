@@ -1,4 +1,5 @@
 {
+  // MARK: Options
   options: {
     default: {
       recolor: {
@@ -38,6 +39,8 @@
     },
   },
   sites: [
+
+    // MARK: None
     {
       name: "none",
     },
@@ -51,6 +54,8 @@
         //{ name: "test.css", path: "./test.freepik.css" },
       ],
     },
+
+    // MARK: Archive
     {
       name: "archive.org",
       options: {},
@@ -59,6 +64,8 @@
         { name: "msdos.html", url: "https://archive.org/details/softwarelibrary_msdos" },
       ],
     },
+
+    // MARK: Boosty
     {
       name: "boosty.to",
       options: {
@@ -73,6 +80,8 @@
         { name: "index.html", url: "https://boosty.to/" },
       ],
     },
+
+    // MARK: BoxOfficeMojo
     {
       name: "boxofficemojo.com",
       options: {},
@@ -81,6 +90,8 @@
         { name: "intl.html", url: "https://www.boxofficemojo.com/intl/" },
       ],
     },
+
+    // MARK: FreePik
     {
       name: "freepik.com",
       options: {
@@ -143,6 +154,8 @@
         //{ name: "devices.html", url: "https://www.freepik.com/user/device-manager" }, // garbage css
       ],
     },
+
+    // MARK: Forum.Ru-Board
     {
       name: "forum.ru-board.com",
       options: {
@@ -166,6 +179,8 @@
         { name: "whosonline.html", url: "https://forum.ru-board.com/whosonline.cgi" },
       ],
     },
+
+    // MARK: Meta.StackExchange
     {
       name: "meta.stackexchange.com",
       options: {
@@ -177,6 +192,8 @@
         //{ name: "channels.css", url: "https://meta.stackexchange.com/Content/Shared/Channels/channels.css" }, // unused??
       ],
     },
+
+    // MARK: NNMClub
     {
       name: "nnmclub.to",
       options: {
@@ -192,6 +209,8 @@
         { name: "office.html", url: "https://nnmclub.to/forum/viewtopic.php?t=975461" },
       ],
     },
+
+    // MARK: Rule34.Paheal
     {
       name: "rule34.paheal.net",
       options: {},
@@ -204,6 +223,8 @@
         { name: "menuh.css", url: "https://rule34.paheal.net/themes/rule34v2/menuh.css" },
       ],
     },
+
+    // MARK: Shigriyat
     {
       name: "shigriyat.ru",
       options: {
@@ -214,6 +235,8 @@
         { name: "index.html", url: "https://shigriyat.ru/" },
       ],
     },
+
+    // MARK: Weather
     {
       name: "weather.com",
       options: {},

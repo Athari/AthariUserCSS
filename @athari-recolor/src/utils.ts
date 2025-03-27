@@ -12,7 +12,11 @@ import { CookieJar, MemoryCookieStore } from 'tough-cookie';
 import { isPrimitive, Primitive } from 'utility-types';
 import NetscapeCookieStore from './http/toughCookieNetscapeStore.ts';
 
+// MARK: Constants
+
 const downloadTimeout = 30000;
+
+// MARK: Types
 
 export type ObjectEntries<T> = {
   [K in keyof T]-?: [K, T[K]];
@@ -85,6 +89,8 @@ export type EnquirerPrompt = ExtractNoArraysNoFunctions<Parameters<enquirer['pro
 
 export type RegExpPattern = ReturnType<typeof re>;
 
+// MARK: Raw strings
+
 export class RawsTemplate<T> {
   #raws: string[][] = [ [] ];
   #values: T[] = [];
@@ -132,6 +138,8 @@ export function escapeRegExp(s: string) {
   return s.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
 }
 
+// MARK: Counter
+
 export class Counter<T> extends Object {
   #counts = new Map<T, number>();
 
@@ -154,6 +162,8 @@ export class Counter<T> extends Object {
   }
 }
 
+// MARK: Asserts
+
 export function assertNever(...values: never[]): never {
   throw new AssertionError({ message: `never expected, got ${values.join(", ")}` });
 }
@@ -165,6 +175,8 @@ export function assertHasKeys<T, K extends keyof T>(o: T, ...keys: K[]): asserts
         message: `Property '${String(key)}' of '${String(o?.constructor?.name ?? typeof o)}' is null or undefined`,
       });
 }
+
+// MARK: Objects
 
 export function objectFromEntries<T extends ReadonlyArray<readonly [PropertyKey, any]>>(entries: T): ObjectFromEntries<T> {
   return Object.fromEntries(entries) as ObjectFromEntries<T>;
@@ -194,6 +206,8 @@ export function objectAssignedValues<T>(o: T) {
   return Object.values(o as {}).filter(isAssigned) as Array<Assigned<T[keyof T]>>;
 }
 
+// MARK: Arrays
+
 export function toArrayIfNeeded<T>(v: undefined | null): typeof v
 export function toArrayIfNeeded<T>(v: T[] | T): T[]
 export function toArrayIfNeeded<T>(v: T[] | T | undefined | null): T[] | undefined | null {
@@ -209,6 +223,8 @@ export function toAssignedArrayIfNeeded<T>(v: T[] | T | undefined | null): Assig
 export function valuesOf<T>() {
   return <U extends T[]>(...values: readonly [...U]) => values;
 }
+
+// MARK: Guards
 
 export function isValueIn<K, U extends K>(value: K, values: readonly U[]): value is U {
   return values.includes(value as U);
@@ -296,6 +312,8 @@ export function regexp(pattern: string, flags?: string): RegExp {
   return regex(flags)`${re(pattern)}`;
 }
 
+// MARK: Compare
+
 export function compare<T>(a: T, b: T): number {
   if (isNumber(a) && isNumber(b)) {
     const an = isNaN(a), bn = isNaN(b);
@@ -313,6 +331,8 @@ export function compare<T>(a: T, b: T): number {
     return 1;
   return 0;
 }
+
+// MARK: Errors
 
 export function errorDetail(ex: Error | unknown): string {
   return ex instanceof Error ? `${ex.message}\n${ex.stack}` : `${ex}`;
@@ -334,6 +354,14 @@ export function throwError(error: Error | string) : never {
   throw error instanceof Error ? error : new Error(error);
 }
 
+export function logError(ex: unknown, message: string | null) {
+  if (message)
+    console.error(message);
+  console.error(inspectPretty(errorDetail(ex)));
+}
+
+// MARK: File
+
 export async function readTextFile(path: string): Promise<string | null> {
   try {
     return await fs.readFile(path, 'utf-8');
@@ -354,6 +382,8 @@ export async function writeTextFile(path: string, data: WritableFileData): Promi
     return false;
   }
 }
+
+// MARK: Enquirer
 
 export function validateRequired(name: string): (input: string) => true | string {
   return (input: string) => input ? true : `Argument ${name} cannot be empty`;
@@ -401,6 +431,8 @@ export function questionSelect(
   });
 }
 
+// MARK: JSON
+
 export async function loadJson<T>(ctr: ClassConstructor<T>, path: string): Promise<T | null> {
   const pojo = JSON5.parse(await readTextFile(path) ?? "null");
   if (pojo == null)
@@ -415,6 +447,8 @@ export async function saveJson<T>(instance: T, path: string): Promise<boolean> {
   const pojo = instanceToPlain<T>(instance);
   return await writeTextFile(path, JSON5.stringify(pojo, { space: "  " }));
 }
+
+// MARK: HTTP
 
 const netscapeCookies = new NetscapeCookieStore('./cookies.txt', { alwaysWrite: false });
 const memoryCookies = new MemoryCookieStore();
@@ -453,6 +487,8 @@ export async function downloadText(url: string, init: DownloadInit = {}): Promis
     : new TextDecoder(init.encoding).decode(await response.arrayBuffer());
   return await getText();
 }
+
+// MARK: Deep merge
 
 type DeepMergeValue = 'skip' | 'merge';
 type DeepMergeArrays = 'replace' | 'concat';
@@ -695,6 +731,8 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
   }
 }
 
+// MARK: Inspect
+
 export function configureInspect() {
   inspect.defaultOptions = {
     ...inspect.defaultOptions,
@@ -714,12 +752,6 @@ export function inspectPretty(o: any, opts?: InspectOptions) {
   return inspect(o, { ...opts });
 }
 
-export function logError(ex: unknown, message: string | null) {
-  if (message)
-    console.error(message);
-  console.error(inspectPretty(errorDetail(ex)));
-}
-
 type InspectColor = { [0]: number; [1]: number };
 type InspectColorKey =
   | 'reset'
@@ -729,7 +761,7 @@ type InspectColorKey =
   | 'bgBlack' | 'bgRed' | 'bgGreen' | 'bgYellow' | 'bgBlue' | 'bgMagenta' | 'bgCyan' | 'bgWhite'
   | 'bgGray' | 'bgRedBright' | 'bgGreenBright' | 'bgYellowBright' | 'bgBlueBright' | 'bgMagentaBright' | 'bgCyanBright' | 'bgWhiteBright';
 
-// TODO: Play around this this bs later
+// TODO: Play around with this bs later
 function makeInspectPretty() {
   Object.assign(Object.prototype, {
     [inspect.custom]: function (this: unknown, depth: number, opts: InspectOptionsStylized, ins: CustomInspectFunction): string {

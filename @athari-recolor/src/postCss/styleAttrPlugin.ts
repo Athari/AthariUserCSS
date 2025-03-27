@@ -3,12 +3,16 @@ import { DeepRequired } from 'utility-types';
 import { PostCss, Css, Sel } from '../domUtils.ts';
 import { ArrayGenerator, Opt } from '../utils.ts';
 
+// MARK: Types: Options
+
 export interface StyleAttrPluginOptions {
   operator?: Opt<Sel.AttributeOperator>;
   insensitive?: Opt<boolean>;
 }
 
 type Options = DeepRequired<StyleAttrPluginOptions>;
+
+// MARK: Process Attrs
 
 function* processStyleAttr(rule: Css.Rule, selTag: Sel.Selector, opts: Options): ArrayGenerator<Css.Rule> {
   for (const declSel of rule.nodes) {
@@ -49,6 +53,8 @@ function processObsoleteAttr(rule: Css.Rule, attr: Sel.Attribute, selTag: Sel.Se
     ],
   });
 }
+
+// MARK: Plugin
 
 export default PostCss.declarePlugin<StyleAttrPluginOptions>('style-attr', {
   operator: '*=',
