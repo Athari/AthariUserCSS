@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { DeepRequired } from 'utility-types';
-import { PostCss, Css, Sel } from './domUtils.ts';
-import { ArrayGenerator, Opt } from './utils.ts';
+import { PostCss, Css, Sel } from '../domUtils.ts';
+import { ArrayGenerator, Opt } from '../utils.ts';
 
 export interface StyleAttrPluginOptions {
   operator?: Opt<Sel.AttributeOperator>;

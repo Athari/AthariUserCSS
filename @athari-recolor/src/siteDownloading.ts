@@ -23,11 +23,11 @@ export type PluginKeys = Assigned<{
 }[keyof SiteOptions]>;
 
 export class SiteOptions {
-  recolor?: PluginOptions<import('./recolorPlugin.ts').RecolorPluginOptions>;
-  derandom?: PluginOptions<import('./transformerPlugin.ts').RegularTransformerPluginOptions>;
-  merge?: PluginOptions<import('./mergeSelectorsPlugin.ts').MergeSelectorsPluginOptions>;
-  remove?: PluginOptions<import('./transformerPlugin.ts').RegularTransformerPluginOptions>;
-  styleAttr?: PluginOptions<import('./styleAttrPlugin.ts').StyleAttrPluginOptions>;
+  recolor?: PluginOptions<import('./postCss/recolorPlugin.ts').RecolorPluginOptions>;
+  derandom?: PluginOptions<import('./postCss/regularTransformerPlugin.ts').RegularTransformerPluginOptions>;
+  merge?: PluginOptions<import('./postCss/mergeSelectorsPlugin.ts').MergeSelectorsPluginOptions>;
+  remove?: PluginOptions<import('./postCss/regularTransformerPlugin.ts').RegularTransformerPluginOptions>;
+  styleAttr?: PluginOptions<import('./postCss/styleAttrPlugin.ts').StyleAttrPluginOptions>;
   encoding?: Opt<string> = 'utf-8';
   combine?: Opt<boolean> = true;
   refs?: Opt<boolean> = false;

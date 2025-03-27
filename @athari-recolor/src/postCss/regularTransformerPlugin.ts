@@ -1,12 +1,12 @@
 import { fail } from 'node:assert/strict';
 import { isRegExp } from 'node:util/types';
 import { Optional, SetComplement } from 'utility-types';
-import { cssTokenRegExps } from './commonUtils.ts';
-import { PostCss, Css, Sel } from './domUtils.ts';
+import { cssTokenRegExps } from '../commonUtils.ts';
+import { PostCss, Css, Sel } from '../domUtils.ts';
 import {
   GuardAny, SubUnion, Opt, OptObject, OneOrArray, KeyOfAny, ArrayGenerator, Counter, RegExpTemplate,
   isSome, isArray, isString, objectAssignedValues, objectEntries, toAssignedArrayIfNeeded, throwError, assertNever, inspectPretty,
-} from './utils.ts';
+} from '../utils.ts';
 
 type MatchProps =
   | 'name' | 'value' | 'operator' | 'text' | 'namespace';

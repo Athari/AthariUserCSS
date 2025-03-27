@@ -2,11 +2,12 @@ import assert, { fail } from 'node:assert/strict';
 import JSON5 from 'json5';
 import { regex } from 'regex';
 import { Brand, DeepRequired } from 'utility-types';
-import { PostCss, Css, Sel } from './domUtils.ts';
-import { Opt, isArray, isSome } from './utils.ts';
+import { PostCss, Css, Sel } from '../domUtils.ts';
+import { Opt, isArray, isSome } from '../utils.ts';
 
 const defaultPrintHeadWidth = 40;
 const defaultPrintCssWidth = 80;
+const debug = false;
 
 type MergeSelectorsPseudo = 'is' | 'where';
 type MergeSelectorsMode = 'safe' | 'greedy' | 'unsafe';
@@ -113,7 +114,7 @@ const selNodeCompat: Record<keyof Sel.NodeTypes, SelNodeCompatType> = {
 };
 
 function areNodesCompatible(a: Sel.Node, b: Sel.Node, mergeMode: MergeSelectorsModeInternal): boolean {
-  //const cmp = (() => {
+  const cmp = (() => {
     const [ aCompat, bCompat ] = [ selNodeCompat[a.type], selNodeCompat[b.type] ];
     if (aCompat === 'never' || bCompat === 'never') {
       return false; // syntax errors can result in this
@@ -133,10 +134,12 @@ function areNodesCompatible(a: Sel.Node, b: Sel.Node, mergeMode: MergeSelectorsM
       return areSpecEqual || isMergeModeUnsafe;
 
     fail(`Unexpected selector node compat type: ${aCompat} | ${bCompat}`);
-  /*})();
-  const formatSelSpecificity = (spec: SelSpecificity) => `(${spec.a}:${spec.b}:${spec.c})`;
-  const formatCmp = (a: SelNode) => `${formatSelSpecificity(getSelSpecificity(a))} ${printNodeHead(a).ellipsis(30)}`.padEnd(40);
-  return console.debug(`cmp: ${formatCmp(a)} ${cmp ? "==" : "!="} ${formatCmp(b)}`), cmp;*/
+  })();
+  if (!debug)
+    return cmp;
+  const formatSelSpecificity = (spec: Sel.Specificity) => `(${spec.a}:${spec.b}:${spec.c})`;
+  const formatCmp = (a: Sel.Node) => `${formatSelSpecificity(Sel.getSpecificity(a))} ${formatNodeHead(a).ellipsis(30)}`.padEnd(40);
+  return console.debug(`cmp: ${formatCmp(a)} ${cmp ? "==" : "!="} ${formatCmp(b)}`), cmp;
 }
 
 function formatTrie(trie: TrieNode | TrieVariant, fields: FormatTrieFields = [ 'nextTries', 'nextVariants' ]): string {

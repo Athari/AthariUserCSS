@@ -9,12 +9,12 @@ import {
   serializeP3 as serializeDisplayP3,
   colorDataFitsRGB_Gamut as isColorDataFitsRgbGamut,
 } from '@csstools/css-color-parser';
-import { ColorFormula } from './commonUtils.ts';
-import { PostCss, Css, Ct, Cn } from './domUtils.ts';
+import { ColorFormula } from '../commonUtils.ts';
+import { PostCss, Css, Ct, Cn } from '../domUtils.ts';
 import {
   Opt, OptArray,
   compare, isSome, objectEntries, objectFromEntries, regexp,
-} from './utils.ts';
+} from '../utils.ts';
 
 export interface RecolorPluginOptions {
   /**

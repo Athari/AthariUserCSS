@@ -10,7 +10,7 @@ import supportsColor from 'supports-color';
 import makeFetchCookie from 'fetch-cookie';
 import { CookieJar, MemoryCookieStore } from 'tough-cookie';
 import { isPrimitive, Primitive } from 'utility-types';
-import NetscapeCookieStore from './toughCookieNetscapeStore.ts';
+import NetscapeCookieStore from './http/toughCookieNetscapeStore.ts';
 
 const downloadTimeout = 30000;
 
