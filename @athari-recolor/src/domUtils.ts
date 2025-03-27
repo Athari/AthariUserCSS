@@ -14,7 +14,7 @@ import * as cssSelSpec from '@csstools/selector-specificity';
 import assert from 'node:assert/strict';
 import { DeepRequired } from 'utility-types';
 import {
-  Assigned, Guard, GuardAny, Opt, MostSpecific,
+  Assigned, GuardAny, Opt, MostSpecific,
   deepMerge, isAssigned, isArray, isSome, isUndefined, logError, throwError,
   isString as isStringPrimitive,
   isNumber as isNumberPrimitive,
@@ -257,6 +257,17 @@ export namespace Css {
   }
 }
 
+// MARK: Kw
+
+export namespace Kw {
+  const equalityComparer = Intl.Collator('en-US', { usage: 'search', sensitivity: 'variant', ignorePunctuation: false });
+
+  export function equals<T extends Opt<string>, V extends string>(kw: T, values: readonly V[] | V): kw is MostSpecific<T, V> {
+    return isAssigned(kw) && isAssigned(values) &&
+      (isStringPrimitive(values) ? !equalityComparer.compare(kw, values) : values.some(v => !equalityComparer.compare(kw, v)));
+  }
+}
+
 // MARK: Ct
 
 export namespace Ct {
@@ -302,6 +313,9 @@ export namespace Ct {
   export import NumberType = cssCt.NumberType;
   export import Type = cssCt.TokenType;
 
+  // Ct: Types (extended)
+
+  export const enum NumberRange { All, NonNegative, Integer, NonNegativeInteger, PositiveInteger };
   export type ParseErrorCallback = (error: ParseError) => void;
 
   export type WithAnyValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
@@ -316,8 +330,9 @@ export namespace Ct {
   export type WithUnit<V extends UnitType> = Dimension & { [4]: { unit: V } };
 
   export type IdentOf<T extends Token> = T extends TokenT<infer U, any> ? U : never;
-  export type ValueOf<T extends WithAnyValue> = T[4]['value'];
-  export type TypeOf<T extends WithAnyType> = T[4]['type'];
+  export type DataOf<T extends Token> = T[4];
+  export type ValueOf<T extends WithAnyValue> = DataOf<T>['value'];
+  export type TypeOf<T extends WithAnyType> = DataOf<T>['type'];
 
   // Ct: Guards
 
@@ -352,43 +367,50 @@ export namespace Ct {
   export import isRaw = cssCt.isTokenWhiteSpaceOrComment;
   export import isSpace = cssCt.isTokenWhitespace;
 
-  type CtGuard<T extends Token> = Guard<Token, T>;
+  // Ct: Guards (extended)
 
-  const keywordComparer = Intl.Collator('en-US', { usage: 'search', sensitivity: 'variant', ignorePunctuation: false });
+  type Guard<T extends Token> = (ct: Token) => ct is Extract<T, Token>;
 
-  export function keywordEquals<A extends Opt<string>, B extends string>(a: A, b: B): a is MostSpecific<A, B> {
-    return isAssigned(a) && isAssigned(b) && !keywordComparer.compare(a, b);
-  }
-
-  export function keywordEqualsOneOf<A extends Opt<string>, B extends string>(a: A, b: readonly B[]): a is MostSpecific<A, B> {
-    return b.some(v => keywordEquals(a, v));
-  }
-
-  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: CtGuard<T>, value: readonly V[] | V, ct: Token): ct is WithValue<T, V>;
-  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: CtGuard<T>, value: readonly V[] | V): CtGuard<WithValue<T, V>>;
-  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: CtGuard<T>, value: readonly V[] | V, ct: Token | null = null): any {
-    const guard = (ct: Token) => g(ct) &&
-      (isStringPrimitive(ct[4].value)
-        ? (isStringPrimitive(value) ? keywordEquals(ct[4].value, value) : keywordEqualsOneOf(ct[4].value, value as readonly string[]))
-        : (isNumberPrimitive(value) ? ct[4].value === value : (value as readonly number[]).includes(ct[4].value)));
+  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V, ct: Token): ct is WithValue<T, V>;
+  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V): Guard<WithValue<T, V>>;
+  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V, ct: Token | null = null): any {
+    const guard = (ct: Token) => {
+      if (!g(ct))
+        return false;
+      const v: ValueOf<T> = value(ct);
+      if (isStringPrimitive(v))
+        return Kw.equals(v, values as (readonly string[] | string));
+      else
+        return isNumberPrimitive(values) ? v === (values as number) : (values as readonly number[]).includes(v);
+    };
     return ct === null ? guard : guard(ct);
   }
 
-  export function isIdentValue<V extends string>(value: readonly V[] | V, ct: Token): ct is WithValue<Ident, V>;
-  export function isIdentValue<V extends string>(value: readonly V[] | V): CtGuard<WithValue<Ident, V>>;
-  export function isIdentValue<V extends string>(value: readonly V[] | V, ct: Token | null = null): any {
-    const guard = (ct: Token) => isIdent(ct) && (isStringPrimitive(value) ? keywordEquals(ct[4].value, value) : keywordEqualsOneOf(ct[4].value, value));
+  export function isIdentValue<V extends string>(values: readonly V[] | V, ct: Token): ct is WithValue<Ident, V>;
+  export function isIdentValue<V extends string>(values: readonly V[] | V): Guard<WithValue<Ident, V>>;
+  export function isIdentValue<V extends string>(values: readonly V[] | V, ct: Token | null = null): any {
+    const guard = (ct: Token) => isIdent(ct) && Kw.equals(value(ct), values);
     return ct === null ? guard : guard(ct);
   }
 
-  export function isDimensionUnit<U extends string>(value: readonly U[] | U, ct: Token): ct is WithUnit<U>;
-  export function isDimensionUnit<U extends string>(value: readonly U[] | U): CtGuard<WithUnit<U>>;
-  export function isDimensionUnit<U extends string>(value: readonly U[] | U, ct: Token | null = null): any {
-    const guard = (ct: Token) => isDimension(ct) && (isStringPrimitive(value) ? keywordEquals(ct[4].unit, value) : keywordEqualsOneOf(ct[4].unit, value));
+  export function isDimensionUnit<U extends string>(values: readonly U[] | U, ct: Token): ct is WithUnit<U>;
+  export function isDimensionUnit<U extends string>(values: readonly U[] | U): Guard<WithUnit<U>>;
+  export function isDimensionUnit<U extends string>(values: readonly U[] | U, ct: Token | null = null): any {
+    const guard = (ct: Token) => isDimension(ct) && Kw.equals(unit(ct), values);
     return ct === null ? guard : guard(ct);
   }
 
   // Ct: Parse
+
+  export function parse(css: string): Ct.Token[] {
+    return cssCt.tokenize({ css });
+  }
+
+  export function stringify(tokens: Ct.Token[]): string {
+    return cssCt.stringify(...tokens);
+  }
+
+  // Ct: Parse (extended)
 
   export interface Parser {
     readonly lastError: Opt<ParseError | ParseErrorWithToken>;
@@ -415,7 +437,7 @@ export namespace Ct {
       }
     });
 
-    const parser = new class CtParser {
+    const parser = new (class CtParser {
       get lastError() {
         return lastError;
       }
@@ -450,23 +472,54 @@ export namespace Ct {
       isEof() {
         return !nextToken && tokenizer.endOfFile();
       }
-    };
+    });
 
     return parser;
   }
 
-  export function parse(css: string): Ct.Token[] {
-    return cssCt.tokenize({ css });
+  // Ct: Modify
+
+  export import setIdentValue = cssCt.mutateIdent;
+  export import setUnit = cssCt.mutateUnit;
+
+  // Ct: Modify (extended)
+
+  export function data<T extends Token>(ct: T): DataOf<T> {
+    return ct[4];
   }
 
-  export function stringify(tokens: Ct.Token[]): string {
-    return cssCt.stringify(...tokens);
+  export function value<T extends WithAnyValue>(ct: T): ValueOf<T> {
+    return ct[4].value;
   }
 
-  // Ct: Mutate
+  export function type<T extends WithAnyType>(ct: T): TypeOf<T> {
+    return ct[4].type;
+  }
 
-  export import setIdent = cssCt.mutateIdent;
-  export import setDimensionUnit = cssCt.mutateUnit;
+  export function unit(ct: Dimension): string {
+    return ct[4].unit;
+  }
+
+  export function isInRange(source: Token | number, range: NumberRange): boolean {
+    const [ v, isInt ] =
+      isNumberPrimitive(source) ? [
+        source,
+        Number.isInteger(source),
+      ] :
+      isToken(source) && isNumeric(source) ? [
+        value(source),
+        !isPercentage(source) && type(source) === NumberType.Integer,
+      ] :
+      throwError(`source must be token or number, ${typeof(source)} received`);
+    switch (range) {
+      case NumberRange.All: return true;
+      case NumberRange.NonNegative: return v >= 0;
+      case NumberRange.Integer: return isInt;
+      case NumberRange.NonNegativeInteger: isInt && v >= 0;
+      case NumberRange.PositiveInteger: isInt && v > 0;
+      default: throwError(`Invalid range value: ${range}`);
+    }
+  }
 }
 
 // MARK: Cn
