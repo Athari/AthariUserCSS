@@ -41,26 +41,26 @@ export namespace Cn {
     return isUndefined(node) ? guard : guard(node);
   }
 
-  export function isTokenValue<T extends Ct.WithAnyValue, TValue extends Ct.ValueType>(
+  export function isTokenValue<T extends Ct.AnyWithValue, TValue extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, value: TValue, node: Node
   ): node is Token & { value: T & { [4]: { value: TValue } } };
-  export function isTokenValue<T extends Ct.WithAnyValue, TValue extends Ct.ValueType>(
+  export function isTokenValue<T extends Ct.AnyWithValue, TValue extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, value: TValue
   ): (node: Node) => node is Token & { value: T & { [4]: { value: TValue } } };
-  export function isTokenValue<T extends Ct.WithAnyValue, TValue extends Ct.ValueType>(
+  export function isTokenValue<T extends Ct.AnyWithValue, TValue extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, value: TValue, node?: Node
   ): any {
     const guard = (node: Node) => isTokenAny(node) && isTokenType(node.value) && node.value[4].value === value;
     return isUndefined(node) ? guard : guard(node);
   }
 
-  export function isTokenType<T extends Ct.WithAnyType, TType extends Ct.ValueType>(
+  export function isTokenType<T extends Ct.AnyWithType, TType extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, type: TType, node: Node
   ): node is Token & { value: T & { [4]: { type: TType } } };
-  export function isTokenType<T extends Ct.WithAnyType, TType extends Ct.ValueType>(
+  export function isTokenType<T extends Ct.AnyWithType, TType extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, type: TType
   ): (node: Node) => node is Token & { value: T & { [4]: { type: TType } } };
-  export function isTokenType<T extends Ct.WithAnyType, TType extends Ct.ValueType>(
+  export function isTokenType<T extends Ct.AnyWithType, TType extends Ct.ValueType>(
     isTokenType: (x: Ct.Token) => x is T, type: TType, node?: Node
   ): any {
     const guard = (node: Node) => isTokenAny(node) && isTokenType(node.value) && node.value[4].type === type;
@@ -70,7 +70,7 @@ export namespace Cn {
   // MARK: Parse
 
   function toTokens(source: string | Ct.Token[]): Ct.Token[] {
-    return isArray(source) ? source : Ct.parse(source);
+    return isArray(source) ? source : Ct.tokenize(source);
   }
 
   function onParseError(ex: Ct.ParseError): void {
@@ -104,11 +104,11 @@ export namespace Cn {
 
   // MARK: Modify (extended)
 
-  export function getValue<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.WithAnyValue>(cn: Token & { value: C }): C[4]['value'] {
+  export function getValue<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.AnyWithValue>(cn: Token & { value: C }): C[4]['value'] {
     return cn.value[4].value;
   }
 
-  export function getType<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.WithAnyType>(cn: Token & { value: C }): C[4]['type'] {
+  export function getType<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.AnyWithType>(cn: Token & { value: C }): C[4]['type'] {
     return cn.value[4].type;
   }
 }

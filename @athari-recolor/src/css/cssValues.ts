@@ -1,11 +1,31 @@
+import assert from 'node:assert/strict';
+import { Optional } from 'utility-types';
 import { Ct } from './cssTokens.ts';
 import { Kw, kw } from './cssKeywords.ts';
 import { Cu } from './cssUnits.ts';
-import { isNull, isNumber, isString, LiteralUnion, Opt, throwError } from '../utils.ts';
+import {
+  LiteralUnion, Opt,
+  isNull, isNumber, isString, isAssigned, isDefined, throwError,
+} from '../utils.ts';
 
 export namespace Cv {
 
   // MARK: Types
+
+  export type KwAny = string;
+  export type KwAnyOpt = string | null;
+  export type KwUnion<T extends KwAnyOpt> =
+    T extends null ? null :
+    string extends T ? string :
+    T extends string ? LiteralUnion<T> :
+    never;
+
+  export interface Shorthand<T extends KwAny = KwAny, V = AnyValue> {
+    props: Map<T, V>;
+  }
+
+  export type ShorthandKey<T extends Shorthand<any, any>> = T extends Shorthand<infer K, any> ? K : never;
+  export type ShorthandValue<T extends Shorthand<any, any>> = T extends Shorthand<any, infer V> ? V : never;
 
   export interface Raws {
     before?: Ct.Raw[];
@@ -16,53 +36,96 @@ export namespace Cv {
     raws?: Opt<Raws>;
   }
 
-  export interface Raws {
-    before?: Ct.Raw[];
-    after?: Ct.Raw[];
-  }
-
-  export interface Keyword<T> {
-    keyword: T;
+  export interface Function<T extends KwAny = KwAny> extends WithRaws {
+    name: T;
+    params: AnyValue[];
     raws?: Raws;
   }
 
-  export interface String<T extends string = string> {
+  export interface Keyword<T extends KwAny = KwAny> extends WithRaws {
+    name: T;
+    raws?: Raws;
+  }
+
+  export interface Numeric<U extends KwAnyOpt = KwAnyOpt> extends WithRaws {
+    value: number;
+    unit: U;
+    //signCharacter?: '+' | '-';
+    raws?: Raws;
+  }
+
+  export interface NumericRange<U extends KwAnyOpt = KwAnyOpt> {
+    start: Numeric<U>;
+    end: Numeric<U>;
+  }
+
+  export interface String<T extends KwAny = KwAny> extends WithRaws {
     value: T;
     raws?: Raws;
   }
 
-  export interface Numeric<T> {
-    value: number;
-    unit: T;
-    signCharacter?: '+' | '-';
+  export interface Url extends WithRaws {
+    url: URL;
     raws?: Raws;
   }
 
-  export interface NumericRange<T> {
-    start: Numeric<T>;
-    end: Numeric<T>;
+  export type KeywordLax<T extends KwAny = KwAny> = Keyword<KwUnion<T>>;
+  export type NumericLax<T extends KwAny = KwAny> = Numeric<KwUnion<T>>;
+  export type NumericOpt<T extends KwAnyOpt = KwAnyOpt> = Numeric<KwUnion<T | null>>;
+  export type NumericLaxOpt<T extends KwAnyOpt = KwAnyOpt> = Numeric<KwUnion<T | null>>;
+  export type NumericRangeLax<T extends KwAny = KwAny> = NumericRange<KwUnion<T>>;
+  export type NumericRangeOpt<T extends KwAnyOpt = KwAnyOpt> = NumericRange<KwUnion<T | null>>;
+  export type NumericRangeLaxOpt<T extends KwAnyOpt = KwAnyOpt> = NumericRange<KwUnion<T | null>>;
+
+  export type AnyValue = Function | Keyword | Numeric | String | Url;
+
+  type TokenToValue<T extends Ct.Token> =
+    T extends Ct.WithStringValue<Ct.Ident, any> ? Keyword<Ct.ValueOf<T>> :
+    T extends Ct.WithStringValue<Ct.String, any> ? String<Ct.ValueOf<T>> :
+    T extends Ct.Dimension ? Numeric<Ct.UnitOf<T>> :
+    T extends Ct.Percentage ? Numeric<'%'> :
+    T extends Ct.Number ? Numeric<null> :
+    T extends Ct.Function ? Function<Ct.ValueOf<T>> :
+    T extends Ct.Url ? Url :
+    never;
+
+  // MARK: Guards
+
+  export function isNumeric(v: AnyValue): v is Numeric<KwAnyOpt> {
+    return true
+      && 'value' in v && isNumber(v.value)
+      && 'unit' in v && (isString(v.unit) || isNull(v.unit))
+      && 'type' in v && (v.type === Ct.NumberType.Integer || v.type === Ct.NumberType.Number);
   }
 
-  export type KeywordLax<T extends string> = Keyword<LiteralUnion<T>>;
-  export type NumericLax<T extends string> = Numeric<LiteralUnion<T>>;
-  export type NumericLaxOpt<T extends string> = Numeric<LiteralUnion<T> | null>;
-  export type NumericRangeLax<T extends string> = NumericRange<LiteralUnion<T>>;
-  export type NumericRangeLaxOpt<T extends string> = NumericRange<LiteralUnion<T> | null>;
+  export function isNumericUnit<T extends KwAny>(v: AnyValue, units: readonly T[]): v is Numeric<T>;
+  export function isNumericUnit(v: AnyValue, units: null): v is Numeric<null>;
+  export function isNumericUnit<T extends KwAny>(v: AnyValue, units: readonly T[] | null): v is Numeric<T> {
+    return isNumeric(v) &&
+      (isAssigned(units) ? isString(v.unit) && Kw.equals(v.unit, units) : isNull(v.unit));
+  }
+
+  export function isNumericOpt<T extends KwAny>(v: AnyValue, units: readonly T[]): v is Numeric<KwUnion<T | null>> {
+    return isNumeric(v) &&
+      (isString(v.unit) ? Kw.equals(v.unit, units) : isNull(v.unit));
+  }
+
+  export function isKeyword(v: AnyValue): v is Keyword<KwAny> {
+    return 'name' in v && isString(v.name) && !('params' in v);
+  }
+
+  export function isKeywordName<T extends KwAny>(v: AnyValue, keywords: readonly T[]): v is Keyword<T> {
+    return isKeyword(v) && Kw.equals(v.name, keywords);
+  }
 
   // MARK: Create
 
   function withRaws<T extends WithRaws>(value: T, after: Opt<Ct.Raw[]>): T {
-    if (after)
-      (value.raws ??= {}).after = after;
+    setRawProp(value, 'after', after);
     return value;
   }
 
-  export function fromToken<T extends Ct.Ident>(ct: T, raws?: Opt<Ct.Raw[]>): Keyword<string>;
-  export function fromToken<T extends Ct.String>(ct: T, raws?: Opt<Ct.Raw[]>): String<string>;
-  export function fromToken<U extends Ct.UnitType, T extends Ct.WithUnit<U>>(ct: T, raws?: Opt<Ct.Raw[]>): Numeric<U>;
-  export function fromToken<T extends Ct.Dimension>(ct: T, raws?: Opt<Ct.Raw[]>): Numeric<string>;
-  export function fromToken<T extends Ct.Percentage>(ct: T, raws?: Opt<Ct.Raw[]>): Numeric<'%'>;
-  export function fromToken<T extends Ct.Number>(ct: T, raws?: Opt<Ct.Raw[]>): Numeric<null>;
+  export function fromToken<T extends Ct.Token>(ct: T, raws?: Opt<Ct.Raw[]>): TokenToValue<T>;
   export function fromToken<T extends Ct.Token>(ct: T, raws?: Opt<Ct.Raw[]>): unknown {
     if (Ct.isIdent(ct))
       return keyword(Ct.value(ct), raws);
@@ -74,42 +137,56 @@ export namespace Cv {
       return numeric(Ct.value(ct), '%', raws);
     if (Ct.isNumber(ct))
       return numeric(Ct.value(ct), null, raws);
+    if (Ct.isFunction(ct))
+      return func(Ct.value(ct), [], raws);
+    if (Ct.isUrl(ct))
+      return url(Ct.value(ct), raws);
     throwError(`Unexpected token type: ${ct[0]}`);
   }
 
-  export function keyword<T extends string>(keyword: T, raws?: Opt<Ct.Raw[]>): Keyword<T> {
-    return withRaws<Keyword<T>>({ keyword: keyword.toLowerCase() as T }, raws);
+  export function fromTokenPeek<T extends Ct.Token>(ct: T, p: Ct.Tokenizer): TokenToValue<T> {
+    return fromToken(ct, p.consumeWithRaws().raws);
   }
 
-  export function string<T extends string>(value: T, raws?: Opt<Ct.Raw[]>): String<T> {
-    return withRaws<String<T>>({ value: value }, raws);
+  export function func<T extends KwAny>(name: string, params: AnyValue[] = [], raws?: Opt<Ct.Raw[]>): Function {
+    return withRaws<Function>({ name: name.toLowerCase() as T, params }, raws);
   }
 
-  export function numberType(value: number): Ct.NumberType {
-    return Number.isInteger(value) ? Ct.NumberType.Integer : Ct.NumberType.Number;
+  export function keyword<T extends KwAny>(name: T, raws?: Opt<Ct.Raw[]>): Keyword<T> {
+    return withRaws<Keyword<T>>({ name: name.toLowerCase() as T }, raws);
   }
 
-  export function numeric<T extends string | null>(value: number, unit: T, raws?: Opt<Ct.Raw[]>): Numeric<T> {
+  export function numeric<T extends KwAnyOpt>(value: number, unit: T, raws?: Opt<Ct.Raw[]>): Numeric<T> {
     return withRaws<Numeric<T>>({ value, unit }, raws);
   }
 
-  export function numericRange<T extends string | null>(start: Numeric<T>, end: Numeric<T>): NumericRange<T> {
+  export function numericRange<T extends KwAnyOpt>(start: Numeric<T>, end: Numeric<T>): NumericRange<T> {
     return { start, end };
+  }
+
+  export function string<T extends KwAny>(value: T, raws?: Opt<Ct.Raw[]>): String<T> {
+    return withRaws<String<T>>({ value }, raws);
+  }
+
+  export function url(url: string, raws?: Opt<Ct.Raw[]>): Url {
+    return withRaws<Url>({ url: new URL(url) }, raws);
   }
 
   // MARK: Parse
 
   export abstract class Parser {
-    protected p: Ct.Parser = Ct.parser("");
+    protected p: Ct.Tokenizer = Ct.tokenizer("");
 
-    protected consumeIdent<T extends string>(values: readonly T[] = []): Opt<Keyword<T>> {
+    protected consumeKeyword<T extends string>(values: readonly T[]): Opt<Keyword<T>>;
+    protected consumeKeyword(): Opt<Keyword<string>>;
+    protected consumeKeyword<T extends string>(values: readonly T[] = []): Opt<Keyword<string>> {
       const ct = this.p.peek();
       if (values.length === 0 && Ct.isIdent(ct) || Ct.isIdentValue(values, ct))
-        return keyword(Ct.value(ct) as T, this.p.consumeWithSpace().raws);
+        return fromTokenPeek(ct, this.p);
       return;
     }
 
-    protected consumeLengthOrPercent(range: Ct.NumberRange, unitless?: boolean): Opt<NumericLaxOpt<Cu.Length | Cu.Percent>> {
+    protected consumeLengthOrPercent(range: Ct.NumberRange, unitless?: boolean): Opt<NumericOpt<Cu.Length | Cu.Percent>> {
       const ct = this.p.peek();
       if (Ct.isDimension(ct) || Ct.isNumber(ct))
         return this.consumeLength(range, unitless);
@@ -118,82 +195,66 @@ export namespace Cv {
       return;
     }
 
-    protected consumeLength(range: Ct.NumberRange, unitless?: boolean): Opt<NumericLaxOpt<Cu.Length>> {
+    protected consumeLength(range: Ct.NumberRange, unitless?: boolean): Opt<NumericOpt<Cu.Length>> {
       const ct = this.p.peek();
       if (Ct.isDimension(ct) && Ct.isDimensionUnit(kw.unit.length.all, ct) && Ct.isInRange(ct, range))
-        return fromToken(ct, this.p.consumeWithSpace().raws);
+        return fromTokenPeek(ct, this.p);
       if (Ct.isNumber(ct) && (Ct.value(ct) === 0 || unitless) && Ct.isInRange(ct, range))
-        return fromToken(ct, this.p.consumeWithSpace().raws);
+        return fromTokenPeek(ct, this.p);
       return;
     }
 
     protected consumePercent(range: Ct.NumberRange): Opt<Numeric<Cu.Percent>> {
       const ct = this.p.peek();
       if (Ct.isPercentage(ct) && Ct.isInRange(ct, range))
-        return fromToken(ct, this.p.consumeWithSpace().raws);
+        return fromTokenPeek(ct, this.p);
       return;
     }
 
     protected consumeNumber(range: Ct.NumberRange): Opt<Numeric<null>> {
       const ct = this.p.peek();
       if (Ct.isNumber(ct) && Ct.isInRange(ct, range))
-        return fromToken(ct, this.p.consumeWithSpace().raws);
+        return fromTokenPeek(ct, this.p);
       return;
     }
 
     protected consumeAngle(): Opt<NumericLax<Cu.Angle>> {
       const ct = this.p.peek();
       if (Ct.isDimensionUnit(kw.unit.angle, ct))
-        return fromToken(ct, this.p.consumeWithSpace().raws);
+        return fromTokenPeek(ct, this.p);
       if (Ct.isNumber(ct) && Ct.value(ct) == 0)
-        return numeric(Ct.value(ct), kw.unit.angle[0], this.p.consumeWithSpace().raws);
+        return numeric(Ct.value(ct), kw.unit.angle[0], this.p.consumeWithRaws().raws);
       return;
     }
 
-    protected consumeSlashWithSpace(): boolean {
-      const ct = this.p.peek();
-      if (Ct.isTokenValue(Ct.isDelim, '/', ct)) {
-        this.p.consume();
-        this.p.consumeSpace();
-        return true;
-      }
-      return false;
+    protected consumeSlashWithRaws(): Opt<Ct.Raw[]> {
+      return this.p.consumeWithRawsIf(Ct.isTokenValue(Ct.isDelim, '/'))?.raws;
     }
 
-    protected consumeCommaWithSpace(): boolean {
-      const ct = this.p.peek();
-      if (Ct.isComma(ct)) {
-        this.p.consume();
-        this.p.consumeSpace();
-        return true;
-      }
-      return false;
+    protected consumeCommaWithRaws(): Opt<Ct.Raw[]> {
+      return this.p.consumeWithRawsIf(Ct.isComma)?.raws;
     }
   }
 
-  // MARK: Utils
+  // MARK: Modify
 
-  export function isAnyNumeric(v: Keyword<unknown> | Numeric<unknown>): v is Numeric<unknown> {
-    return true
-      && 'value' in v && isNumber(v.value)
-      && 'unit' in v && (isString(v.unit) || isNull(v.unit))
-      && 'type' in v && (v.type === Ct.NumberType.Integer || v.type === Ct.NumberType.Number);
+  export function setShorthandProp<T extends Shorthand<KwAny, V> & Optional<Record<P, V>>, P extends Exclude<keyof T, 'props'>, V>(
+    shorthand: T, propMap: Record<P, ShorthandKey<T>>, prop: P, value: T[P]
+  ): T {
+    if (isDefined(value))
+      shorthand.props.set(propMap[prop], value);
+    else
+      shorthand.props.delete(propMap[prop]);
+    shorthand[prop] = value;
+    return shorthand;
   }
 
-  export function isNumeric<T extends string>(v: Keyword<T> | Numeric<T>, units: readonly T[]): v is Numeric<T> {
-    return isAnyNumeric(v) && Kw.equals(v.unit, units);
-  }
-
-  export function isUnitlessNumeric<T>(v: Keyword<T> | Numeric<T>): v is Numeric<T> {
-    return isAnyNumeric(v) && isNull(v.unit);
-  }
-
-  export function isAnyKeyword(v: Keyword<unknown> | Numeric<unknown>): v is Keyword<unknown> {
-    return 'keyword' in v && isString(v.keyword);
-  }
-
-  export function isKeyword<T extends string>(v: Keyword<T> | Numeric<T>, keywords: readonly T[]): v is Keyword<T> {
-    return isAnyKeyword(v) && Kw.equals(v.keyword, keywords);
+  export function setRawProp<T extends WithRaws, P extends keyof Raws>(value: T, prop: P, raws: Opt<Ct.Raw[]>) {
+    if (!raws)
+      return;
+    value.raws ??= {};
+    assert.equal(value.raws[prop], undefined);
+    value.raws[prop] = raws;
   }
 
   const cssAbsoluteLengthMult: Record<Cu.AbsoluteLength, number> = {

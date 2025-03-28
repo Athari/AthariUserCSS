@@ -53,23 +53,30 @@ export namespace Ct {
   // MARK: Types (extended)
 
   export const enum NumberRange { All, NonNegative, Integer, NonNegativeInteger, PositiveInteger };
+
   export type ParseErrorCallback = (error: ParseError) => void;
+  export type TokenStream = ReturnType<typeof cssCt['tokenizer']>;
 
-  export type WithAnyValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
+  export type AnyWithValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
+  export type AnyWithStringValue = AtKeyword | Delim | Function | Hash | Ident | String | Url;
+  export type AnyWithNumberValue = Dimension | Number | Percentage;
   export type ValueType = string | number;
-  export type WithValue<T extends WithAnyValue, V extends ValueType> = T & { [4]: { value: V } };
+  export type WithValue<T extends AnyWithValue, V extends ValueType> = T & { [4]: { value: V } };
+  export type WithStringValue<T extends AnyWithStringValue, V extends string> = T & { [4]: { value: V } };
+  export type WithNumberValue<T extends AnyWithNumberValue, V extends number> = T & { [4]: { value: V } };
 
-  export type WithAnyType = Dimension | Hash | Number;
+  export type AnyWithType = Dimension | Hash | Number;
   export type TypeType = NumberType | HashType;
-  export type WithType<T extends WithAnyType, V extends TypeType> = T & { [4]: { type: V } };
+  export type WithType<T extends AnyWithType, V extends TypeType> = T & { [4]: { type: V } };
 
   export type UnitType = string;
   export type WithUnit<V extends UnitType> = Dimension & { [4]: { unit: V } };
 
   export type IdentOf<T extends Token> = T extends TokenT<infer U, any> ? U : never;
   export type DataOf<T extends Token> = T[4];
-  export type ValueOf<T extends WithAnyValue> = DataOf<T>['value'];
-  export type TypeOf<T extends WithAnyType> = DataOf<T>['type'];
+  export type ValueOf<T extends AnyWithValue> = DataOf<T>['value'];
+  export type TypeOf<T extends AnyWithType> = DataOf<T>['type'];
+  export type UnitOf<T extends Dimension> = DataOf<T>['unit'];
 
   // MARK: Guards
 
@@ -87,7 +94,7 @@ export namespace Ct {
   export import isComment = cssCt.isTokenComment;
   export import isDelim = cssCt.isTokenDelim;
   export import isDimension = cssCt.isTokenDimension;
-  export import isEOF = cssCt.isTokenEOF;
+  export import isEof = cssCt.isTokenEOF;
   export import isFunction = cssCt.isTokenFunction;
   export import isHash = cssCt.isTokenHash;
   export import isIdent = cssCt.isTokenIdent;
@@ -106,11 +113,11 @@ export namespace Ct {
 
   // MARK: Guards (extended)
 
-  type Guard<T extends Token> = (ct: Token) => ct is Extract<T, Token>;
+  export type Guard<T extends Token> = (ct: Token) => ct is Extract<T, Token>;
 
-  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V, ct: Token): ct is WithValue<T, V>;
-  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V): Guard<WithValue<T, V>>;
-  export function isTokenValue<T extends WithAnyValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V, ct: Token | null = null): any {
+  export function isTokenValue<T extends AnyWithValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V, ct: Token): ct is WithValue<T, V>;
+  export function isTokenValue<T extends AnyWithValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V): Guard<WithValue<T, V>>;
+  export function isTokenValue<T extends AnyWithValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V, ct: Token | null = null): any {
     const guard = (ct: Token) => {
       if (!g(ct))
         return false;
@@ -139,7 +146,14 @@ export namespace Ct {
 
   // MARK: Parse
 
-  export function parse(css: string): Ct.Token[] {
+  export function tokenStream(css: string, unicodeRangesAllowed?: Opt<boolean>): TokenStream {
+    return cssCt.tokenizer({
+      css,
+      unicodeRangesAllowed: unicodeRangesAllowed ?? false,
+    });
+  }
+
+  export function tokenize(css: string): Ct.Token[] {
     return cssCt.tokenize({ css });
   }
 
@@ -149,69 +163,98 @@ export namespace Ct {
 
   // MARK: Parse (extended)
 
-  export interface Parser {
-    readonly lastError: Opt<ParseError | ParseErrorWithToken>;
-    readonly lastErrorToken: Opt<Token>;
+  export interface Tokenizer {
+    get isEof(): boolean;
+    get lastError(): Opt<ParseError | ParseErrorWithToken>;
+    get lastErrorToken(): Opt<Token>;
+
     onParseError?: Opt<ParseErrorCallback>;
+
     peek(): Token;
     consume(): Token;
-    consumeSpace(): Raw[];
-    consumeWithSpace(): { ct: Token; raws: Raw[] };
-    isEof(): boolean;
+    consumeIf<T extends Token>(ctGuard: Guard<T>): Opt<T>;
+    consumeRaws(): Raw[];
+    consumeWithRaws(): TokenWithRaws;
+    consumeWithRawsIf<T extends Token>(ctGuard: Guard<T>): Opt<TokenWithRaws<T>>;
   }
 
-  export function parser(css: string, unicodeRangesAllowed?: Opt<boolean>): Parser {
-    let nextToken: Opt<Token>;
-    let lastError: Opt<ParseError>;
+  export interface TokenWithRaws<T extends Token = Token> {
+    ct: T;
+    raws: Raw[];
+  }
 
-    const tokenizer = cssCt.tokenizer({
-      css,
-      unicodeRangesAllowed: unicodeRangesAllowed ?? false,
-    }, {
-      onParseError(error: ParseError) {
-        lastError = error;
-        parser.onParseError?.(error);
-      }
-    });
+  class TokenizerImpl implements Tokenizer {
+    readonly #stream: TokenStream;
+    #nextToken: Opt<Ct.Token>;
 
-    const parser = new (class CtParser {
-      get lastError() {
-        return lastError;
-      }
-      get lastErrorToken() {
-        return lastError instanceof ParseErrorWithToken ? lastError.token : undefined;
-      }
-      onParseError: Opt<ParseErrorCallback>;
-      peek() {
-        lastError = undefined;
-        return nextToken ??= tokenizer.nextToken();
-      }
-      consume() {
-        if (nextToken) {
-          const currentToken = nextToken;
-          nextToken = undefined;
-          return currentToken;
-        } else {
-          lastError = undefined;
-          nextToken = undefined;
-          return tokenizer.nextToken();
-        }
-      }
-      consumeSpace() {
-        const spaceTokens: Raw[] = [];
-        while (isRaw(this.peek()))
-          spaceTokens.push(this.consume() as Raw);
-        return spaceTokens;
-      }
-      consumeWithSpace() {
-        return { ct: this.consume(), raws: this.consumeSpace() };
-      }
-      isEof() {
-        return !nextToken && tokenizer.endOfFile();
-      }
-    });
+    lastError: Opt<ParseError | ParseErrorWithToken>;
 
-    return parser;
+    constructor(tokenizer: TokenStream) {
+      this.#stream = tokenizer;
+    }
+
+    get isEof() {
+      return !this.#nextToken && this.#stream.endOfFile();
+    }
+
+    get lastErrorToken() {
+      return this.lastError instanceof ParseErrorWithToken ? this.lastError.token : undefined;
+    }
+
+    onParseError: Opt<ParseErrorCallback>;
+
+    peek(): Token {
+      this.lastError = undefined;
+      return this.#nextToken ??= this.#stream.nextToken();
+    }
+
+    consume(): Token {
+      if (this.#nextToken) {
+        const currentToken = this.#nextToken;
+        this.#nextToken = undefined;
+        return currentToken;
+      } else {
+        this.lastError = undefined;
+        this.#nextToken = undefined;
+        return this.#stream.nextToken();
+      }
+    }
+
+    consumeIf<T extends Token>(ctGuard: Guard<T>): Opt<T> {
+      const ct = this.peek();
+      if (!ctGuard(ct))
+        return;
+      this.consume();
+      return ct;
+    }
+
+    consumeRaws(): Raw[] {
+      const raws: Raw[] = [];
+      while (isRaw(this.peek()))
+        raws.push(this.consume() as Raw);
+      return raws;
+    }
+
+    consumeWithRaws(): TokenWithRaws {
+      return { ct: this.consume(), raws: this.consumeRaws() };
+    }
+
+    consumeWithRawsIf<T extends Token>(ctGuard: Guard<T>): Opt<TokenWithRaws<T>> {
+      const ct = this.peek();
+      if (!ctGuard(ct))
+        return;
+      this.consume();
+      return { ct, raws: this.consumeRaws() };
+    }
+  }
+
+  export function tokenizer(css: string, unicodeRangesAllowed?: Opt<boolean>): Tokenizer {
+    const tokenizer = new TokenizerImpl(tokenStream(css, unicodeRangesAllowed));
+    tokenizer.onParseError = (error: ParseError) => {
+      tokenizer.lastError = error;
+      tokenizer.onParseError?.(error);
+    };
+    return tokenizer;
   }
 
   // MARK: Modify
@@ -225,11 +268,11 @@ export namespace Ct {
     return ct[4];
   }
 
-  export function value<T extends WithAnyValue>(ct: T): ValueOf<T> {
+  export function value<T extends AnyWithValue>(ct: T): ValueOf<T> {
     return ct[4].value;
   }
 
-  export function type<T extends WithAnyType>(ct: T): TypeOf<T> {
+  export function type<T extends AnyWithType>(ct: T): TypeOf<T> {
     return ct[4].type;
   }
 

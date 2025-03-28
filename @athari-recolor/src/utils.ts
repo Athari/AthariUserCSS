@@ -488,7 +488,7 @@ export async function downloadText(url: string, init: DownloadInit = {}): Promis
   return await getText();
 }
 
-// MARK: Deep merge
+// MARK: Deep merge: Types
 
 type DeepMergeValue = 'skip' | 'merge';
 type DeepMergeArrays = 'replace' | 'concat';
@@ -626,6 +626,8 @@ type DeepMerge<T, TSources extends unknown[], O extends DeepMergeOptions> =
       DeepMerge<DM_Proc<T, S, O>, Rest, O>,
       DeepMerge<T, Rest, O>> :
     T;
+
+// MARK: Deep merge: Fn
 
 export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOptions>(
   options: O | null | undefined, target: T, ...sources: TSources

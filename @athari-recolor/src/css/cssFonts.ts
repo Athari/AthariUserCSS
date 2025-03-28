@@ -1,17 +1,19 @@
-import assert from 'node:assert/strict';
 import { Ct } from './cssTokens.ts';
-import { kw, Kw } from './cssKeywords.ts';
+import { Kw, kw } from './cssKeywords.ts';
 import { Cu } from './cssUnits.ts';
 import { Cv } from './cssValues.ts';
-import { Opt, logError, deepMerge, isObject, throwError, isString } from '../utils.ts';
+import {
+  Opt,
+  isString, isObject, isDefined, logError, throwError, deepMerge,
+} from '../utils.ts';
 
 export namespace CvFont {
 
   // MARK: Types
 
-  export interface Font {
+  export interface Font extends Cv.Shorthand<Kw.Prop.Font.AnyShorthand, AnyShorthand> {
     family: Families;
-    size?: Size;
+    size?: Opt<Size>;
     stretch?: Opt<Stretch>;
     style?: Opt<Style>;
     variant?: Opt<Variant>;
@@ -67,6 +69,8 @@ export namespace CvFont {
     | Cv.KeywordLax<Kw.Font.LineHeight | Kw.GlobalValue>
     | Cv.NumericLaxOpt<Cu.Length | Cu.Percent>;
 
+  export type AnyShorthand = Families | Size | Stretch | Style | Variant | Weight | LineHeight;
+
   // MARK: Parser
 
   export interface ParserOptions {
@@ -85,24 +89,27 @@ export namespace CvFont {
 
   type Source = string | CssDecl;
 
-  export class Parser extends Cv.Parser {
-    readonly defaultOpts: Options = { isFontFaceRule: false, strict: false };
-    opts: ParserOptions = this.defaultOpts;
+  const defaultOpts: Options = { isFontFaceRule: false, strict: false };
+  const defaultFont: Font = { family: [], props: new Map() };
 
-    // MARK: Parser: public
+  export class Parser extends Cv.Parser {
+    #opts: ParserOptions = defaultOpts;
+    #font: Font = defaultFont;
+
+    // MARK: Parser: Public
 
     #parse<T>(source: Source, opts: Opt<ParserOptions>, parse: () => Opt<T>): Opt<T> {
       const decl: Opt<CssDecl> = isObject(source) && 'type' in source && source.type === 'decl' ? source : undefined;
       const css: string = decl?.value ?? isString(source) ? <string>source : throwError(`source must be string or Decl, ${typeof(source)} received`);
-      this.opts = deepMerge(null, this.defaultOpts, opts);
-      this.p = Ct.parser(css);
+      this.#opts = deepMerge(null, defaultOpts, opts);
+      this.p = Ct.tokenizer(css);
       this.p.onParseError = ex => logError(ex, `Failed to parse ${decl?.prop ?? 'a font property'}`);
       return parse();
     }
 
     parseFont(source: Source, opts: Opt<ParserOptions> = undefined): Opt<Font> {
-      const font = <Font>{};
-      return this.#parse(source, opts, () => this.parseFontShorthand(font) ? font : undefined);
+      this.#font = structuredClone(defaultFont);
+      return this.#parse(source, opts, () => this.consumeFontShorthand());
     }
 
     parseFontSize(source: Source, opts: Opt<ParserOptions> = undefined): Opt<Size> {
@@ -119,7 +126,7 @@ export namespace CvFont {
 
     // TODO: Parse font variant
     // parseFontVariant(source: Source, opts: Opt<ParserOptions> = undefined): Opt<Variant> {
-    //   return this.#parse(source, opts, (p, o) => consumeFontVariant(p, o));
+    //   return this.#parse(source, opts, () => consumeFontVariant());
     // }
 
     parseFontWeight(source: Source, opts: Opt<ParserOptions> = undefined): Opt<Weight> {
@@ -139,156 +146,153 @@ export namespace CvFont {
       return Ct.stringify(this.tokenizeFont(font));
     }
 
+    // MARK: Utils
+
+    setFontProp<P extends Exclude<keyof Font, 'props'>>(prop: P, value: Font[P]): Font {
+      return Cv.setShorthandProp(this.#font, kw.prop.font, prop, value);
+    }
+
     // MARK: Parser: Private
 
-    private parseFontShorthand(font: Font): boolean {
+    private consumeFontShorthand(): Opt<Font> {
       const ct = this.p.peek();
       if (Ct.isIdentValue(kw.font.family.system, ct))
-        return this.consumeSystemFont(font);
-      return this.consumeFont(font);
+        return this.consumeSystemFont();
+      return this.consumeFont();
     }
 
-    private consumeSystemFont(font: Font): boolean {
-      const ct = this.p.consume();
-      assert(Ct.isIdent(ct));
-      font.family = [ Cv.keyword(Ct.value(ct)) ];
-      return true;
+    private consumeSystemFont(): Opt<Font> {
+      const ct = this.p.peek();
+      if (Ct.isIdent(ct))
+        this.setFontProp('family', [ Cv.fromTokenPeek(ct, this.p) ]);
+      return this.#font;
     }
 
-    private consumeFont(font: Font): boolean {
-      let fontStyle: Opt<Style>;
-      let fontVariant: Opt<Variant>;
-      let fontWeight: Opt<Weight>;
-      let fontStretch: Opt<Stretch>;
-
-      for (let i = 0; i < 4 && !this.p.isEof(); i++) {
+    private consumeFont(): Opt<Font> {
+      for (let i = 0; i < 4 && !this.p.isEof; i++) {
         const ct = this.p.peek();
         const ident = Ct.isIdent(ct) ? Ct.value(ct) : undefined;
 
         if (Kw.equals(ident, kw.normal)) {
-          this.p.consume();
+          // TODO: Store raws of `normal` values (distribute `normal` values among missing props?)
+          this.p.consumeWithRaws();
           continue;
         }
-        if (!fontStyle && Kw.equals(ident, kw.font.style.all)) {
-          fontStyle = this.consumeFontStyle();
-          if (!fontStyle)
-            return false;
+        if (!isDefined(this.#font.style) && Kw.equals(ident, kw.font.style.all)) {
+          const fontStyle = this.consumeFontStyle();
+          if (!isDefined(fontStyle))
+            return;
+          this.setFontProp('style', fontStyle);
           continue;
         }
-        if (!fontVariant && Kw.equals(ident, kw.font.variantCss21)) {
-          fontVariant = this.consumeFontVariantCSS21();
-          if (fontVariant)
+        if (!isDefined(this.#font.variant) && Kw.equals(ident, kw.font.variantCss21)) {
+          const fontVariant = this.consumeFontVariantCSS21();
+          if (isDefined(fontVariant)) {
+            this.setFontProp('variant', fontVariant);
             continue;
+          }
         }
-        if (!fontWeight) {
-          fontWeight = this.consumeFontWeight();
-          if (fontWeight)
+        if (!isDefined(this.#font.weight)) {
+          const fontWeight = this.consumeFontWeight();
+          if (isDefined(fontWeight)) {
+            this.setFontProp('weight', fontWeight);
             continue;
+          }
         }
-        if (!fontStretch) {
-          fontStretch = this.consumeFontStretchKeywordOnly();
-          if (fontStretch)
+        if (!isDefined(this.#font.stretch)) {
+          const fontStretch = this.consumeFontStretchKeywordOnly();
+          if (isDefined(fontStretch)) {
+            this.setFontProp('stretch', fontStretch);
             continue;
+          }
         }
         break;
       }
 
-      if (this.p.isEof())
-        return false;
-
-      // || Cv.keyword(keywords.normal[0])
-      font.style = fontStyle;
-      font.variant = fontVariant;
-      font.weight = fontWeight;
-      font.stretch = fontStretch;
+      if (this.p.isEof)
+        return;
 
       const fontSize = this.consumeFontSize();
-      if (!fontSize || this.p.isEof())
-        return false;
-      font.size = fontSize;
+      if (!isDefined(fontSize) || this.p.isEof)
+        return;
+      this.setFontProp('size', fontSize);
 
-      if (this.consumeSlashWithSpace()) {
+      const slashRaws = this.consumeSlashWithRaws();
+      if (isDefined(slashRaws)) {
         const lineHeight = this.consumeLineHeight();
-        if (!lineHeight)
-          return false;
-        font.lineHeight = lineHeight;
+        if (!isDefined(lineHeight))
+          return;
+        Cv.setRawProp(lineHeight, 'before', slashRaws);
+        this.setFontProp('lineHeight', lineHeight);
       }
 
-      const fontFamily = this.consumeFontFamily();
-      if (!fontFamily)
-        return false;
-      font.family = fontFamily;
+      const fontFamily = this.consumeFontFamilyList();
+      if (!isDefined(fontFamily))
+        return;
+      this.setFontProp('family', fontFamily);
 
-      return true;
+      return this.#font;
     }
 
     private consumeFontSize(unitless?: boolean): Opt<Size> {
-      const ct = this.p.peek();
-      if (Ct.isIdentValue(kw.font.size.all, ct))
-        return this.consumeIdent();
-      return this.consumeLengthOrPercent(Ct.NumberRange.NonNegative, unitless);
+      const keyword = this.consumeKeyword(kw.font.size.all);
+      return isDefined(keyword) ? keyword : this.consumeLengthOrPercent(Ct.NumberRange.NonNegative, unitless);
     }
 
     private consumeLineHeight(): Opt<LineHeight> {
-      const ct = this.p.peek();
-      if (Ct.isIdentValue(kw.font.lineHeight, ct))
-        return this.consumeIdent();
-
+      const keyword = this.consumeKeyword(kw.font.lineHeight);
+      if (isDefined(keyword))
+        return keyword;
       const lineHeight = this.consumeNumber(Ct.NumberRange.NonNegative);
-      if (lineHeight)
-        return lineHeight;
-      return this.consumeLengthOrPercent(Ct.NumberRange.NonNegative, undefined);
+      return isDefined(lineHeight) ? lineHeight : this.consumeLengthOrPercent(Ct.NumberRange.NonNegative);
     }
 
-    private consumeFontFamily(): Opt<Families> {
-      const list: Family[] = [];
-      do {
+    private consumeFontFamilyList(): Opt<Families> {
+      return this.consumeFamilyList(() => {
         const genericFamily = this.consumeGenericFamily();
-        if (genericFamily) {
-          list.push(genericFamily);
-        } else {
-          const familyName = this.consumeFamilyName();
-          if (familyName)
-            list.push(familyName);
-          else
-            return;
-        }
-      } while (this.consumeCommaWithSpace());
-      return list;
+        return isDefined(genericFamily) ? genericFamily : this.consumeFamilyName();
+      });
     }
 
-    private consumeNonGenericFamilyNameList(): Opt<Families> {
-      const list: Family[] = [];
-      do {
-        const parsedValue = this.consumeGenericFamily();
-        if (parsedValue)
+    private consumeNonGenericFontFamilyList(): Opt<Families> {
+      return this.consumeFamilyList(() => {
+        const genericFamily = this.consumeGenericFamily();
+        return isDefined(genericFamily) ? undefined : this.consumeFamilyName();
+      });
+    }
+
+    private consumeFamilyList(consumeFamilyFn: () => Opt<Family>): Opt<Families> {
+      const families: Family[] = [];
+      let rawsBefore: Opt<Ct.Raw[]>;
+      for (;;) {
+        const family = consumeFamilyFn();
+        if (!isDefined(family))
           return;
-        const familyName = this.consumeFamilyName();
-        if (familyName)
-          list.push(familyName);
-        else
-          return;
-      } while (this.consumeCommaWithSpace());
-      return list;
+        Cv.setRawProp(family, 'before', rawsBefore);
+        families.push(family);
+        const commaRaws = this.consumeCommaWithRaws();
+        if (!isDefined(commaRaws))
+          break;
+        rawsBefore = commaRaws;
+      }
+      return families;
     }
 
     private consumeGenericFamily(): Opt<Family> {
-      return this.consumeIdent(kw.font.family.generic.all);
+      return this.consumeKeyword(kw.font.family.generic.all);
     }
 
     private consumeFamilyName(): Opt<Family> {
       const ct = this.p.peek();
       if (Ct.isString(ct))
-        return Cv.fromToken(ct, this.p.consumeWithSpace().raws);
+        return Cv.fromTokenPeek(ct, this.p);
       if (!Ct.isIdent(ct))
         return;
-      const familyName = this.concatenateFamilyName();
-      if (!familyName)
-        return;
-      return Cv.string(familyName);
+      const familyName = this.concatenateIdents();
+      return isDefined(familyName) ? Cv.string(familyName) : undefined;
     }
 
-    private concatenateFamilyName(): Opt<string> {
+    private concatenateIdents(): Opt<string> {
       const sb: string[] = [];
       let addedSpace = false;
       const ct0 = this.p.peek();
@@ -299,7 +303,8 @@ export namespace CvFont {
           sb.push(" ");
           addedSpace = true;
         }
-        this.p.consumeWithSpace();
+        // TODO: Store non-normalized family name
+        this.p.consumeWithRaws();
         sb.push(Ct.value(ct));
       }
 
@@ -309,84 +314,74 @@ export namespace CvFont {
     }
 
     private consumeFontStyle(): Opt<Style> {
-      const ct = this.p.peek();
-      if (Ct.isIdentValue(kw.font.style.generic, ct))
-        return this.consumeIdent();
-      if (Ct.isIdentValue(kw.auto, ct) && this.opts.isFontFaceRule)
-        return this.consumeIdent();
-      if (!Ct.isIdentValue(kw.font.style.oblique, ct))
+      const keyword = this.consumeKeyword(this.#opts.isFontFaceRule ? kw.auto : kw.font.style.generic);
+      if (isDefined(keyword))
+        return keyword;
+
+      const keywordOblique = this.consumeKeyword(kw.font.style.oblique);
+      if (!isDefined(keywordOblique))
         return;
 
-      const idOblique = this.consumeIdent(kw.font.style.oblique)!;
       const startAngle = this.consumeAngle();
-      if (!startAngle)
-        return idOblique;
+      if (!isDefined(startAngle))
+        return keywordOblique;
 
-      if (!this.opts.isFontFaceRule || this.p.isEof())
-        return { keyword: idOblique.keyword, value: startAngle.value };
+      if (!this.#opts.isFontFaceRule || this.p.isEof)
+        return { name: keywordOblique.name, value: startAngle.value };
 
       const endAngle = this.consumeAngle();
-      if (!endAngle)
+      if (!isDefined(endAngle))
         return;
 
-      return { keyword: idOblique.keyword, start: startAngle, end: endAngle };
+      return { name: keywordOblique.name, start: startAngle, end: endAngle };
     }
 
     private consumeFontStretchKeywordOnly(): Opt<Stretch> {
-      const ct = this.p.peek();
-      if (Ct.isIdentValue(kw.font.stretch.all, ct))
-        return this.consumeIdent();
-      if (Ct.isIdentValue(kw.auto, ct) && this.opts.isFontFaceRule)
-        return this.consumeIdent();
-      return;
+      return this.consumeKeyword(this.#opts.isFontFaceRule ? kw.auto : kw.font.stretch.all);
     }
 
     private consumeFontStretch(): Opt<Stretch> {
-      const parsedKeyword = this.consumeFontStretchKeywordOnly();
-      if (parsedKeyword)
-        return parsedKeyword;
+      const keywordStretch = this.consumeFontStretchKeywordOnly();
+      if (isDefined(keywordStretch))
+        return keywordStretch;
 
-      const startPercent = this.consumePercent(Ct.NumberRange.NonNegative);
-      if (!startPercent)
-        return;
-
-      if (!this.opts.isFontFaceRule || this.p.isEof())
-        return startPercent;
-
-      const endPercent = this.consumePercent(Ct.NumberRange.NonNegative);
-      if (!endPercent)
-        return;
-
-      return Cv.numericRange(startPercent, endPercent);
+      return this.consumeNumericRange(
+        () => this.consumePercent(Ct.NumberRange.NonNegative),
+        v => true,
+      );
     }
 
     private consumeFontWeight(): Opt<Weight> {
-      const ct = this.p.peek();
-      if (Ct.isIdentValue(this.opts.isFontFaceRule ? kw.font.weight.allFontFace : kw.font.weight.all, ct))
-        return this.consumeIdent();
+      const keywordWeight = this.consumeKeyword(this.#opts.isFontFaceRule ? kw.font.weight.allFontFace : kw.font.weight.all);
+      if (isDefined(keywordWeight))
+        return keywordWeight;
 
-      if (Ct.isNumber(ct)) {
-        const value = Ct.value(ct);
-        if (value < 1 || value > 1000)
-          return;
-      }
+      return this.consumeNumericRange(
+        () => this.consumeNumber(Ct.NumberRange.NonNegative),
+        v => v >= 1 && v <= 1000,
+      );
+    }
 
-      const startWeight = this.consumeNumber(Ct.NumberRange.NonNegative);
-      if (!startWeight || startWeight.value < 1 || startWeight.value > 1000)
+    private consumeNumericRange<V extends Cv.KwAnyOpt>(
+      consumeValueFn: () => Opt<Cv.Numeric<V>>,
+      validateFn: (v: number) => boolean,
+    ): Opt<Cv.Numeric<V> | Cv.NumericRange<V>> {
+      const start = consumeValueFn();
+      if (!isDefined(start) || !validateFn(start.value))
         return;
 
-      if (!this.opts.isFontFaceRule || this.p.isEof())
-        return startWeight;
+      if (!this.#opts.isFontFaceRule || this.p.isEof)
+        return start;
 
-      const endWeight = this.consumeNumber(Ct.NumberRange.NonNegative);
-      if (!endWeight || endWeight.value < 1 || endWeight.value > 1000)
+      const end = consumeValueFn();
+      if (!isDefined(end) || !validateFn(end.value))
         return;
 
-      return Cv.numericRange(startWeight, endWeight);
+      return Cv.numericRange(start, end);
     }
 
     private consumeFontVariantCSS21(): Opt<Variant> {
-      return this.consumeIdent(kw.font.variantCss21);
+      return this.consumeKeyword(kw.font.variantCss21);
     }
   }
 }

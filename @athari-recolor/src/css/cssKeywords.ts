@@ -66,6 +66,20 @@ export const kw = new class {
     };
     readonly lineHeight = [ 'normal' ] as const;
   };
+
+  readonly prop = new class {
+    readonly font = new class {
+      readonly shorthand = 'font' as const;
+      readonly family = 'font-family' as const;
+      readonly size = 'font-size' as const;
+      readonly stretch = 'font-stretch' as const;
+      readonly style = 'font-style' as const;
+      readonly variant = 'font-variant' as const;
+      readonly weight = 'font-weight' as const;
+      readonly lineHeight = 'line-height' as const;
+      readonly allShorthand = [ this.family, this.size, this.stretch, this.style, this.variant, this.weight, this.lineHeight ] as const;
+    };
+  };
 };
 
 export namespace Kw {
@@ -99,6 +113,12 @@ export namespace Kw {
     export type Weight = typeof kw.font.weight.all[number];
 
     export type LineHeight = typeof kw.font.lineHeight[number];
+  }
+
+  export namespace Prop {
+    export namespace Font {
+      export type AnyShorthand = typeof kw.prop.font.allShorthand[number];
+    }
   }
 
   // MARK: Utils
