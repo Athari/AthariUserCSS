@@ -332,6 +332,20 @@ export function compare<T>(a: T, b: T): number {
   return 0;
 }
 
+type OptRetFn<T> = () => Opt<T>;
+type OptMapFn<T> = (v: Opt<T>) => Opt<T>;
+type OptRetMap<T> = [ OptRetFn<T>, Opt<OptMapFn<T>> ];
+
+export function fallback<T, R = T>(...fnrs: (OptRetFn<T> | OptRetMap<T>)[]): Opt<T> {
+  for (const fnr of fnrs) {
+    const [ fn, ret ]: [ OptRetFn<T>, Opt<OptMapFn<T>> ] = isArray(fnr) ? fnr : [ fnr, void 0 ];
+    const result = fn();
+    if (isDefined(result))
+      return ret?.(result) ?? undefined;
+  }
+  return;
+}
+
 // MARK: Errors
 
 export function errorDetail(ex: Error | unknown): string {

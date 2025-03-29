@@ -1,8 +1,9 @@
+import assert from 'node:assert/strict';
 import * as cssCt from '@csstools/css-tokenizer';
 import { Kw } from './cssKeywords.ts';
 import {
   Opt,
-  throwError,
+  isDefined, throwError,
   isString as isStringPrimitive,
   isNumber as isNumberPrimitive,
 } from '../utils.ts';
@@ -174,6 +175,8 @@ export namespace Ct {
     consume(): Token;
     consumeIf<T extends Token>(ctGuard: Guard<T>): Opt<T>;
     consumeRaws(): Raw[];
+    consumeRawsAfter(ct: Token): Raw[];
+    consumeRawsAfterIf<T extends Token>(ctGuard: Guard<T>): Opt<Raw[]>;
     consumeWithRaws(): TokenWithRaws;
     consumeWithRawsIf<T extends Token>(ctGuard: Guard<T>): Opt<TokenWithRaws<T>>;
   }
@@ -235,16 +238,27 @@ export namespace Ct {
       return raws;
     }
 
+    consumeRawsAfter(ct: Token): Raw[] {
+      assert.equal(this.peek(), ct);
+      this.consume();
+      return this.consumeRaws();
+    }
+
+    consumeRawsAfterIf<T extends Token>(ctGuard: Guard<T>): Opt<Raw[]> {
+      const ct = this.consumeIf(ctGuard);
+      if (!isDefined(ct))
+        return;
+      this.consume();
+      return this.consumeRaws();
+    }
+
     consumeWithRaws(): TokenWithRaws {
       return { ct: this.consume(), raws: this.consumeRaws() };
     }
 
     consumeWithRawsIf<T extends Token>(ctGuard: Guard<T>): Opt<TokenWithRaws<T>> {
-      const ct = this.peek();
-      if (!ctGuard(ct))
-        return;
-      this.consume();
-      return { ct, raws: this.consumeRaws() };
+      const ct = this.consumeIf(ctGuard);
+      return isDefined(ct) ? { ct, raws: this.consumeRaws() } : undefined;
     }
   }
 
