@@ -5,7 +5,7 @@ import { Kw, kw } from './cssKeywords.ts';
 import { Cu } from './cssUnits.ts';
 import {
   LiteralUnion, Opt,
-  isNull, isAssigned, isDefined, throwError, isObject,
+  isNull, isAssigned, isDefined, isObject, isArray, throwError,
   isString as isStringPrimitive,
 } from '../utils.ts';
 
@@ -38,42 +38,51 @@ export namespace Cv {
     raws?: Opt<Raws>;
   }
 
-  const valueTypes = [ 'function', 'keyword', 'numeric', 'numeric-range', 'numeric-with-keyword', 'numeric-range-with-keyword', 'string', 'url' ] as const;
+  export enum ValueType {
+    Function = 'function',
+    Keyword = 'keyword',
+    Numeric = 'numeric',
+    NumericRange = 'numeric-range',
+    NumericWithKeyword = 'numeric-with-keyword',
+    NumericRangeWithKeyword = 'numeric-range-with-keyword',
+    String = 'string',
+    Url = 'url',
+  }
 
-  export type ValueType = typeof valueTypes[number];
+  const valueTypes = Object.values(ValueType).filter(isStringPrimitive);
 
   export interface Value {
     readonly type: ValueType;
   }
 
   export interface Function<N extends KwAny = KwAny, V = AnyValue> extends Value, WithRaws {
-    readonly type: 'function';
+    readonly type: ValueType.Function;
     name: N;
     params: V[];
     raws?: Raws;
   }
 
   export interface Keyword<N extends KwAny = KwAny> extends Value, WithRaws {
-    readonly type: 'keyword';
+    readonly type: ValueType.Keyword;
     name: N;
     raws?: Raws;
   }
 
   export interface Numeric<U extends KwAnyOpt = KwAnyOpt> extends Value, WithRaws {
-    readonly type: 'numeric';
+    readonly type: ValueType.Numeric;
     value: number;
     unit: U;
     raws?: Raws;
   }
 
   export interface NumericRange<U extends KwAnyOpt = KwAnyOpt> extends Value {
-    readonly type: 'numeric-range';
+    readonly type: ValueType.NumericRange;
     start: Numeric<U>;
     end: Numeric<U>;
   }
 
   export interface NumericWithKeyword<N extends KwAny = KwAny, U extends KwAnyOpt = KwAnyOpt> extends Value, WithRaws {
-    readonly type: 'numeric-with-keyword';
+    readonly type: ValueType.NumericWithKeyword;
     name: N;
     value: number;
     unit: U;
@@ -81,20 +90,20 @@ export namespace Cv {
   }
 
   export interface NumericRangeWithKeyword<N extends KwAny = KwAny, U extends KwAnyOpt = KwAnyOpt> extends Value {
-    readonly type: 'numeric-range-with-keyword';
+    readonly type: ValueType.NumericRangeWithKeyword;
     name: N;
     start: Numeric<U>;
     end: Numeric<U>;
   }
 
   export interface String<V extends KwAny = KwAny> extends Value, WithRaws {
-    readonly type: 'string';
+    readonly type: ValueType.String;
     value: V;
     raws?: Raws;
   }
 
   export interface Url extends Value, WithRaws {
-    readonly type: 'url';
+    readonly type: ValueType.Url;
     url: URL;
     raws?: Raws;
   }
@@ -106,9 +115,9 @@ export namespace Cv {
   export type NumericLaxWithKeyword<N extends KwAny = KwAny, U extends KwAny = KwAny> = NumericWithKeyword<KwUnion<N>, KwUnion<U>>;
   export type NumericLaxRangeWithKeyword<N extends KwAny = KwAny, U extends KwAny = KwAny> = NumericRangeWithKeyword<KwUnion<N>, KwUnion<U>>;
 
-  export type NumericOpt<U extends KwAnyOpt = KwAnyOpt> = Numeric<KwUnion<U | null>>;
+  export type NumericOpt<U extends KwAnyOpt = KwAnyOpt> = Numeric<U | null>;
   export type NumericOptLax<U extends KwAnyOpt = KwAnyOpt> = Numeric<KwUnion<U | null>>;
-  export type NumericOptRange<U extends KwAnyOpt = KwAnyOpt> = NumericRange<KwUnion<U | null>>;
+  export type NumericOptRange<U extends KwAnyOpt = KwAnyOpt> = NumericRange<U | null>;
   export type NumericOptLaxRange<U extends KwAnyOpt = KwAnyOpt> = NumericRange<KwUnion<U | null>>;
 
   export type AnyValue = Function | Keyword | Numeric | NumericRange | NumericWithKeyword | NumericRangeWithKeyword | String | Url;
@@ -130,7 +139,7 @@ export namespace Cv {
   }
 
   export function isFunction(v: AnyValue): v is Function {
-    return v.type === 'function';
+    return !!v && v.type === 'function';
   }
 
   export function isFunctionName<T extends KwAny>(v: AnyValue, names: readonly T[]): v is Function<T> {
@@ -138,7 +147,7 @@ export namespace Cv {
   }
 
   export function isKeyword(v: AnyValue): v is Keyword {
-    return v.type === 'keyword';
+    return !!v && v.type === 'keyword';
   }
 
   export function isKeywordName<T extends KwAny>(v: AnyValue, names: readonly T[]): v is Keyword<T> {
@@ -146,7 +155,7 @@ export namespace Cv {
   }
 
   export function isNumeric(v: AnyValue): v is Numeric {
-    return v.type === 'numeric';
+    return !!v && v.type === 'numeric';
   }
 
   export function isNumericUnit<T extends KwAny>(v: AnyValue, units: readonly T[]): v is Numeric<T>;
@@ -162,19 +171,19 @@ export namespace Cv {
   }
 
   export function isNumericRange(v: AnyValue): v is NumericRange {
-    return v.type === 'numeric-range';
+    return !!v && v.type === 'numeric-range';
   }
 
   export function isNumericRangeWithKeyword(v: AnyValue): v is NumericRangeWithKeyword {
-    return v.type === 'numeric-range-with-keyword';
+    return !!v && v.type === 'numeric-range-with-keyword';
   }
 
   export function isNumericWithKeyword(v: AnyValue): v is NumericWithKeyword {
-    return v.type === 'numeric-with-keyword';
+    return !!v && v.type === 'numeric-with-keyword';
   }
 
   export function isString(v: AnyValue): v is String {
-    return v.type === 'string';
+    return !!v && v.type === 'string';
   }
 
   export function isStringValue<T extends KwAny>(v: AnyValue, values: readonly T[]): v is String<T> {
@@ -182,18 +191,13 @@ export namespace Cv {
   }
 
   export function isUrl(v: AnyValue): v is Url {
-    return v.type === 'url';
+    return !!v && v.type === 'url';
   }
 
-  // MARK: Create
+  // MARK: Convert
 
-  function withRaws<T extends WithRaws>(value: T, after: Opt<Ct.Raw[]>): T {
-    setRawProp(value, 'after', after);
-    return value;
-  }
-
-  export function fromToken<T extends Ct.Token>(ct: T, raws?: Opt<Ct.Raw[]>): TokenToValue<T>;
-  export function fromToken<T extends Ct.Token>(ct: T, raws?: Opt<Ct.Raw[]>): unknown {
+  export function fromToken<T extends Ct.Token>(ct: T, raws?: Opt<Raws | Ct.Raw[]>): TokenToValue<T>;
+  export function fromToken<T extends Ct.Token>(ct: T, raws?: Opt<Raws | Ct.Raw[]>): unknown {
     // TODO: Move signCharacter to raws
     if (Ct.isIdent(ct))
       return keyword(Ct.value(ct), raws);
@@ -216,46 +220,61 @@ export namespace Cv {
     return fromToken(ct, p.consumeRawsAfter(ct));
   }
 
-  export function func<N extends KwAny>(name: N, params: AnyValue[] = [], raws?: Opt<Ct.Raw[]>): Function<N> {
-    return withRaws<Function<N>>({ type: 'function', name: name.toLowerCase() as N, params }, raws);
+  // MARK: Create
+
+  function withRaws<T extends WithRaws>(value: T, raws: Opt<Raws | Ct.Raw[]>): T {
+    if (isDefined(raws)) {
+      if (isArray(raws))
+        setRawProp(value, 'after', raws);
+      else {
+        setRawProp(value, 'before', raws.before);
+        setRawProp(value, 'after', raws.after);
+        setRawProp(value, 'between', raws.between);
+      }
+    }
+    return value;
   }
 
-  export function keyword<N extends KwAny>(name: N, raws?: Opt<Ct.Raw[]>): Keyword<N> {
-    return withRaws<Keyword<N>>({ type: 'keyword', name: name.toLowerCase() as N }, raws);
+  export function func<N extends KwAny>(name: N, params: AnyValue[] = [], raws?: Opt<Raws | Ct.Raw[]>): Function<N> {
+    return withRaws<Function<N>>({ type: ValueType.Function, name: name.toLowerCase() as N, params }, raws);
   }
 
-  export function numeric<U extends KwAnyOpt>(value: number, unit: U, raws?: Opt<Ct.Raw[]>): Numeric<U> {
-    return withRaws<Numeric<U>>({ type: 'numeric', value, unit }, raws);
+  export function keyword<N extends KwAny>(name: N, raws?: Opt<Raws | Ct.Raw[]>): Keyword<N> {
+    return withRaws<Keyword<N>>({ type: ValueType.Keyword, name: name.toLowerCase() as N }, raws);
+  }
+
+  export function numeric<U extends KwAnyOpt>(value: number, unit: U, raws?: Opt<Raws | Ct.Raw[]>): Numeric<U> {
+    return withRaws<Numeric<U>>({ type: ValueType.Numeric, value, unit }, raws);
   }
 
   export function numericRange<U extends KwAnyOpt>(start: Numeric<U>, end: Numeric<U>): NumericRange<U> {
-    return { type: 'numeric-range', start, end };
+    return { type: ValueType.NumericRange, start, end };
   }
 
   export function numericWithKeyword<N extends KwAny, U extends KwAnyOpt>(
     name: N, value: Numeric<U>
   ): NumericWithKeyword<N, U>;
   export function numericWithKeyword<N extends KwAny, U extends KwAnyOpt>(
-    name: N, value: number, unit: U, raws?: Opt<Ct.Raw[]>
+    name: N, value: number, unit: U, raws?: Opt<Raws | Ct.Raw[]>
   ): NumericWithKeyword<N, U>;
   export function numericWithKeyword<N extends KwAny, U extends KwAnyOpt>(
-    name: N, value: Numeric<U> | number, unit?: U, raws?: Opt<Ct.Raw[]>
+    name: N, value: Numeric<U> | number, unit?: U, raws?: Opt<Raws | Ct.Raw[]>
   ): NumericWithKeyword<N, U> {
     return isValue(value)
-      ? withRaws<NumericWithKeyword<N, U>>({ type: 'numeric-with-keyword', name, value: value.value, unit: value.unit }, value.raws?.after)
-      : withRaws<NumericWithKeyword<N, U>>({ type: 'numeric-with-keyword', name, value, unit: unit! }, raws);
+      ? withRaws<NumericWithKeyword<N, U>>({ type: ValueType.NumericWithKeyword, name, value: value.value, unit: value.unit }, value.raws)
+      : withRaws<NumericWithKeyword<N, U>>({ type: ValueType.NumericWithKeyword, name, value, unit: unit! }, raws);
   }
 
   export function numericRangeWithKeyword<N extends KwAny, U extends KwAnyOpt>(name: N, start: Numeric<U>, end: Numeric<U>): NumericRangeWithKeyword<N, U> {
-    return { type: 'numeric-range-with-keyword', name, start, end };
+    return { type: ValueType.NumericRangeWithKeyword, name, start, end };
   }
 
-  export function string<T extends KwAny>(value: T, raws?: Opt<Ct.Raw[]>): String<T> {
-    return withRaws<String<T>>({ type: 'string', value }, raws);
+  export function string<T extends KwAny>(value: T, raws?: Opt<Raws | Ct.Raw[]>): String<T> {
+    return withRaws<String<T>>({ type: ValueType.String, value }, raws);
   }
 
-  export function url(url: string, raws?: Opt<Ct.Raw[]>): Url {
-    return withRaws<Url>({ type: 'url', url: new URL(url) }, raws);
+  export function url(url: string, raws?: Opt<Raws | Ct.Raw[]>): Url {
+    return withRaws<Url>({ type: ValueType.Url, url: new URL(url) }, raws);
   }
 
   // MARK: Parse
@@ -343,27 +362,26 @@ export namespace Cv {
     value.raws[prop] = raws;
   }
 
-  const cssAbsoluteLengthMult: Record<Cu.AbsoluteLength, number> = {
-    px: 1,
-    cm: 96 / 2.54,
-    mm: 96 / 2.54 / 10,
-    q: 96 / 2.54 / 10 / 4,
-    in: 96,
-    pc: 96 / 6,
-    pt: 96 / 72,
-  };
+  export function convertAngle(from: Numeric<Cu.Angle>, toUnit: Cu.Angle): Numeric<Cu.Angle> {
+    return numeric(Cu.convertAngle(from.value, from.unit, toUnit), toUnit, from.raws);
+  }
 
-  export function convertAbsoluteLength(from: Numeric<Cu.AbsoluteLength>, toUnit: Cu.AbsoluteLength): Numeric<Cu.AbsoluteLength> {
-    return {
-      ...from,
-      value: from.value * getMult(from.unit, "Source") / getMult(toUnit, "Target"),
-      unit: toUnit,
-    };
+  export function convertFrequency(from: Numeric<Cu.Frequency>, toUnit: Cu.Frequency): Numeric<Cu.Frequency> {
+    return numeric(Cu.convertFrequency(from.value, from.unit, toUnit), toUnit, from.raws);
+  }
 
-    function getMult(unit: Cu.AbsoluteLength, msg: string) {
-      if (!Cu.isLengthAbsolute(from.unit))
-        throwError(`${msg} unit must be absolute, ${unit} provided`);
-      return cssAbsoluteLengthMult[unit.toLowerCase() as Cu.AbsoluteLength];
-    }
+  export function convertLength(from: Numeric<Cu.AbsoluteLength>, toUnit: Cu.AbsoluteLength): Numeric<Cu.AbsoluteLength> {
+    return numeric(Cu.convertLength(from.value, from.unit, toUnit), toUnit, from.raws);
+  }
+
+  export function convertPercent(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent): Numeric<Cu.Percent>;
+  export function convertPercent(from: NumericOpt<Cu.Percent>, toUnit: null): Numeric<null>;
+  export function convertPercent(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent | null): NumericOpt<Cu.Percent>;
+  export function convertPercent(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent | null): NumericOpt<Cu.Percent> {
+    return numeric(Cu.convertPercent(from.value, from.unit, toUnit), toUnit, from.raws);
+  }
+
+  export function convertResolution(from: Numeric<Cu.Resolution>, toUnit: Cu.Resolution): Numeric<Cu.Resolution> {
+    return numeric(Cu.convertResolution(from.value, from.unit, toUnit), toUnit, from.raws);
   }
 }
