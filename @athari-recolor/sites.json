@@ -7,8 +7,8 @@
         mode: 'override',
         formula: 'dark-full',
         palette: true,
-        colorVar: "",
         paletteVar: "c-",
+        compVars: [ 'l', 'm', 'c', 'd', 'h', 'i' ],
         renameVar: [
           { find: '-var-', replace: '-' },
         ],

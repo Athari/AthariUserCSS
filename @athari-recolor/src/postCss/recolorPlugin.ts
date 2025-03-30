@@ -13,7 +13,7 @@ import { ColorFormula } from '../commonUtils.ts';
 import { PostCss, Css, Ct, Cn } from '../css/index.ts';
 import {
   Opt, OptArray,
-  compare, isSome, objectEntries, objectFromEntries, regexp,
+  compare, isSome, isString, objectEntries, objectFromEntries, regexp,
 } from '../utils.ts';
 
 // MARK: Types
@@ -29,10 +29,10 @@ export interface RecolorPluginOptions {
   formula?: Opt<ColorFormula>;
   /** Whether to generate palette or to inline color values. */
   palette?: Opt<boolean>;
-  /** Prefix of generated custom properties of the shared colors. */
-  colorVar?: Opt<string>;
   /** Prefix of generated custom properties of the palette. */
   paletteVar?: Opt<string>;
+  /** Names of custom properties for OkLCH color component offsets and multipliers. */
+  compVars?: Opt<[ string, string, string, string, string, string ]>;
   /** Find-replace pairs for renaming generated custom properties. */
   renameVar?: OptArray<RecolorVarTransform>;
 }
@@ -187,12 +187,12 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CnColor, 
 function recolorCnColor(node: CnColor, opts: Options): string {
   type ColorComp = string | boolean | number;
 
-  const colorVar = (s: string, i: number) =>
-    `var(--${opts.colorVar}${String.fromCharCode(s.charCodeAt(0) + i)})`;
-  const colorComp = (c: string, b: ColorComp) =>
-    typeof b === 'string' ? b : b ? `calc(${colorVar(c, 0)} + ${colorVar(c, 1)} * ${c})` : c;
+  const colorVar = (i: number) =>
+    `var(--${opts.compVars[i]})`;
+  const colorComp = (c: string, i: number, b: ColorComp) =>
+    isString(b) ? b : b ? `calc(${colorVar(i)} + ${colorVar(i + 1)} * ${c})` : c;
   const colorOkLch = (orig: Cn.Node, l: ColorComp, c: ColorComp, h: ColorComp) =>
-    `oklch(from ${orig.toString()} ${colorComp('l', l)} ${colorComp('c', c)} ${colorComp('h', h)})`;
+    `oklch(from ${orig.toString()} ${colorComp('l', 0, l)} ${colorComp('c', 2, c)} ${colorComp('h', 4, h)})`;
   const colorAutoTheme = (orig: Cn.Node, expr: ColorComp) =>
     `light-dark(${orig.toString()}, ${expr})`;
 
@@ -285,16 +285,19 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
 
 // MARK: Plugin
 
+const defaultCompVars = [ 'l', 'm', 'c', 'd', 'h', 'i' ];
+
 export default PostCss.declarePlugin<RecolorPluginOptions>('recolor', {
   mode: 'replace',
   formula: ColorFormula.DarkFull,
   palette: true,
-  colorVar: "",
   paletteVar: "c-",
+  compVars: defaultCompVars,
   renameVar: [
     { find: '-var-', replace: '-', regex: null! },
   ],
 }, (opts: Options) => {
+  opts.compVars = defaultCompVars.map((v, i) => opts?.compVars?.[i] ?? v);
   for (const transform of opts.renameVar)
     transform.regex ??= regexp(transform.find, 'gi');
   return {
