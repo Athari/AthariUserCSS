@@ -34,7 +34,7 @@ export type ObjectInvert<T extends Record<PropertyKey, PropertyKey>> = {
   [K in keyof T as T[K]]: K;
 };
 
-export type LiteralUnion<T extends U, U = string> = T | (Pick<U, never> & { _?: never | undefined });
+export type LiteralUnion<T extends U, U = string> = T | (U & { _?: never | undefined });
 
 export type MostSpecific<A, B> = A extends B ? A : B extends A ? B : never;
 

@@ -4,7 +4,7 @@ import { Ct } from './cssTokens.ts';
 import { Kw, kw } from './cssKeywords.ts';
 import { Cu } from './cssUnits.ts';
 import {
-  LiteralUnion, Opt,
+  LiteralUnion, Opt, ArrayGenerator,
   isNull, isAssigned, isDefined, isObject, isArray, throwError,
   isString as isStringPrimitive,
 } from '../utils.ts';
@@ -29,13 +29,9 @@ export namespace Cv {
   export type ShorthandValue<T extends Shorthand<any, any>> = T extends Shorthand<any, infer V> ? V : never;
 
   export interface Raws {
-    before?: Ct.Raw[];
-    after?: Ct.Raw[];
-    between?: Ct.Raw[];
-  }
-
-  export interface WithRaws {
-    raws?: Opt<Raws>;
+    before?: Opt<Ct.Raw[]>;
+    after?: Opt<Ct.Raw[]>;
+    between?: Opt<Ct.Raw[]>;
   }
 
   export enum ValueType {
@@ -51,61 +47,68 @@ export namespace Cv {
 
   const valueTypes = Object.values(ValueType).filter(isStringPrimitive);
 
+  export interface WithKeyword<N extends KwAny = KwAny> {
+    name: N;
+  }
+
+  export interface WithNumber<U extends KwAnyOpt = KwAnyOpt> {
+    value: number;
+    unit: U;
+  }
+
+  export interface WithRange<V = AnyValue> {
+    start: V;
+    end: V;
+  }
+
+  export interface WithRaws {
+    raws?: Opt<Raws>;
+  }
+
   export interface Value {
     readonly type: ValueType;
   }
 
-  export interface Function<N extends KwAny = KwAny, V = AnyValue> extends Value, WithRaws {
+  export interface Function<N extends KwAny = KwAny, V = AnyValue> extends Value, WithKeyword<N>, WithRaws {
     readonly type: ValueType.Function;
-    name: N;
     params: V[];
-    raws?: Raws;
   }
 
-  export interface Keyword<N extends KwAny = KwAny> extends Value, WithRaws {
+  export interface Keyword<N extends KwAny = KwAny>
+    extends Value, WithKeyword<N>, WithRaws {
     readonly type: ValueType.Keyword;
-    name: N;
-    raws?: Raws;
   }
 
-  export interface Numeric<U extends KwAnyOpt = KwAnyOpt> extends Value, WithRaws {
+  export interface Numeric<U extends KwAnyOpt = KwAnyOpt>
+    extends Value, WithNumber<U>, WithRaws {
     readonly type: ValueType.Numeric;
-    value: number;
-    unit: U;
-    raws?: Raws;
   }
 
-  export interface NumericRange<U extends KwAnyOpt = KwAnyOpt> extends Value {
+  export interface NumericRange<U extends KwAnyOpt = KwAnyOpt>
+    extends Value, WithRange<Numeric<U>> {
     readonly type: ValueType.NumericRange;
-    start: Numeric<U>;
-    end: Numeric<U>;
   }
 
-  export interface NumericWithKeyword<N extends KwAny = KwAny, U extends KwAnyOpt = KwAnyOpt> extends Value, WithRaws {
+  export interface NumericWithKeyword<N extends KwAny = KwAny, U extends KwAnyOpt = KwAnyOpt>
+    extends Value, WithKeyword<N>, WithNumber<U>, WithRaws {
     readonly type: ValueType.NumericWithKeyword;
-    name: N;
-    value: number;
-    unit: U;
-    raws?: Raws;
   }
 
-  export interface NumericRangeWithKeyword<N extends KwAny = KwAny, U extends KwAnyOpt = KwAnyOpt> extends Value {
+  export interface NumericRangeWithKeyword<N extends KwAny = KwAny, U extends KwAnyOpt = KwAnyOpt>
+    extends Value, WithKeyword<N>, WithRange<Numeric<U>> {
     readonly type: ValueType.NumericRangeWithKeyword;
-    name: N;
-    start: Numeric<U>;
-    end: Numeric<U>;
   }
 
-  export interface String<V extends KwAny = KwAny> extends Value, WithRaws {
+  export interface String<V extends KwAny = KwAny>
+    extends Value, WithRaws {
     readonly type: ValueType.String;
     value: V;
-    raws?: Raws;
   }
 
-  export interface Url extends Value, WithRaws {
+  export interface Url
+    extends Value, WithRaws {
     readonly type: ValueType.Url;
     url: URL;
-    raws?: Raws;
   }
 
   export type KeywordLax<N extends KwAny = KwAny> = Keyword<KwUnion<N>>;
@@ -220,6 +223,72 @@ export namespace Cv {
     return fromToken(ct, p.consumeRawsAfter(ct));
   }
 
+  export function* toTokens(v: AnyValue): ArrayGenerator<Ct.Token> {
+    const raws: Opt<Raws> = 'raws' in v ? v.raws : undefined;
+
+    yield* raws?.before ?? [];
+
+    switch (v.type) {
+      case ValueType.Function:
+        yield Ct.token(Ct.Type.Function, `${Kw.encodeIdent(v.name)}(`, { value: v.name });
+        for (const p of v.params)
+          yield* toTokens(p);
+        yield Ct.token(Ct.Type.CloseParen);
+        break;
+
+      case ValueType.Keyword:
+        yield keywordToToken(v);
+        break;
+
+      case ValueType.Numeric:
+        yield numericToToken(v);
+        break;
+
+      case ValueType.NumericRange:
+        yield* rangeToTokens(v);
+        break;
+
+      case ValueType.NumericWithKeyword:
+        yield keywordToToken(v);
+        yield* raws?.between ?? [];
+        yield numericToToken(v);
+        break;
+
+      case ValueType.NumericRangeWithKeyword:
+        yield keywordToToken(v);
+        yield* raws?.between ?? [];
+        yield* rangeToTokens(v);
+        break;
+
+      case ValueType.String:
+        // TODO: Preserve original quote mark in strings
+        yield Ct.token(Ct.Type.String, Kw.encodeString(v.value, '"'), { value: v.value });
+        break;
+
+      case ValueType.Url:
+        yield Ct.token(Ct.Type.URL, Kw.encodeUrl(v.url), { value: v.url.toString() });
+        break;
+    }
+
+    yield* raws?.after ?? [];
+
+    function keywordToToken(v: WithKeyword) {
+      return Ct.token(Ct.Type.Ident, Kw.encodeIdent(v.name), { value: v.name });
+    }
+
+    function numericToToken(v: WithNumber) {
+      // TODO: Preserve sign character in numbers
+      return v.unit === null ?
+        Ct.token(Ct.Type.Number, Kw.encodeNumber(v.value), Ct.numberData(v.value)) :
+        Ct.token(Ct.Type.Dimension, `${Kw.encodeNumber(v.value)}${Kw.encodeIdent(v.unit)}`, Ct.numberData(v.value, v.unit));
+    }
+
+    function* rangeToTokens(v: WithRange) {
+      yield* toTokens(v.start);
+      yield* toTokens(v.end);
+    }
+  }
+
   // MARK: Create
 
   function withRaws<T extends WithRaws>(value: T, raws: Opt<Raws | Ct.Raw[]>): T {
@@ -252,21 +321,18 @@ export namespace Cv {
   }
 
   export function numericWithKeyword<N extends KwAny, U extends KwAnyOpt>(
-    name: N, value: Numeric<U>
-  ): NumericWithKeyword<N, U>;
-  export function numericWithKeyword<N extends KwAny, U extends KwAnyOpt>(
-    name: N, value: number, unit: U, raws?: Opt<Raws | Ct.Raw[]>
-  ): NumericWithKeyword<N, U>;
-  export function numericWithKeyword<N extends KwAny, U extends KwAnyOpt>(
-    name: N, value: Numeric<U> | number, unit?: U, raws?: Opt<Raws | Ct.Raw[]>
+    keyword: Keyword<N>, value: Numeric<U>
   ): NumericWithKeyword<N, U> {
-    return isValue(value)
-      ? withRaws<NumericWithKeyword<N, U>>({ type: ValueType.NumericWithKeyword, name, value: value.value, unit: value.unit }, value.raws)
-      : withRaws<NumericWithKeyword<N, U>>({ type: ValueType.NumericWithKeyword, name, value, unit: unit! }, raws);
+    return withRaws<NumericWithKeyword<N, U>>(
+      { type: ValueType.NumericWithKeyword, name: keyword.name, value: value.value, unit: value.unit },
+      { between: keyword.raws?.after, after: value.raws?.after });
   }
 
-  export function numericRangeWithKeyword<N extends KwAny, U extends KwAnyOpt>(name: N, start: Numeric<U>, end: Numeric<U>): NumericRangeWithKeyword<N, U> {
-    return { type: ValueType.NumericRangeWithKeyword, name, start, end };
+  export function numericRangeWithKeyword<N extends KwAny, U extends KwAnyOpt>(
+    keyword: Keyword<N>, start: Numeric<U>, end: Numeric<U>
+  ): NumericRangeWithKeyword<N, U> {
+    setRawProp(start, 'before', keyword.raws?.after);
+    return { type: ValueType.NumericRangeWithKeyword, name: keyword.name, start, end };
   }
 
   export function string<T extends KwAny>(value: T, raws?: Opt<Raws | Ct.Raw[]>): String<T> {

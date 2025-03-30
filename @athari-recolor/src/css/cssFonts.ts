@@ -3,8 +3,8 @@ import { Kw, kw } from './cssKeywords.ts';
 import { Cu } from './cssUnits.ts';
 import { Cv } from './cssValues.ts';
 import {
-  Opt,
-  isString, isObject, isDefined, logError, throwError, deepMerge, fallback,
+  Opt, ArrayGenerator,
+  isArray, isString, isObject, isDefined, logError, throwError, deepMerge, fallback,
 } from '../utils.ts';
 
 export namespace CvFont {
@@ -133,13 +133,24 @@ export namespace CvFont {
       return this.#parse(source, opts, () => this.consumeLineHeight());
     }
 
-    // TODO: Stringify font
-    tokenizeFont(font: Font): Ct.Token[] {
-      throw "NotImplemented";
+    *tokenizeFont(font: Font): ArrayGenerator<Ct.Token> {
+      for (const [ prop, value ] of font.props.entries()) {
+        if (prop === 'line-height')
+          yield Ct.delim('/');
+        if (!isArray(value))
+          yield* Cv.toTokens(value);
+        else {
+          for (let i = 0; i < value.length; i++) {
+            if (i > 0)
+              yield Ct.token(Ct.Type.Comma);
+            yield* Cv.toTokens(value[i]!);
+          }
+        }
+      }
     }
 
     stringifyFont(font: Font): string {
-      return Ct.stringify(this.tokenizeFont(font));
+      return Ct.stringify(this.tokenizeFont(font).toArray());
     }
 
     // MARK: Utils
@@ -306,11 +317,11 @@ export namespace CvFont {
       if (!isDefined(startAngle))
         return keywordOblique;
       if (!this.#opts.isFontFaceRule || this.p.isEof)
-        return Cv.numericWithKeyword(keywordOblique.name, startAngle);
+        return Cv.numericWithKeyword(keywordOblique, startAngle);
       const endAngle = this.consumeAngle();
       if (!isDefined(endAngle))
         return;
-      return Cv.numericRangeWithKeyword(keywordOblique.name, startAngle, endAngle);
+      return Cv.numericRangeWithKeyword(keywordOblique, startAngle, endAngle);
     }
 
     private consumeFontStretchKeywordOnly(): Opt<Stretch> {

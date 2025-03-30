@@ -229,7 +229,7 @@ export namespace Kw {
     return decodeText(s, start, end, len);
   }
 
-  export function encodeString(s: string, quoteMark: Ch.QuotationMark | Ch.Apostrophe) {
+  export function encodeString(s: string, quoteMark: "'" | '"') {
     const quoteCode = quoteMark === Ch.Apostrophe ? C.Apostrophe : C.QuotationMark;
     let r = '';
     let wsBeforeHex = false;
@@ -310,7 +310,8 @@ export namespace Kw {
     return decodeText(s, start, end, len);
   }
 
-  export function encodeUrl(s: string) {
+  export function encodeUrl(s: string | URL) {
+    s = s.toString();
     let r = '';
     let wsBeforeHex = false;
     for (let i = 0; i < s.length; i++) {
@@ -363,5 +364,13 @@ export namespace Kw {
         r += s[i];
     }
     return r;
+  }
+
+  export function decodeNumber(s: string): number {
+    return Number.parseFloat(s);
+  }
+
+  export function encodeNumber(v: number): string {
+    return v.toString(10);
   }
 }

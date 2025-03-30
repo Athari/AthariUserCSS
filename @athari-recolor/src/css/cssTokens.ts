@@ -58,20 +58,25 @@ export namespace Ct {
   export type ParseErrorCallback = (error: ParseError) => void;
   export type TokenStream = ReturnType<typeof cssCt['tokenizer']>;
 
+  export type AnyWithData = AtKeyword | Delim | Dimension | Function | Hash | Ident | Number | Percentage | String | UnicodeRange | Url;
+  export type AnyWithoutData = BadString | BadUrl | CDC | CDO | CloseCurly | CloseParen | CloseSquare | Colon | Comma | Comment | Eof | OpenCurly | OpenParen | OpenSquare | Semicolon | Space;
+  export type AnyTypeWithData = AnyWithData[0];
+  export type AnyTypeWithoutData = AnyWithoutData[0];
+
   export type AnyWithValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
   export type AnyWithStringValue = AtKeyword | Delim | Function | Hash | Ident | String | Url;
   export type AnyWithNumberValue = Dimension | Number | Percentage;
   export type ValueType = string | number;
-  export type WithValue<T extends AnyWithValue, V extends ValueType> = T & { [4]: { value: V } };
-  export type WithStringValue<T extends AnyWithStringValue, V extends string> = T & { [4]: { value: V } };
-  export type WithNumberValue<T extends AnyWithNumberValue, V extends number> = T & { [4]: { value: V } };
+  export type WithValue<T extends AnyWithValue, V extends ValueType> = Extract<T, { [4]: { value: V } }>;
+  export type WithStringValue<T extends AnyWithStringValue, V extends string> = Extract<T, { [4]: { value: V } }>;
+  export type WithNumberValue<T extends AnyWithNumberValue, V extends number> = Extract<T, { [4]: { value: V } }>;
 
   export type AnyWithType = Dimension | Hash | Number;
   export type TypeType = NumberType | HashType;
-  export type WithType<T extends AnyWithType, V extends TypeType> = T & { [4]: { type: V } };
+  export type WithType<T extends AnyWithType, V extends TypeType> = Extract<T, { [4]: { type: V } }>;
 
   export type UnitType = string;
-  export type WithUnit<V extends UnitType> = Dimension & { [4]: { unit: V } };
+  export type WithUnit<V extends UnitType> = Extract<Dimension, { [4]: { unit: V } }>;
 
   export type IdentOf<T extends Token> = T extends TokenT<infer U, any> ? U : never;
   export type DataOf<T extends Token> = T[4];
@@ -143,6 +148,43 @@ export namespace Ct {
   export function isDimensionUnit<U extends string>(values: readonly U[] | U, ct: Token | null = null): any {
     const guard = (ct: Token) => isDimension(ct) && Kw.equals(unit(ct), values);
     return ct === null ? guard : guard(ct);
+  }
+
+  // MARK: Create (extended)
+
+  type TokenWithType<T extends Type> = Extract<Token, { [0]: T }>;
+  type AnyTokenWithSingleValue = CDC | CDO | CloseCurly | CloseParen | CloseSquare | Colon | Comma | Semicolon | OpenCurly | OpenParen | OpenSquare;
+  type AnyTypeWithSingleValue = AnyTokenWithSingleValue[0];
+  const singleTokenValues: Record<AnyTypeWithSingleValue, string> = {
+    [Type.CDC]: '-->',
+    [Type.CDO]: '<!--',
+    [Type.CloseCurly]: '}',
+    [Type.CloseParen]: ')',
+    [Type.CloseSquare]: ']',
+    [Type.Colon]: ':',
+    [Type.Comma]: ',',
+    [Type.Semicolon]: ';',
+    [Type.OpenCurly]: '{',
+    [Type.OpenParen]: '(',
+    [Type.OpenSquare]: '[',
+  };
+
+  export function token<T extends AnyTypeWithSingleValue>(type: T): TokenWithType<T>;
+  export function token<T extends AnyTypeWithoutData>(type: T, css: string): TokenWithType<T>;
+  export function token<T extends AnyTypeWithData>(type: T, css: string, value: TokenWithType<T>[4]): TokenWithType<T>;
+  export function token<T extends Type>(type: T, css?: string, value?: TokenWithType<T>[4]): TokenWithType<T> {
+    return <TokenWithType<T>>[ type, (singleTokenValues as Record<Type, Opt<string>>)[type] ?? css, -1, -1, value ];
+  }
+
+  export function delim(value: string): Delim {
+    return token(Type.Delim, value, { value });
+  }
+
+  export function numberData(value: number, unit: string): { value: number, type: NumberType, unit: string };
+  export function numberData(value: number): { value: number, type: NumberType };
+  export function numberData(value: number, unit: Opt<string>): { value: number, type: NumberType, unit: Opt<string> };
+  export function numberData(value: number, unit?: Opt<string>): { value: number, type: NumberType, unit: Opt<string> } {
+    return { value, type: Number.isInteger(value) ? NumberType.Integer : NumberType.Number, unit };
   }
 
   // MARK: Parse
