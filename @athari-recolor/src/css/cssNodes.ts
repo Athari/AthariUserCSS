@@ -67,7 +67,7 @@ export function isTokenType<T extends Ct.AnyWithType, TType extends Ct.ValueType
 
 // MARK: Parse
 
-function toTokens(source: string | Ct.Token[]): Ct.Token[] {
+function toTokens(source: string | Ct.Token[]): Ct.CompatToken[] {
   return isArray(source) ? source : Ct.tokenize(source);
 }
 
@@ -102,10 +102,14 @@ export import walk = cssCn.walk;
 
 // MARK: Modify (extended)
 
-export function getValue<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.AnyWithValue>(cn: Token & { value: C }): C[4]['value'] {
+export function data<T extends Ct.AnyWithValue>(cn: Extract<Token, { value: T }>): Ct.DataOf<T> {
+  return cn.value[4];
+}
+
+export function value<T extends Ct.AnyWithValue>(cn: Extract<Token, { value: T }>): Ct.ValueOf<T> {
   return cn.value[4].value;
 }
 
-export function getType<T extends Ct.Type, U, C extends Ct.TokenT<T, U> & Ct.AnyWithType>(cn: Token & { value: C }): C[4]['type'] {
+export function type<T extends Ct.AnyWithType>(cn: Extract<Token, { value: T }>): Ct.TypeOf<T> {
   return cn.value[4].type;
 }

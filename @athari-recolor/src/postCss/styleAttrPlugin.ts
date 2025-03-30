@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { DeepRequired } from 'utility-types';
 import { PostCss, Css, Sel } from '../css/index.ts';
-import { ArrayGenerator, Opt } from '../utils.ts';
+import { Opt } from '../utils.ts';
 
 // MARK: Types: Options
 
@@ -14,7 +14,7 @@ type Options = DeepRequired<StyleAttrPluginOptions>;
 
 // MARK: Process Attrs
 
-function* processStyleAttr(rule: Css.Rule, selTag: Sel.Selector, opts: Options): ArrayGenerator<Css.Rule> {
+function* processStyleAttr(rule: Css.Rule, selTag: Sel.Selector, opts: Options): ArrayIterator<Css.Rule> {
   for (const declSel of rule.nodes) {
     assert(Css.isDecl(declSel));
     const declDecl = declSel.clone();

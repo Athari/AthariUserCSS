@@ -4,7 +4,7 @@ import { Optional, SetComplement } from 'utility-types';
 import { cssTokenRegExps } from '../commonUtils.ts';
 import { PostCss, Css, Sel } from '../css/index.ts';
 import {
-  GuardAny, SubUnion, Opt, OptObject, OneOrArray, KeyOfAny, ArrayGenerator, Counter, RegExpTemplate,
+  GuardAny, SubUnion, Opt, OptObject, OneOrArray, KeyOfAny, Counter, RegExpTemplate,
   isSome, isArray, isString, objectAssignedValues, objectEntries, toAssignedArrayIfNeeded, throwError, assertNever, inspectPretty,
 } from '../utils.ts';
 
@@ -170,7 +170,7 @@ function getTransformer<T extends Node>(
     transformer[nodeType] = getTransforms(propMap as PropMap, nodeType).toArray();
   return transformer;
 
-  function* getTransforms(propMap: PropMap, nodeType: NodeName): ArrayGenerator<Transform<T>> {
+  function* getTransforms(propMap: PropMap, nodeType: NodeName): ArrayIterator<Transform<T>> {
     for (const option of toAssignedArrayIfNeeded(options[nodeType])) {
       const ctxOp: OperationContext = new class {
         type = nodeType;
@@ -310,7 +310,7 @@ function getTransformer<T extends Node>(
 
   function* getAllRegexes(
     propMap: PropMap, option: Optional<Record<MatchProps, RegExpMatchOption>>, flagsDefault: Opt<string>
-  ): ArrayGenerator<RegExpMatch<T>> {
+  ): ArrayIterator<RegExpMatch<T>> {
     for (const [ matcherProp, nodeProp ] of objectEntries(propMap)) {
       const matcher: Opt<RegExpMatchOption> = option[matcherProp];
       if (!matcher)

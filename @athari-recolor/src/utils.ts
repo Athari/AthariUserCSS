@@ -68,8 +68,6 @@ export type ArrayIfNeeded<T> = T extends ReadonlyArray<infer U> ? Array<U> : nev
 
 export type AssignedArrayIfNeeded<T> = T extends ReadonlyArray<infer U> ? Array<Assigned<U>> : never;
 
-export type ArrayGenerator<T> = Generator<T, void, unknown>;
-
 export type KeyOfAny<T> = T extends any ? keyof T : never;
 
 export type ValueOf<T> = T[keyof T];
@@ -163,6 +161,10 @@ export class Counter<T> extends Object {
 }
 
 // MARK: Asserts
+
+export function typed<T>(v: T): T {
+  return v;
+}
 
 export function assertNever(...values: never[]): never {
   throw new AssertionError({ message: `never expected, got ${values.join(", ")}` });
@@ -729,12 +731,12 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
     assertNever(o);
   }
 
-  function* iterateClonedArray(a: UnknownArray): ArrayGenerator<unknown> {
+  function* iterateClonedArray(a: UnknownArray): ArrayIterator<unknown> {
     for (const v of a)
       yield structuredClone(v);
   }
 
-  function* iterateObject(o: UnknownObject): ArrayGenerator<[unknown, unknown]> {
+  function* iterateObject(o: UnknownObject): ArrayIterator<[unknown, unknown]> {
     if (isMap(o))
       return yield* o.entries();
     if (isObject(o))

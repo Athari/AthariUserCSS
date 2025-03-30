@@ -4,7 +4,7 @@ import * as Kw from './cssKeywords.ts';
 import * as Cu from './cssUnits.ts';
 import * as Cv from './cssValues.ts';
 import {
-  Opt, ArrayGenerator,
+  Opt,
   isArray, isString, isObject, isDefined, logError, throwError, deepMerge, fallback,
 } from '../utils.ts';
 
@@ -199,16 +199,16 @@ export class Parser extends Cv.Parser {
   }
 
   parseRule(rule: CssRule, opts?: Opt<ParserOptions>) {
-    return this.parseRuleOrAtRule(rule, opts);
+    return this.#font.props.size > 0 ? this.parseRuleOrAtRuleProc(rule, opts) : undefined;
   }
 
   parseFontFaceAtRule(atRule: CssAtRule, opts?: Opt<ParserOptions>) {
     if (!Kw.equals(atRule.name, kw.atRule.fontFace))
       throwError(`@font-face at-rule expected, got @${atRule.name}`);
-    return this.parseRuleOrAtRule(atRule, { ...opts, isFontFaceRule: true });
+    return this.parseRuleOrAtRuleProc(atRule, { ...opts, isFontFaceRule: true });
   }
 
-  private parseRuleOrAtRule(source: CssRuleOrAtRule, opts?: Opt<ParserOptions>): Opt<Font> {
+  private parseRuleOrAtRuleProc(source: CssRuleOrAtRule, opts?: Opt<ParserOptions>): Opt<Font> {
     this.resetFont();
     source.each((child: unknown) => {
       const decl  = child as CssAnyNode;
@@ -221,7 +221,7 @@ export class Parser extends Cv.Parser {
     return this.#font;
   }
 
-  *tokenizeFont(font: Font): ArrayGenerator<Ct.Token> {
+  *tokenizeFont(font: Font): ArrayIterator<Ct.Token> {
     for (const [ prop, value ] of font.props.entries()) {
       if (prop === 'line-height')
         yield Ct.delim('/');
@@ -238,7 +238,7 @@ export class Parser extends Cv.Parser {
   }
 
   stringifyFont(font: Font): string {
-    return Ct.stringify(this.tokenizeFont(font).toArray());
+    return Ct.stringify(this.tokenizeFont(font));
   }
 
   // MARK: Parser: Parsing
