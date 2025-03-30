@@ -6,7 +6,8 @@ import { WritableKeys } from 'utility-types';
 import { regex } from 'regex';
 import { format as prettifyCode, Options as PrettierOptions } from 'prettier';
 import { getSiteDir } from './commonUtils.ts';
-import { Html, Sel } from './domUtils.ts';
+import { Sel } from './css/index.ts';
+import { Html } from './html/index.ts';
 import {
   Assigned, Opt, OptObject,
   assertHasKeys, compare, deepMerge, downloadText, isArray, isString, logError, objectEntries, objectKeys, objectValues, readTextFile, throwError,

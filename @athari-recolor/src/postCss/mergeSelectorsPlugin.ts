@@ -2,7 +2,7 @@ import assert, { fail } from 'node:assert/strict';
 import JSON5 from 'json5';
 import { regex } from 'regex';
 import { Brand, DeepRequired } from 'utility-types';
-import { PostCss, Css, Sel } from '../domUtils.ts';
+import { PostCss, Css, Sel } from '../css/index.ts';
 import { Opt, isArray, isSome } from '../utils.ts';
 
 // MARK: Types

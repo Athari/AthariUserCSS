@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { regex } from "regex";
+import { regex } from 'regex';
 
 // MARK: Types
 

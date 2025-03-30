@@ -10,7 +10,7 @@ import {
   colorDataFitsRGB_Gamut as isColorDataFitsRgbGamut,
 } from '@csstools/css-color-parser';
 import { ColorFormula } from '../commonUtils.ts';
-import { PostCss, Css, Ct, Cn } from '../domUtils.ts';
+import { PostCss, Css, Ct, Cn } from '../css/index.ts';
 import {
   Opt, OptArray,
   compare, isSome, objectEntries, objectFromEntries, regexp,
@@ -272,7 +272,7 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
     return;
   });
   if (newDeclProp !== '-') {
-    decl.cloneBefore({
+    decl.cloneAfter({
       prop: newDeclProp,
       value: newDeclValue ?? Cn.stringifyList(newCns),
       important: decl.important,

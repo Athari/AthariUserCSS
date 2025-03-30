@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import * as fs from 'fs/promises';
 import { Cookie, Store, canonicalDomain, permuteDomain, permutePath } from 'tough-cookie';
 
 // Based on https://www.npmjs.com/package/@root/file-cookie-store (MIT)

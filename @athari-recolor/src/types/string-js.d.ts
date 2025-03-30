@@ -8,7 +8,7 @@ declare module 'string' {
     restorePrototype(): void;
   };
 
-  export = S;
+  export default S;
 }
 
 interface String {

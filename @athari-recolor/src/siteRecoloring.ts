@@ -1,20 +1,17 @@
 import fs from 'node:fs/promises';
 import paths from 'node:path';
+import { regex } from 'regex';
 import postCss from 'postcss';
 import cssSafeParser from 'postcss-safe-parser';
 import cssNanoPlugin from 'cssnano';
 import cssNanoPresetDefault from 'cssnano-preset-default';
 import autoPrefixerPlugin from 'autoprefixer';
 import discardEmptyPlugin from 'postcss-discard-empty';
-import transformerPlugin from './postCss/regularTransformerPlugin.ts';
-import mergeSelectorsPlugin from './postCss/mergeSelectorsPlugin.ts';
-import recolorPlugin from './postCss/recolorPlugin.ts';
-import styleAttrPlugin from './postCss/styleAttrPlugin.ts';
 import { PluginKeys, Site, SiteCss, SiteOptions } from './siteDownloading.ts';
+import { PostCss } from './css/index.ts';
+import * as plugins from './postCss/index.ts';
 import { getSiteDir } from './commonUtils.ts';
-import { PostCss } from './domUtils.ts';
 import { assertHasKeys, deepMerge, downloadText, inspectPretty, objectEntries, readTextFile, throwError } from './utils.ts';
-import { regex } from 'regex';
 
 // MARK: Types: Options
 
@@ -57,7 +54,7 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
   let result = await runPostCss(inputPath, inputCss, [
     autoPrefixerPlugin({ add: false }),
     ...optionalPostCssPlugins(opts, {
-      remove: transformerPlugin,
+      remove: plugins.regularTransformerPlugin,
     }),
     cssNanoPlugin({
       preset: [
@@ -70,11 +67,11 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
 
   result = await runPostCss(inputPath, result.css, [
     ...optionalPostCssPlugins(opts, {
-      merge: mergeSelectorsPlugin,
-      derandom: transformerPlugin,
-      recolor: recolorPlugin,
+      merge: plugins.mergeSelectorsPlugin,
+      derandom: plugins.regularTransformerPlugin,
+      recolor: plugins.recolorPlugin,
     }),
-    transformerPlugin({
+    plugins.regularTransformerPlugin({
       css: {
         comment: {
           text: { find: regex('i')`^ \s* !ath!`, negate: true },
@@ -82,7 +79,7 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
         },
       },
     }),
-    transformerPlugin({
+    plugins.regularTransformerPlugin({
       css: {
         comment: {
           text: { find: regex('si')`^ \s* !ath! \s* (?<text> .* )` },
@@ -144,7 +141,7 @@ async function transformInlineSiteCss(site: Site, css: SiteCss, opts: SiteOption
 
   const result = await runPostCss(origPath, css.text, [
     ...optionalPostCssPlugins(opts, {
-      styleAttr: styleAttrPlugin,
+      styleAttr: plugins.styleAttrPlugin,
     })
   ]);
 

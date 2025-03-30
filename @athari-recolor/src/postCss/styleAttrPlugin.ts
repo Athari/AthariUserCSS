@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { DeepRequired } from 'utility-types';
-import { PostCss, Css, Sel } from '../domUtils.ts';
+import { PostCss, Css, Sel } from '../css/index.ts';
 import { ArrayGenerator, Opt } from '../utils.ts';
 
 // MARK: Types: Options
