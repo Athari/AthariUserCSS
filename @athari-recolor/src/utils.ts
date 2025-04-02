@@ -1,4 +1,6 @@
 import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import EventEmitter from 'node:events';
 import { AssertionError } from 'node:assert/strict';
 import { InspectOptions, InspectOptionsStylized, CustomInspectFunction, inspect } from 'node:util';
 import { isDate } from 'node:util/types';
@@ -35,6 +37,15 @@ export type ObjectInvert<T extends Record<PropertyKey, PropertyKey>> = {
 };
 
 export type LiteralUnion<T extends U, U = string> = T | (U & { _?: never | undefined });
+
+export type Tuple<T, N extends number> = N extends N ? number extends N ? never : TupleOf<T, N, []> : never;
+type TupleOf<T, N extends number, Rest extends unknown[]> = Rest['length'] extends N ? Rest : TupleOf<T, N, [T, ...Rest]>;
+
+export type ReadonlyTuple<T, N extends number> = N extends N ? number extends N ? never : ReadonlyTupleOf<T, N, []> : never;
+type ReadonlyTupleOf<T, N extends number, Rest extends readonly unknown[]> = Rest['length'] extends N ? Rest : ReadonlyTupleOf<T, N, readonly [T, ...Rest]>;
+
+export type IntRange<From extends number, To extends number> = Exclude<IntRangeTo<To>, IntRangeTo<From>>;
+type IntRangeTo<N extends number, Acc extends number[] = []> = Acc['length'] extends N ? Acc[number] : IntRangeTo<N, [...Acc, Acc['length']]>;
 
 export type MostSpecific<A, B> = A extends B ? A : B extends A ? B : never;
 
@@ -76,9 +87,13 @@ export type ValueOfAny<T> = T extends any ? T[keyof T] : never;
 
 export type Opt<T> = T | undefined;
 
-export type OptObject<T> = { [K in keyof T]?: T[K] | undefined } | undefined;
+export type OptObject<T> = { [K in keyof T]?: T[K] | undefined };
 
-export type OptArray<T> = Array<T | undefined> | undefined;
+export type OptOptObject<T> = { [K in keyof T]?: T[K] | undefined } | undefined;
+
+export type OptArray<T> = Array<T | undefined>;
+
+export type OptOptArray<T> = Array<T | undefined> | undefined;
 
 export type OptOneOrArray<T> = Array<T | undefined> | T | undefined;
 
@@ -164,6 +179,10 @@ export class Counter<T> extends Object {
 
 export function typed<T>(v: T): T {
   return v;
+}
+
+export function cast<T>(): <A>(a: A) => T {
+  return <A>(a: A): T => a as unknown as T;
 }
 
 export function assertNever(...values: never[]): never {
@@ -338,13 +357,18 @@ type OptRetFn<T> = () => Opt<T>;
 type OptMapFn<T> = (v: Opt<T>) => Opt<T>;
 type OptRetMap<T> = [ OptRetFn<T>, Opt<OptMapFn<T>> ];
 
-export function fallback<T, R = T>(...fnrs: (OptRetFn<T> | OptRetMap<T>)[]): Opt<T> {
+export function fallback<T>(...fnrs: (OptRetFn<T> | OptRetMap<T>)[]): Opt<T> {
+  //console.log("start", fnrs);
   for (const fnr of fnrs) {
     const [ fn, ret ]: [ OptRetFn<T>, Opt<OptMapFn<T>> ] = isArray(fnr) ? fnr : [ fnr, void 0 ];
     const result = fn();
-    if (isDefined(result))
-      return ret?.(result) ?? undefined;
+    //console.log("try#", fnrs.indexOf(fnr), fn, "=", result);
+    if (isDefined(result)) {
+      //console.log("result = ", isDefined(ret) ? ret(result) : result);
+      return isDefined(ret) ? ret(result) : result;
+    }
   }
+  //console.log("fail", fnrs);
   return;
 }
 
@@ -373,7 +397,40 @@ export function throwError(error: Error | string) : never {
 export function logError(ex: unknown, message: string | null) {
   if (message)
     console.error(message);
-  console.error(inspectPretty(errorDetail(ex)));
+  console.error(inspectPretty(ex));
+}
+
+// MARK: Events
+
+type EventMap<T> = Record<keyof T, any[]>;
+type TypedEventEmitter<T> = T extends [never] ? never : T extends EventMap<T> ? EventEmitter<T> : never;
+export type EventName<T> = T extends [never] ? never : keyof T;
+export type EventHandler<T, K> = T extends [never] ? never : K extends keyof T ? T extends EventMap<T> ? (...args: T[K]) => void : never : never;
+
+export type HasEvents<T extends EventMap<T>> = {
+  [K in keyof T as K extends string ? `on${Capitalize<K>}` : never]: EventHandler<T, K> | null;
+} & {
+  on(name: EventName<T>, handler: EventHandler<T, typeof name>): void;
+  off(name: EventName<T>, handler: EventHandler<T, typeof name>): void;
+  once(name: EventName<T>, handler: EventHandler<T, typeof name>): void;
+};
+
+export function eventGet<T extends EventMap<T>, K extends EventName<T>>(
+  events: TypedEventEmitter<T>,
+  eventName: K,
+): EventHandler<T, K> | null {
+  const listeners = events.listeners(eventName) as EventHandler<T, K>[];
+  return listeners[0] ?? null;
+}
+
+export function eventSet<T extends EventMap<T>, K extends EventName<T>>(
+  events: TypedEventEmitter<T>,
+  eventName: K,
+  handler: EventHandler<T, K> | null,
+): void {
+  events.removeAllListeners(eventName);
+  if (isAssigned(handler))
+    events.on(eventName, handler);
 }
 
 // MARK: File
@@ -686,7 +743,11 @@ export function deepMerge<T, TSources extends unknown[], O extends DeepMergeOpti
         setTargetObjectProp(k, deepMergeProc(getTargetObjectProp(k), v));
       return targetVal;
     } else {
-      return structuredClone(sourceVal);
+      try {
+        return structuredClone(sourceVal);
+      } catch (ex: unknown) {
+        return sourceVal;
+      }
     }
   }
 
