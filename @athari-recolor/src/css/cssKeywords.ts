@@ -1,4 +1,4 @@
-import { MostSpecific, Opt, isAssigned, isString } from '../utils.ts';
+import { MostSpecific, isAssigned, isString } from '../utils.ts';
 
 // MARK: Constants
 
@@ -89,6 +89,7 @@ export const kw = new class {
 
   readonly atRule = new class {
     readonly fontFace = 'font-face';
+    readonly media = 'media';
   };
 };
 
@@ -131,11 +132,19 @@ export namespace Prop {
 
 // MARK: Utils
 
-const equalityComparer = Intl.Collator('en-US', { usage: 'search', sensitivity: 'variant', ignorePunctuation: false });
+const equalityComparer = Intl.Collator('en-US', { usage: 'search', sensitivity: 'accent', ignorePunctuation: false });
 
-export function equals<T extends Opt<string>, V extends string>(kw: T, values: readonly V[] | V): kw is MostSpecific<T, V> {
+export function equals<T extends string | null | undefined, V extends string>(kw: T, values: readonly V[] | V): kw is MostSpecific<T, V> {
   return isAssigned(kw) && isAssigned(values) &&
     (isString(values) ? !equalityComparer.compare(kw, values) : values.some(v => !equalityComparer.compare(kw, v)));
+}
+
+export function index<T extends string | null | undefined, V extends string>(kw: T, values: readonly V[] | V): number {
+  if (!isAssigned(kw) || !isAssigned(values))
+    return -1;
+  return isString(values)
+    ? (!equalityComparer.compare(kw, values) ? 0 : -1)
+    : values.findIndex(v => !equalityComparer.compare(kw, v));
 }
 
 // MARK: Escape
@@ -143,20 +152,37 @@ export function equals<T extends Opt<string>, V extends string>(kw: T, values: r
 // Based on https://github.com/csstree/csstree/blob/master/lib/utils/
 
 const enum C {
-  NullChar = 0x0000, // \0
+  Null = 0x0000, // \0
+  Tabulation = 0x0009, // \t
   LineFeed = 0x000A, // \n
   CarriageReturn = 0x000D, // \r
+  FormFeed = 0x000C,
+  InformationSeparatorOne = 0x001F,
   Space = 0x0020, //
   QuotationMark = 0x0022, // "
   Apostrophe = 0x0027, // '
   LeftParenthesis = 0x0028, // (
   RightParenthesis = 0x0029, // )
   HyphenMinus = 0x002D, // -
+  DigitZero = 0x0030, // 0
+  DigitNine = 0x0039, // 9
+  LatinCapitalLetterA = 0x0041, // A
+  LatinCapitalLetterF = 0x0046, // F
+  LatinCapitalLetterZ = 0x005A, // Z
+  LatinSmallLetterA = 0x0061, // a
+  LatinSmallLetterF = 0x0066, // f
+  LatinSmallLetterZ = 0x007A, // z
   ReverseSolidus = 0x005C, // \
-  SurrogatePairStart = 0xD800,
-  SurrogatePairEnd = 0xDFFF,
+  LowLine = 0x005F, // _
+  Delete = 0x007F,
   ReplacementChar = 0xFFFD, // �
+
+  MaxControl = InformationSeparatorOne,
+  MaxAscii = Delete,
+  MinSurrogate = 0xD800,
+  MaxSurrogate = 0xDFFF,
   MaxUnicodeCodePoint = 0x10FFFF,
+
   Eof = 0,
 };
 
@@ -169,25 +195,37 @@ const enum Ch {
   ReplacementChar = '�',
 };
 
-const isDigit = (c: number): boolean => c >= 0x0030 && c <= 0x0039;
-const isHexDigit = (c: number): boolean => isDigit(c) || (c >= 0x0041 && c <= 0x0046) || (c >= 0x0061 && c <= 0x0066);
-const isUppercaseLetter = (c: number): boolean => c >= 0x0041 && c <= 0x005A;
-const isLowercaseLetter = (c: number): boolean => c >= 0x0061 && c <= 0x007A;
-const isLetter = (c: number): boolean => isUppercaseLetter(c) || isLowercaseLetter(c);
-const isNonAscii = (c: number): boolean => c >= 0x0080;
-const isNameStart = (c: number): boolean => isLetter(c) || isNonAscii(c) || c === 0x005F;
-const isName = (c: number): boolean => isNameStart(c) || isDigit(c) || c === 0x002D;
-const isNewline = (c: number): boolean => c === C.LineFeed || c === C.CarriageReturn || c === 0x000C;
-const isWhitecSpace = (c: number) => isNewline(c) || c === 0x0020 || c === 0x0009;
-const isValidEscape = (c0: number, c1: number): boolean => c0 === C.ReverseSolidus && !isNewline(c1) && c1 !== C.Eof;
-const isControl = (c: number): boolean => c <= 0x001F || c === 0x007F;
+const isDigit = (c: number): boolean =>
+  c >= C.DigitZero && c <= C.DigitNine;
+const isHexDigit = (c: number): boolean =>
+  isDigit(c) || (c >= C.LatinCapitalLetterA && c <= C.LatinCapitalLetterF) || (c >= C.LatinSmallLetterA && c <= C.LatinSmallLetterF);
+const isUppercaseLetter = (c: number): boolean =>
+  c >= C.LatinCapitalLetterA && c <= C.LatinCapitalLetterZ;
+const isLowercaseLetter = (c: number): boolean =>
+  c >= C.LatinSmallLetterA && c <= C.LatinSmallLetterZ;
+const isLetter = (c: number): boolean =>
+  isUppercaseLetter(c) || isLowercaseLetter(c);
+const isNonAscii = (c: number): boolean =>
+  c > C.MaxAscii;
+const isNameStart = (c: number): boolean =>
+  isLetter(c) || isNonAscii(c) || c === C.LowLine;
+const isName = (c: number): boolean =>
+  isNameStart(c) || isDigit(c) || c === C.HyphenMinus;
+const isNewline = (c: number): boolean =>
+  c === C.LineFeed || c === C.CarriageReturn || c === C.FormFeed;
+const isWhitecSpace = (c: number) =>
+  isNewline(c) || c === C.Space || c === C.Tabulation;
+const isValidEscape = (c0: number, c1: number): boolean =>
+  c0 === C.ReverseSolidus && !isNewline(c1) && c1 !== C.Eof;
+const isControl = (c: number): boolean =>
+  c <= C.MaxControl || c === C.Delete;
 
 function getCharCode(s: string, i: number) {
   return i < s.length ? s.charCodeAt(i) : C.Eof;
 }
 
 function getNewlineLength(source: string, offset: number, code: number) {
-  return code === 13 && getCharCode(source, offset + 1) === 10 ? 2 : 1;
+  return code === C.CarriageReturn && getCharCode(source, offset + 1) === C.LineFeed ? 2 : 1;
 }
 
 function consumeEscaped(s: string, i: number) {
@@ -207,7 +245,7 @@ function decodeEscaped(s: string) {
   if (s.length === 1 && !isHexDigit(s.charCodeAt(0)))
     return s[0];
   let c = parseInt(s, 16);
-  if ((c === C.NullChar) || (c >= C.SurrogatePairStart && c <= C.SurrogatePairEnd) || (c > C.MaxUnicodeCodePoint))
+  if ((c === C.Null) || (c >= C.MinSurrogate && c <= C.MaxSurrogate) || (c > C.MaxUnicodeCodePoint))
     c = C.ReplacementChar;
   return String.fromCodePoint(c);
 }
@@ -240,7 +278,7 @@ export function encodeString(s: string, quoteMark: "'" | '"') {
   let wsBeforeHex = false;
   for (let i = 0; i < s.length; i++) {
     const c = s.charCodeAt(i);
-    if (c === C.NullChar) {
+    if (c === C.Null) {
       r += Ch.ReplacementChar;
       continue;
     }
@@ -284,14 +322,14 @@ export function decodeIdent(s: string) {
   return r;
 }
 
-export function encodeIdent(s: string) {
+export function encodeIdent(s: string): string {
   let r = '';
   const firstHyphen = s.charCodeAt(0) === C.HyphenMinus;
   if (s.length === 1 && firstHyphen)
     return '\\-';
   for (let i = 0; i < s.length; i++) {
     const c = s.charCodeAt(i);
-    if (c === C.NullChar) {
+    if (c === C.Null) {
       r += Ch.ReplacementChar;
       continue;
     }
@@ -321,7 +359,7 @@ export function encodeUrl(s: string | URL) {
   let wsBeforeHex = false;
   for (let i = 0; i < s.length; i++) {
     const c = s.charCodeAt(i);
-    if (c === C.NullChar) {
+    if (c === C.Null) {
       r += Ch.ReplacementChar;
       continue;
     }

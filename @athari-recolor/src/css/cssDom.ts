@@ -41,6 +41,15 @@ export const isRule = (n: unknown): n is Rule => n instanceof Rule;
 
 export const isChildNode = isSome(isAtRule, isComment, isDecl, isRule);
 
+// MARK: Create
+
+export import atRule = postCss.atRule;
+export import comment = postCss.comment;
+export import decl = postCss.decl;
+export import document = postCss.document;
+export import root = postCss.root;
+export import rule = postCss.rule;
+
 // MARK: Parse
 
 export const parseRoot = (css: string) => cssParserSafe(css);
