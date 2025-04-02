@@ -1,0 +1,713 @@
+/* ==UserStyle==
+@name           Forum.Ru-Board.com – Dark Restyle [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Dark theme + optional restyling for Forum.Ru-Board.com with configurable enhancements: colors, fonts, compact header, skeuomorphism etc.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var            checkbox ath-compact-header     "Compact header"         1
+@var            checkbox ath-fix-sizing         "Improve element sizes"  1
+@var            checkbox ath-fix-pages          "Page-specific fixes"    1
+@var            checkbox ath-skeuomorphic       "Skeuomorphic style"     1
+@var            text     ath-font-family        "Font family"            '"Segoe UI", Verdana, Arial, sans-serif'
+@var            number   ath-font-size          "Font size"              [21, 'px']
+@var            number   ath-font-line-height   "Font line height"       [1.3, 0.8, 2, 0.05]
+@var            select   ath-color-scheme       "Controls color scheme"  ["light:Light", "dark:Dark*"]
+
+@var            range    l "Lightness base"     [1.2, -2.0, 2.0, 0.02]
+@var            range    m "Lightness contrast" [-1.0, -2.0, 2.0, 0.02]
+@var            range    c "Chroma base"        [0.0, 0.0, 0.40, 0.01]
+@var            range    d "Chroma contrast"    [1.0, -2.0, 2.0, 0.02]
+@var            range    h "Hue base"           [0, 0, 360, 2]
+@var            range    i "Hue contrast"       [1.0, -2.0, 2.0, 0.05]
+@var            checkbox y "Invert images"      1
+==/UserStyle== */
+
+@-moz-document domain("forum.ru-board.com"), domain("forall.ru-board.com") {
+  /*
+   * generated
+   * formula: dark-full
+   * site: forum.ru-board.com
+   * name: board.css
+   * url: https://forum.ru-board.com/board/board.css
+   * name: ajax.css
+   * url: https://forum.ru-board.com/forall/ajax/ajax.css
+   * name: board.css
+   * url: http://forum.ru-board.com/board/board.css
+   * name: legal.embed1.css
+   * name: inline-style-attrs.css
+   */
+  :root {
+    /* color black n=9 rgb(0, 0, 0) oklch(0 0 0) */
+    --c-black: oklch(from #000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color white n=9 rgb(255, 255, 255) oklch(1 0 180) */
+    --c-white: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #333 n=8 rgb(51, 51, 51) oklch(6 0 180) */
+    --c-333: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #999 n=5 rgb(153, 153, 153) oklch(6 0 180) */
+    --c-999: oklch(from #999 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color red n=5 rgb(255, 0, 0) oklch(6 14 22) */
+    --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ddd n=3 rgb(221, 221, 221) oklch(6 0 16) */
+    --c-ddd: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f7f7f7 n=3 rgb(247, 247, 247) oklch(6 0 16) */
+    --c-f7f7f7: oklch(from #f7f7f7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #69c n=2 rgb(102, 153, 204) oklch(6 14 22) */
+    --c-69c: oklch(from #69c calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color silver n=2 rgb(192, 192, 192) oklch(6 0 180) */
+    --c-silver: oklch(from silver calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #eee n=2 rgb(238, 238, 238) oklch(6 0 180) */
+    --c-eee: oklch(from #eee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #339 n=2 rgb(51, 51, 153) oklch(6 14 22) */
+    --c-339: oklch(from #339 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #0000c0 n=1 rgb(0, 0, 192) oklch(6 14 22) */
+    --c-0000c0: oklch(from #0000c0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color blue n=1 rgb(0, 0, 255) oklch(6 14 22) */
+    --c-blue: oklch(from blue calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #dedfdf n=1 rgb(222, 223, 223) oklch(6 14 22) */
+    --c-dedfdf: oklch(from #dedfdf calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #555 n=1 rgb(85, 85, 85) oklch(6 0 16) */
+    --c-555: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .obertka {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-black);
+    color: var(--c-333);
+  }
+  .shadow {
+    background-color: var(--c-black);
+  }
+  .loader {
+    background-color: var(--c-999);
+    color: var(--c-white);
+  }
+  .flhead {
+    background-color: var(--c-ddd);
+    color: var(--c-black);
+  }
+  .copyurl {
+    color: var(--c-999);
+  }
+  .mod_text {
+    color: var(--c-red);
+  }
+  a.m,
+  a.m:active,
+  a.m:hover,
+  a.m:link,
+  a.m:visited,
+  a.tpc:active,
+  a.tpc:hover,
+  a.tpc:link,
+  a.tpc:visited {
+    color: var(--c-333);
+  }
+  a.md2,
+  a.md2:active,
+  a.md2:hover,
+  a.md2:link,
+  a.md2:visited {
+    color: var(--c-black);
+  }
+  .dats,
+  .tit {
+    color: var(--c-333);
+  }
+  .helm,
+  .onl {
+    color: var(--c-333);
+  }
+  .lgf {
+    color: var(--c-333);
+  }
+  SELECT,
+  input,
+  option,
+  textarea {
+    color: var(--c-black);
+  }
+  a:active,
+  a:link,
+  a:visited {
+    color: var(--c-0000c0);
+  }
+  a:hover {
+    color: var(--c-red);
+  }
+  .md2 {
+    color: var(--c-black);
+  }
+  .post,
+  .tpc {
+    color: var(--c-333);
+  }
+  .sing {
+    color: var(--c-339);
+  }
+  .sing a:active,
+  .sing a:link,
+  .sing a:visited {
+    color: var(--c-339);
+  }
+  .sing a:hover {
+    color: var(--c-red);
+  }
+  .mtext {
+    color: var(--c-red);
+  }
+  .button {
+    background-color: var(--c-white);
+    border: 1px outset var(--c-black);
+  }
+  .sh1 {
+    color: var(--c-333);
+  }
+  .sh1,
+  .u1 {
+    background-color: var(--c-white);
+  }
+  .u2,
+  .u2:active,
+  .u2:hover,
+  .u2:link,
+  .u2:visited {
+    background-color: var(--c-69c);
+    color: var(--c-white);
+  }
+  .tb {
+    border: 1px solid var(--c-999);
+    border-bottom: 0 solid var(--c-black);
+  }
+  .tp {
+    border-bottom: 1px dotted var(--c-black);
+  }
+  .tp .tooltiptext {
+    background-color: var(--c-555);
+    color: var(--c-white);
+  }
+  .spoiler div {
+    background-color: var(--c-f7f7f7);
+    border: 1px solid var(--c-silver);
+  }
+  .attachment {
+    background-color: var(--c-f7f7f7);
+    border: 1px solid var(--c-silver);
+  }
+  a.l,
+  a.l:active,
+  a.l:hover,
+  a.l:link,
+  a.l:visited {
+    color: var(--c-333);
+  }
+  [bgcolor="\#6699cc" i] {
+    /* td.big[colspan='6'][bgcolor='#6699CC'] */
+    background-color: var(--c-69c);
+  }
+  [color="\#ffffff" i] {
+    /* font[color='#FFFFFF'] */
+    color: var(--c-white);
+  }
+  [bgcolor="\#dedfdf" i] {
+    /* td.dats[valign=middle][bgcolor='#dedfdf'] */
+    background-color: var(--c-dedfdf);
+  }
+  [bgcolor="\#f7f7f7" i] {
+    /* td.dats[align=left][valign=middle][bgcolor='#f7f7f7'] */
+    background-color: var(--c-f7f7f7);
+  }
+  [color="blue" i] {
+    /* font[color=blue] */
+    color: var(--c-blue);
+  }
+  [bgcolor="white" i] {
+    /* table.tb[cellpadding='5'][cellspacing='0'][border='0'][width='95%'][align=center][bgcolor=white] */
+    background-color: var(--c-white);
+  }
+  [bordercolor="\#eeeeee" i] {
+    /* table[cellpadding='3'][cellspacing='0'][width='75%'][border='1'][bordercolor='#EEEEEE'] */
+    border-color: var(--c-eee);
+  }
+  [color="\#999999" i] {
+    /* hr[size='1'][width='100%'][color='#999999'] */
+    color: var(--c-999);
+  }
+  [bgcolor="\#dddddd" i] {
+    /* tr.dats[valign=middle][align=center][bgcolor='#dddddd'] */
+    background-color: var(--c-ddd);
+  }
+  [style*="background-color: #dddddd" i] {
+    /* option[value='board.cgi?catplace=7'][style] */
+    background-color: var(--c-ddd) !important;
+  }
+  [bgcolor="\#eeeeee" i] {
+    /* td.big[valign=middle][colspan='4'][align=center][bgcolor='#EEEEEE'] */
+    background-color: var(--c-eee);
+  }
+  [color="red" i] {
+    /* font[color=red] */
+    color: var(--c-red);
+  }
+  [bgcolor="\#999999" i] {
+    /* table[cellpadding='3'][cellspacing='1'][border='0'][width='95%'][align=center][bgcolor='#999999'] */
+    background-color: var(--c-999);
+  }
+  [bgcolor="\#ffffff" i] {
+    /* table[align=center][width='95%'][bgcolor='#FFFFFF'] */
+    background-color: var(--c-white);
+  }
+
+  /* generated fonts */
+  :root {
+    font-size: 16px;
+    /* font-family n=18 */
+    --f-verdana-arial-helvet: "Verdana", "Arial", "Helvetica", sans-serif;
+    /* font-family n=1 */
+    --f-small-fonts-verdana: "Small Fonts", "Verdana", "Arial";
+    /* font-size n=7 */
+    --s-8pt: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.67rem), var(--st, 1e9px));
+    /* font-size n=5 */
+    --s-11px: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.69rem), var(--st, 1e9px));
+    /* font-size n=4 */
+    --s-10px: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.63rem), var(--st, 1e9px));
+    /* font-size n=3 */
+    --s-12px: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.75rem), var(--st, 1e9px));
+    /* font-size n=3 */
+    --s-7pt: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.58rem), var(--st, 1e9px));
+    /* font-size n=2 */
+    --s-10pt: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.83rem), var(--st, 1e9px));
+    /* font-size n=2 */
+    --s-13px: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.81rem), var(--st, 1e9px));
+    /* font-size n=1 */
+    --s-12pt: clamp(var(--sf, 0px), calc(var(--so, 0px) + 1rem), var(--st, 1e9px));
+    /* font-size n=1 */
+    --s-9pt: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.75rem), var(--st, 1e9px));
+    /* font-size n=1 */
+    --s-9px: clamp(var(--sf, 0px), calc(var(--so, 0px) + 0.56rem), var(--st, 1e9px));
+  }
+  .obertka {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-8pt);
+  }
+  .loader {
+    font-size: var(--s-9px);
+  }
+  .copyurl {
+    font-size: var(--s-7pt);
+  }
+  .mod_text {
+    font-size: var(--s-7pt);
+  }
+  a.m,
+  a.m:active,
+  a.m:hover,
+  a.m:link,
+  a.m:visited {
+    font-size: var(--s-8pt);
+  }
+  a.m,
+  a.m:active,
+  a.m:hover,
+  a.m:link,
+  a.m:visited,
+  a.tpc:active,
+  a.tpc:hover,
+  a.tpc:link,
+  a.tpc:visited {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  a.md2,
+  a.md2:active,
+  a.md2:hover,
+  a.md2:link,
+  a.md2:visited {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-10pt);
+  }
+  blockquote {
+    font-size: var(--s-11px);
+  }
+  .s,
+  blockquote {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  .s {
+    font-size: var(--s-10px);
+  }
+  li {
+    font-size: var(--s-12px);
+  }
+  .big,
+  li {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  .big {
+    font-size: var(--s-13px);
+  }
+  .small {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-10px);
+  }
+  .dats {
+    font-size: var(--s-8pt);
+  }
+  .dats,
+  .tit {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  .tit {
+    font-size: var(--s-10pt);
+  }
+  .onl {
+    font-size: var(--s-8pt);
+  }
+  .helm,
+  .onl {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  .helm {
+    font-size: var(--s-10px);
+  }
+  .lgf {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-11px);
+  }
+  SELECT,
+  input,
+  option,
+  textarea {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-8pt);
+  }
+  a:active,
+  a:hover,
+  a:link,
+  a:visited {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  .bottom,
+  .top {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  .poster,
+  body {
+    font-size: var(--s-12px);
+  }
+  .md2,
+  .poster,
+  body {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  .md2 {
+    font-size: var(--s-12pt);
+  }
+  .post {
+    font-size: var(--s-13px);
+  }
+  .post,
+  .tpc {
+    font-family: var(--f-verdana-arial-helvet);
+  }
+  .tpc {
+    font-size: var(--s-10px);
+  }
+  .sing {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-11px);
+  }
+  .sing a:active,
+  .sing a:link,
+  .sing a:visited {
+    font-size: var(--s-11px);
+  }
+  .sing a:hover {
+    font-size: var(--s-11px);
+  }
+  .mtext {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-12px);
+  }
+  .sh1,
+  .u1 {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-8pt);
+  }
+  .u2,
+  .u2:active,
+  .u2:hover,
+  .u2:link,
+  .u2:visited {
+    font-family: var(--f-verdana-arial-helvet);
+    font-size: var(--s-8pt);
+  }
+  .mini {
+    font-family: var(--f-small-fonts-verdana);
+    font-size: var(--s-7pt);
+  }
+  [style*="font-size:9pt" i] {
+    /* td[style] */
+    font-size: var(--s-9pt) !important;
+  }
+
+  /* fixes */
+  :root {
+    font-size: var(--ath-font-size);
+    line-height: var(--ath-font-line-height);
+    color-scheme: var(--ath-color-scheme);
+
+    --f-verdana-arial-helvet: var(--ath-font-family);
+    --f-small-fonts-verdana: "Small Fonts", var(--ath-font-family);
+
+    --c-666: oklch(from #666 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    --c-ccc: oklch(from #ccc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+
+    --ath-border-color: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    --ath-border-radius: .5em;
+    --ath-border-radius-left: var(--ath-border-radius) 0 0 var(--ath-border-radius);
+    --ath-border-radius-right: 0 var(--ath-border-radius) var(--ath-border-radius) 0;
+    --ath-gradient-blue:
+      linear-gradient(to bottom,
+        oklch(from var(--c-69c) calc(l * 1.2) c h),
+        oklch(from var(--c-69c) calc(l * 0.8) c h));
+    --ath-gradient-gray:
+      linear-gradient(to bottom,
+        oklch(from var(--c-ddd) calc(l * 1.2) c h),
+        oklch(from var(--c-ddd) calc(l * 0.8) c h));
+    --ath-gradient-gray-light:
+      linear-gradient(to bottom,
+        oklch(from var(--c-ddd) calc(l * 1.4) c h),
+        oklch(from var(--c-ddd) calc(l * 1.0) c h));
+    --ath-gradient-gray-inv:
+      linear-gradient(to bottom,
+        oklch(from var(--c-ddd) calc(l * 0.8) c h),
+        oklch(from var(--c-ddd) calc(l * 0.95) c h) 25%,
+        oklch(from var(--c-ddd) calc(l * 1.05) c h) 75%,
+        oklch(from var(--c-ddd) calc(l * 1.2) c h));
+    --ath-gradient-gray-inv-light:
+      linear-gradient(to bottom,
+        oklch(from var(--c-ddd) calc(l * 1.0) c h),
+        oklch(from var(--c-ddd) calc(l * 1.15) c h) 25%,
+        oklch(from var(--c-ddd) calc(l * 1.25) c h) 75%,
+        oklch(from var(--c-ddd) calc(l * 1.4) c h));
+    --ath-box-shadow-3d-gray:
+      inset 2px 2px 3px 0px #ffa1,
+      inset -2px -2px 2px 0px #0041;
+    --ath-box-shadow-3d-gray-inv:
+      inset 2px 2px 3px 0px #0041,
+      inset -2px -2px 2px 0px #ffa1;
+    --ath-box-shadow:
+      2px 2px 3px 1px #0004;
+  }
+  table {
+    font-size: inherit;
+    line-height: inherit;
+  }
+  [style*="background: rgb(255, 255, 255);"] {
+    background: var(--c-white) !important;
+  }
+
+  @container style(--y: 1) {
+    img:is([src*="/board/images/"], [src*="/i.ru-board.com/images/"]) {
+      filter: invert(1) hue-rotate(calc(180deg + var(--h) * 1deg)) contrast(0.85) brightness(1.2);
+    }
+  }
+
+  /* sizing */
+  @container style(--ath-fix-sizing: 1) {
+    .post {
+      font-size: var(--s-12px);
+    }
+    input[type=text] {
+      min-width: 16em;
+    }
+    input, select {
+      margin: 0.3em;
+      padding: .2em .4em;
+    }
+    input:is([type=button], [type=submit]),
+    button {
+      padding-inline: .8em;
+    }
+    :where(th, td) {
+      padding: .3em .6em;
+    }
+    body > table[width="550"],
+    body > form > table[width="500"] {
+      width: clamp(550px, 80%, 1200px) !important;
+    }
+  }
+
+  @container style(--ath-compact-header: 1) {
+    table:has(img[src$="/board/images/remake1.gif"]) {
+      margin-bottom: -70px;
+      + br {
+        display: none;
+      }
+    }
+  }
+
+  /* design */
+  @container style(--ath-skeuomorphic: 1) {
+    table[bgcolor]:not([bgcolor="#ffffff" i]) {
+      border-collapse: collapse;
+      border: none;
+      > :is(thead, tbody, tfoot) {
+        border: inherit;
+        > tr {
+          border: inherit;
+          /* > :is(td, th) {
+            border: solid 1px var(--ath-border-color);
+          } */
+        }
+      }
+    }
+    input {
+      background: var(--ath-gradient-gray-inv);
+      box-shadow: var(--ath-box-shadow-3d-gray-inv), var(--ath-box-shadow);
+      border: solid 1px var(--c-ccc);
+      border-radius: .3em;
+      &:hover, &:focus, &:active {
+        background: var(--ath-gradient-gray-inv-light);
+      }
+    }
+    button, select, input:is([type=button], [type=submit], [type=search]) {
+      background: var(--ath-gradient-gray);
+      box-shadow: var(--ath-box-shadow-3d-gray), var(--ath-box-shadow);
+      border: solid 1px var(--c-ccc);
+      border-radius: .3em;
+      &:hover, &:focus {
+        background: var(--ath-gradient-gray-light);
+      }
+      &:active {
+        background: var(--ath-gradient-gray-inv-light);
+        box-shadow: var(--ath-box-shadow-3d-gray-inv), var(--ath-box-shadow);
+      }
+    }
+    option {
+      background: var(--c-eee);
+    }
+
+    table[bgcolor="#999999" i]/*:not(:has(> tbody > tr:not([bgcolor])))*/ /* forum topic list */ {
+      background: none !important;
+    }
+    hr[color="#999999" i] {
+      border: groove 2px var(--c-999);
+      border-top: none;
+      opacity: 0.25;
+    }
+    a.tpc:visited,
+    a.tpc:link {
+      color: var(--c-69c);
+      &:hover, &:active, &:focus {
+        color: var(--c-red);
+      }
+    }
+    .bottomline .tpc {
+      color: var(--c-666);
+    }
+    td.small:has(> b):has(> a[href*="&start="]),
+    .dats .small *,
+    tr[bgcolor="#dddddd" i] /* gray header */,
+    tr:has(td[bgcolor="#dddddd" i]:only-child) {
+      background: var(--ath-gradient-gray);
+      > td {
+        &:first-child {
+          border-radius: var(--ath-border-radius-left);
+        }
+        &:last-child {
+          border-radius: var(--ath-border-radius-right);
+        }
+        &:only-child {
+          border-radius: var(--ath-border-radius);
+        }
+        box-shadow: var(--ath-box-shadow-3d-gray);
+      }
+    }
+    td[bgcolor="#6699cc" i] /* blue header */ {
+      background: var(--ath-gradient-blue);
+      box-shadow:
+        inset 2px 2px 3px 0px #ffa3,
+        inset -2px -2px 2px #0043;
+      border-radius: var(--ath-border-radius);
+    }
+    tr[bgcolor="#ffffff" i]:nth-child(2n+3) {
+      background: none;
+      > :is(td, th) {
+        background: #ffffff08;
+        &[bgcolor="#dedfdf"] {
+          background: #ffffff20;
+        }
+      }
+    }
+    .dats .small /*pagination*/ {
+      font-size: 0;
+      a, b {
+        display: inline-block;
+        text-align: center;
+        min-width: 1.2em;
+        padding: .2em .4em;
+        font-size: var(--s-12px);
+        &:first-child {
+          border-radius: var(--ath-border-radius-left);
+        }
+        &:last-child {
+          border-radius: var(--ath-border-radius-right);
+        }
+      }
+      a:hover {
+        background: var(--ath-gradient-gray-light);
+      }
+    }
+    td.small:has(> b):has(> a[href*="&start="]) /* topic pagination */ {
+      &:first-child {
+        border-radius: var(--ath-border-radius-left);
+      }
+      &:last-child {
+        border-radius: var(--ath-border-radius-right);
+      }
+    }
+
+    td:has(> [name="noftosh,bm"]) {
+      column-width: 20em;
+      column-gap: 1em;
+    }
+  }
+}
+
+@-moz-document url("https://forum.ru-board.com/"), url("http://forum.ru-board.com/") {
+  @container style(--ath-fix-pages: 1) {
+    td[bgcolor="#f7f7f7"]:nth-child(2) {
+      a[href*="forum=active"]:not([href*="active8"], [href*="active12"]) {
+        ~ br ~ br {
+          display: none;
+        }
+        ~ a {
+          display: inline-block;
+          &:not(:last-child)::after {
+            content: "  ●  ";
+            color: var(--c-999);
+          }
+        }
+      }
+    }
+    td[bgcolor="#f7f7f7"]:nth-child(6) {
+      br {
+        display: none;
+      }
+      b {
+        display: inline-block;
+        margin: 0 1em 0 0;
+      }
+      > a::before {
+        content: " ";
+      }
+      .pusto {
+        display: block;
+      }
+    }
+  }
+}
