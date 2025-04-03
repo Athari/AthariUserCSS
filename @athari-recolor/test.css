@@ -1,6 +1,30 @@
 @charset 'utf8';
 
-h3:has(:is([a=b], :where(.c, .d), :is(.e, .f))):active,
+p {
+  font-size: 16px;
+}
+pre {
+  font: 14px / 18px Consolas, monospace;
+  color: white;
+}
+q {
+  font: italic bold small-caps 1cm / 1.5 Segoe UI, serif;
+}
+menu {
+  font: menu;
+}
+.foo {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 500;
+  background: blue;
+}
+.bar {
+  font-family: 'Times New Roman', Times, serif;
+  font-style: oblique 10deg;
+  border: solid 1px rebeccapurple;
+}
+
+/*h3:has(:is([a=b], :where(.c, .d), :is(.e, .f))):active,
 .checkbox.active .checkbox__indicator,
 .checkbox.active .radio__indicator,
 .radio.active .checkbox__indicator,
@@ -253,4 +277,4 @@ b:has(.label.b .b),
 .checkbox,
 .radio {
   color: pink;
-}
+}*/
