@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           PrideLands.ru – Dark [Ath]
 @namespace      athari
-@version        1.1.0
+@version        1.2.0
 @description    Dark theme for ПрайдЛендс.ру (PrideLands.ru).
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -375,7 +375,7 @@
     img[src="images/paws.gif"],
     img[src="images/paw1.gif"],
     img[src="images/paw2.gif"],
-    table[width="600"] img:is([src^="i/"]):not([src="i/tonew.gif"], [src="i/tolast.gif"]) {
+    table[width="600"] img:is([src^="i/"]):not([src="i/tonew.gif"], [src="i/tolast.gif"], [src^="i/smile_"]) {
       filter: invert(1) hue-rotate(calc(180deg + var(--h) * 1deg));
     }
     body {
@@ -384,6 +384,25 @@
   }
   img:is([src="i/tonew.gif"], [src="i/tolast.gif"]) {
     filter: invert(1) brightness(0.6) invert(1);
+  }
+  img[src^="i/smile_"] {
+    /*border: solid 1px red;*/
+    border-radius: 50%;
+  }
+  img[src="i/smile_bangin.gif"],
+  img[src="i/smile_censored.gif"],
+  img[src="i/smile_chair.gif"],
+  img[src="i/smile_dead.gif"],
+  img[src="i/smile_devil2.gif"],
+  img[src="i/smile_tea.gif"],
+  img[src="i/smile_stroke.gif"],
+  img[src="i/smile_thumbup.gif"],
+  img[src="i/smile_banned.gif"],
+  img[src="i/smile_off.gif"],
+  img[src="i/smile_spam.gif"],
+  img[src="i/smile_angel.gif"]
+  {
+    border-radius: 0;
   }
 
   table.stable {
