@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           PrideLands.ru – Dark [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.1.0
 @description    Dark theme for ПрайдЛендс.ру (PrideLands.ru).
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -361,6 +361,9 @@
   }
   table {
     line-height: inherit;
+  }
+  input, textarea, select {
+    font-size: 0.8rem !important;
   }
   body {
     margin: 0;
