@@ -6,10 +6,11 @@ import { WritableKeys } from 'utility-types';
 import { regex } from 'regex';
 import { format as prettifyCode, Options as PrettierOptions } from 'prettier';
 import { getSiteDir } from './commonUtils.ts';
+import * as plugins from './postCss/index.ts';
 import { Sel } from './css/index.ts';
 import { Html } from './html/index.ts';
 import {
-  Assigned, Opt, OptObject,
+  Assigned, Opt, OptOptObject,
   assertHasKeys, compare, deepMerge, downloadText, isArray, isString, logError, objectEntries, objectKeys, objectValues, readTextFile, throwError,
 } from './utils.ts';
 
@@ -19,18 +20,19 @@ export interface OptionalPlugin {
   enabled?: Opt<boolean>;
 };
 
-export type PluginOptions<T> = OptObject<T & OptionalPlugin>;
+export type PluginOptions<T> = OptOptObject<T & OptionalPlugin>;
 
 export type PluginKeys = Assigned<{
   [K in keyof SiteOptions]: SiteOptions[K] extends PluginOptions<any> ? K : never
 }[keyof SiteOptions]>;
 
 export class SiteOptions {
-  recolor?: PluginOptions<import('./postCss/recolorPlugin.ts').RecolorPluginOptions>;
-  derandom?: PluginOptions<import('./postCss/regularTransformerPlugin.ts').RegularTransformerPluginOptions>;
-  merge?: PluginOptions<import('./postCss/mergeSelectorsPlugin.ts').MergeSelectorsPluginOptions>;
-  remove?: PluginOptions<import('./postCss/regularTransformerPlugin.ts').RegularTransformerPluginOptions>;
-  styleAttr?: PluginOptions<import('./postCss/styleAttrPlugin.ts').StyleAttrPluginOptions>;
+  recolor?: PluginOptions<plugins.RecolorOptions>;
+  refont?: PluginOptions<plugins.RefontOptions>;
+  derandom?: PluginOptions<plugins.RegularTransformerPluginOptions>;
+  merge?: PluginOptions<plugins.MergeSelectorsOptions>;
+  remove?: PluginOptions<plugins.RegularTransformerPluginOptions>;
+  styleAttr?: PluginOptions<plugins.StyleAttrOptions>;
   encoding?: Opt<string> = 'utf-8';
   combine?: Opt<boolean> = true;
   refs?: Opt<boolean> = false;
@@ -150,7 +152,7 @@ export class Site {
   }
 
   async prettifyCode(filepath: string, source: string, lang: keyof SiteFormat): Promise<string> {
-    const options = deepMerge(null, {} as PrettierOptions, this.format.default, this.format.css);
+    const options = deepMerge(null, {} as PrettierOptions, this.format.default, this.format[lang]);
     return await this.#prettifyCodeSafe(filepath, source, options);
   }
 }

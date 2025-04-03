@@ -8,7 +8,9 @@ export import Processor = postCss.Processor;
 export import Result = postCss.Result;
 export import Warning = postCss.Warning;
 
+export type LazyResult = postCss.LazyResult;
 export type Plugin = postCss.Plugin;
+export type AcceptedPlugin = postCss.AcceptedPlugin;
 export type Processors = ReturnType<Assigned<Plugin['prepare']>>;
 export type PluginCreate<O> = ((opts?: O) => Plugin) & { postcss: true };
 
@@ -17,14 +19,14 @@ export type PluginCreate<O> = ((opts?: O) => Plugin) & { postcss: true };
 export function declarePlugin<O>(
   name: string,
   defaultOpts: DeepRequired<O>,
-  processors: (opts: DeepRequired<O>) => Processors,
+  processorsFn: (opts: DeepRequired<O>, result: Result) => Processors,
 ): PluginCreate<O> {
   return Object.assign(
     (opts?: O): Plugin => ({
       postcssPlugin: name,
-      prepare() {
+      prepare(result: Result) {
         const actualOpts = deepMerge(null, {}, defaultOpts, opts) as DeepRequired<O>;
-        return processors(actualOpts);
+        return processorsFn(actualOpts, result);
       },
     }),
     {
@@ -36,14 +38,14 @@ export function declarePlugin<O>(
 export function declarePluginOpt<O>(
   name: string,
   defaultOptions: O,
-  processors: (opts: O) => Processors,
+  processorsFn: (opts: O, result: Result) => Processors,
 ): PluginCreate<O> {
   return Object.assign(
     (opts?: O): Plugin => ({
       postcssPlugin: name,
-      prepare() {
+      prepare(result: Result) {
         const actualOpts = Object.assign({}, defaultOptions, opts) as O;
-        return processors(actualOpts);
+        return processorsFn(actualOpts, result);
       },
     }),
     {
