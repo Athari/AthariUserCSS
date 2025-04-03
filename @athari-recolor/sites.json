@@ -3,8 +3,11 @@
   options: {
     default: {
       recolor: {
-        enabled: false,
-        mode: 'override',
+        enabled: true,
+        removeOriginal: true,
+        removeUnrelated: true,
+        removeUnsupported: true,
+        commentPrefix: '!ath! ',
         formula: 'dark-full',
         palette: true,
         paletteVar: "c-",
@@ -13,10 +16,22 @@
           { find: '-var-', replace: '-' },
         ],
       },
+      refont: {
+        enabled: false,
+        removeOriginal: true,
+        removeUnrelated: true,
+        removeUnsupported: true,
+        commentPrefix: '!ath! ',
+      },
+      styleAttr: {
+        enabled: true,
+        commentPrefix: '!ath! ',
+        operator: '*=',
+        insensitive: true,
+      },
       derandom: { enabled: false },
       merge: { enabled: false },
       remove: { enabled: false },
-      styleAttr: { enabled: true, operator: '*=', insensitive: true },
       encoding: 'utf-8',
       combine: true,
       refs: true,
@@ -160,6 +175,7 @@
       name: "forum.ru-board.com",
       options: {
         encoding: 'windows-1251',
+        refont: { enabled: true },
       },
       html: [
         { name: "blog.html", url: "https://forum.ru-board.com/blog.cgi" },

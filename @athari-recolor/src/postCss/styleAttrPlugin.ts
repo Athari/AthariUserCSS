@@ -1,20 +1,29 @@
 import assert from 'node:assert/strict';
-import { DeepRequired } from 'utility-types';
 import { PostCss, Css, Sel } from '../css/index.ts';
-import { Opt } from '../utils.ts';
+import { Kwh } from '../html/index.ts';
+import { OptObject } from '../utils.ts';
+
+const kwh = Kwh.kwh;
 
 // MARK: Types: Options
 
-export interface StyleAttrPluginOptions {
-  operator?: Opt<Sel.AttributeOperator>;
-  insensitive?: Opt<boolean>;
+interface Opts {
+  commentPrefix: string,
+  operator: Sel.AttributeOperator;
+  insensitive: boolean;
 }
 
-type Options = DeepRequired<StyleAttrPluginOptions>;
+const defaultOpts: Opts = {
+  commentPrefix: "",
+  operator: '*=',
+  insensitive: true,
+};
+
+export type StyleAttrOptions = OptObject<Opts>;
 
 // MARK: Process Attrs
 
-function* processStyleAttr(rule: Css.Rule, selTag: Sel.Selector, opts: Options): ArrayIterator<Css.Rule> {
+function* processStyleAttr(rule: Css.Rule, selTag: Sel.Selector, opts: Opts): ArrayIterator<Css.Rule> {
   for (const declSel of rule.nodes) {
     assert(Css.isDecl(declSel));
     const declDecl = declSel.clone();
@@ -28,27 +37,27 @@ function* processStyleAttr(rule: Css.Rule, selTag: Sel.Selector, opts: Options):
 
     const selStyle = Sel.attribute('style', opts.operator, declSelStr, opts.insensitive);
 
-    yield new Css.Rule({
+    yield Css.rule({
       selector: selStyle.toString(),
       nodes: [
-        new Css.Comment({ text: `!ath! ${selTag.toString()}` }),
+        Css.comment({ text: `!ath! ${selTag.toString()}` }),
         declDecl,
       ],
     });
   }
 }
 
-function processObsoleteAttr(rule: Css.Rule, attr: Sel.Attribute, selTag: Sel.Selector, opts: Options): Css.Rule {
+function processObsoleteAttr(rule: Css.Rule, attr: Sel.Attribute, selTag: Sel.Selector, opts: Opts): Css.Rule {
   rule.cleanRaws();
   const declSel = attr.clone();
   declSel.insensitive = opts.insensitive;
   if (opts.insensitive)
     declSel.value = declSel.value?.toLowerCase();
 
-  return new Css.Rule({
+  return Css.rule({
     selector: declSel.toString(),
     nodes: [
-      new Css.Comment({ text: `!ath! ${selTag.toString()}` }),
+      Css.comment({ text: `${opts.commentPrefix}${selTag.toString()}` }),
       ...rule.nodes,
     ],
   });
@@ -56,10 +65,7 @@ function processObsoleteAttr(rule: Css.Rule, attr: Sel.Attribute, selTag: Sel.Se
 
 // MARK: Plugin
 
-export default PostCss.declarePlugin<StyleAttrPluginOptions>('style-attr', {
-  operator: '*=',
-  insensitive: true,
-}, (opts: Options) => {
+export default PostCss.declarePlugin<StyleAttrOptions>('style-attr', defaultOpts, (opts: Opts) => {
   return {
     OnceExit(css: Css.Root): void {
       const newRules: Css.Node[] = [];
@@ -68,7 +74,7 @@ export default PostCss.declarePlugin<StyleAttrPluginOptions>('style-attr', {
         const selTag: Sel.Selector = Sel.parseSelector(rule);
         assert(Sel.isAttribute(selTag.last));
         const selAttr = selTag.last;
-        if (selAttr.attribute === 'style')
+        if (Kwh.equals(selAttr.attribute, kwh.attr.style))
           newRules.push(...processStyleAttr(rule, selTag, opts));
         else
           newRules.push(processObsoleteAttr(rule, selAttr, selTag, opts))

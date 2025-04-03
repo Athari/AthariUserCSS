@@ -4,7 +4,7 @@ import { Optional, SetComplement } from 'utility-types';
 import { cssTokenRegExps } from '../commonUtils.ts';
 import { PostCss, Css, Sel } from '../css/index.ts';
 import {
-  GuardAny, SubUnion, Opt, OptObject, OneOrArray, KeyOfAny, Counter, RegExpTemplate,
+  GuardAny, SubUnion, Opt, OptOptObject, OneOrArray, KeyOfAny, Counter, RegExpTemplate,
   isSome, isArray, isString, objectAssignedValues, objectEntries, toAssignedArrayIfNeeded, throwError, assertNever, inspectPretty,
 } from '../utils.ts';
 
@@ -316,7 +316,7 @@ function getTransformer<T extends Node>(
       if (!matcher)
         continue;
 
-      const { re, find, flags, negate }: OptObject<{ re: RegExp, find: string[], flags: string, negate: boolean }> =
+      const { re, find, flags, negate }: OptOptObject<{ re: RegExp, find: string[], flags: string, negate: boolean }> =
         isRegExp(matcher) ?
           { re: matcher } :
         isString(matcher) ?

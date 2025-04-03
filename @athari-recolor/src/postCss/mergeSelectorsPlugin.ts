@@ -1,15 +1,17 @@
 import assert, { fail } from 'node:assert/strict';
 import JSON5 from 'json5';
 import { regex } from 'regex';
-import { Brand, DeepRequired } from 'utility-types';
+import { Brand } from 'utility-types';
 import { PostCss, Css, Sel } from '../css/index.ts';
-import { Opt, isArray, isSome } from '../utils.ts';
+import { Opt, OptObject, isArray, isSome } from '../utils.ts';
 
-// MARK: Types
+// MARK: Consts
 
 const defaultPrintHeadWidth = 40;
 const defaultPrintCssWidth = 80;
 const debug = false;
+
+// MARK: Types
 
 type MergeSelectorsPseudo = 'is' | 'where';
 type MergeSelectorsMode = 'safe' | 'greedy' | 'unsafe';
@@ -17,12 +19,17 @@ type MergeSelectorsModeInternal = MergeSelectorsMode | 'unsafe-linear';
 type FormatTrieField = 'nextTries' | 'nextVariants';
 type FormatTrieFields = FormatTrieField[];
 
-export interface MergeSelectorsPluginOptions {
-  pseudo?: Opt<MergeSelectorsPseudo>;
-  mergeMode?: Opt<MergeSelectorsMode>;
+interface Opts {
+  pseudo: MergeSelectorsPseudo;
+  mergeMode: MergeSelectorsMode;
 }
 
-type Options = DeepRequired<MergeSelectorsPluginOptions>;
+const defaultOpts: Opts = {
+  pseudo: 'is',
+  mergeMode: 'unsafe',
+};
+
+export type MergeSelectorsOptions = OptObject<Opts>;
 
 class TrieNode {
   /** List of compatible {@link SelNode nodes}. Lists of incompatible nodes are within the siblings to this trie node. */
@@ -317,10 +324,7 @@ function unwrapSimplePseudoIs(root: Sel.Root) {
 
 // MARK: Plugin
 
-export default PostCss.declarePlugin<MergeSelectorsPluginOptions>('merge-selectors', {
-  pseudo: 'is',
-  mergeMode: 'unsafe',
-}, (opts: Options) => ({
+export default PostCss.declarePlugin<MergeSelectorsOptions>('merge-selectors', defaultOpts, (opts: Opts) => ({
   OnceExit(css: Css.Root) {
     css.walkRules((rule: Css.Rule) => {
       if (rule.selectors.length <= 1)
