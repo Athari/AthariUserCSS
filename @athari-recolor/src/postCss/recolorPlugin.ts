@@ -1,4 +1,3 @@
-import { DeepRequired } from 'utility-types';
 import { regex } from 'regex';
 import cssColorsNames from 'color-name';
 import {
@@ -10,32 +9,55 @@ import {
   colorDataFitsRGB_Gamut as isColorDataFitsRgbGamut,
 } from '@csstools/css-color-parser';
 import { ColorFormula } from '../commonUtils.ts';
-import { PostCss, Css, Ct, Cn } from '../css/index.ts';
+import { PostCss, Css, Ct, Cn, Kw } from '../css/index.ts';
 import {
-  Opt, OptArray,
-  compare, isSome, isString, objectEntries, objectFromEntries, regexp,
+  OptObject,
+  compare, deepMerge, isSome, isString, objectEntries, objectFromEntries, regexp,
 } from '../utils.ts';
+
+const kw = Kw.kw;
+const debug = false;
 
 // MARK: Types
 
-export interface RecolorPluginOptions {
+interface Opts {
+  removeOriginal: boolean;
+  removeUnrelated: boolean;
+  removeUnsupported: boolean;
+  commentPrefix: string,
   /**
    * How to modify original CSS code.
    * * `append` Add modified color declarations, keep all old declarations.
    * * `replace` Replace color declarations, keep non-color declarations.
    * * `override` Remove all non-color declarations, leave only modified color declarations.
    */
-  mode?: Opt<TransformMode>;
-  formula?: Opt<ColorFormula>;
+  formula: ColorFormula;
   /** Whether to generate palette or to inline color values. */
-  palette?: Opt<boolean>;
+  palette: boolean;
   /** Prefix of generated custom properties of the palette. */
-  paletteVar?: Opt<string>;
+  paletteVar: string;
   /** Names of custom properties for OkLCH color component offsets and multipliers. */
-  compVars?: Opt<[ string, string, string, string, string, string ]>;
+  compVars: string[];
   /** Find-replace pairs for renaming generated custom properties. */
-  renameVar?: OptArray<RecolorVarTransform>;
+  renameVar: RecolorVarTransform[];
 }
+
+const defaultCompVars = [ 'l', 'm', 'c', 'd', 'h', 'i' ];
+
+const defaultOpts: Opts = {
+  removeOriginal: true,
+  removeUnrelated: false,
+  removeUnsupported: false,
+  commentPrefix: '',
+
+  formula: ColorFormula.DarkFull,
+  palette: true,
+  paletteVar: "c-",
+  compVars: defaultCompVars,
+  renameVar: [
+    { find: '-var-', replace: '-' },
+  ],
+};
 
 interface RecolorVarTransform {
   /** String to find. */
@@ -46,9 +68,7 @@ interface RecolorVarTransform {
   regex?: RegExp;
 }
 
-type TransformMode = 'append' | 'replace' | 'override';
-
-type Options = DeepRequired<RecolorPluginOptions>;
+export type RecolorOptions = OptObject<Opts>;
 
 type CnColor = Cn.Function | Cn.Token;
 
@@ -71,59 +91,69 @@ interface PaletteColor {
 
 // MARK: Syntax
 
+const noDecl = '-';
+
 const identifiableColorNotations = new Set([ ColorNotation.HEX, ColorNotation.RGB, ColorNotation.HSL, ColorNotation.HWB ]);
 
 const cssColorMap = objectFromEntries(objectEntries(cssColorsNames).map(([name, [r, g, b]]) => [ `${r}|${g}|${b}` as const, name ]));
 
-const reColorFunction = regex('i')`
-  ^ (
-    rgb | rgba | hsl | hsla | hwb | lab | lch | oklab | oklch | color
-  ) $`;
-const reColorPropSimple = regex('i')`
-  ^ (
-    -moz- | -webkit- | -ms- |
-  )
-  (
-    color | fill | stroke |
+const re = new class {
+  readonly floats = regex('gi')`
     (
-      background | outline | text-decoration | text-emphasis | text-outline |
-      tap-highlight | accent | column-rule | caret | stop | flood | lighting
-    ) -color |
-    border (
-      -top | -right | -left | -bottom |
-      ( -block | -inline )
-      ( -start | -end ) |
-    ) -color |
-    scrollbar (
-      -3dlight | -arrow | -base | -darkshadow | -face | -highlight | -shadow | -track |
-    ) -color |
-    ( box | text ) -shadow |
-    background-image
-  ) $ `;
-const reColorPropSplit = regex('i')`
-  ^ (
-    -moz- | -webkit- | -ms- |
-  )
-  (
-    background | outline | text-decoration | column-rule |
-    border ( -top | -right | -left | -bottom )
-  ) $ `;
-const reColorPropComplexSplit = regex('i')`
-  ^ (
-    -moz- | -webkit- | -ms- |
-  )
-  (
-    border ( -block | -inline | )
-  ) $ `;
-const reAtRuleMediaDark = regex('i')`
-  prefers-color-scheme \s* : \s* dark `;
-const reAtRuleMediaNameAllowed = regex('i')`
-  ^ ( container | media | scope | starting-style | supports ) $ `;
+      \d+ \. \d+ |
+      \d+ \. |
+      \. \d+
+    )`;
+  readonly colorFunction = regex('i')`
+    ^ (
+      rgb | rgba | hsl | hsla | hwb | lab | lch | oklab | oklch | color
+    ) $`;
+  readonly colorPropSimple = regex('i')`
+    ^ (
+      -moz- | -webkit- | -ms- |
+    )
+    (
+      color | fill | stroke |
+      (
+        background | outline | text-decoration | text-emphasis | text-outline |
+        tap-highlight | accent | column-rule | caret | stop | flood | lighting
+      ) -color |
+      border (
+        -top | -right | -left | -bottom |
+        ( -block | -inline )
+        ( -start | -end ) |
+      ) -color |
+      scrollbar (
+        -3dlight | -arrow | -base | -darkshadow | -face | -highlight | -shadow | -track |
+      ) -color |
+      ( box | text ) -shadow |
+      background-image
+    ) $ `;
+  readonly colorPropSplit = regex('i')`
+    ^ (
+      -moz- | -webkit- | -ms- |
+    )
+    (
+      background | outline | text-decoration | column-rule |
+      border ( -top | -right | -left | -bottom )
+    ) $ `;
+  readonly colorPropComplexSplit = regex('i')`
+    ^ (
+      -moz- | -webkit- | -ms- |
+    )
+    (
+      border ( -block | -inline | )
+    ) $ `;
+  readonly atRuleMediaDark = regex('i')`
+    prefers-color-scheme \s* : \s* dark `;
+  readonly atRuleMediaNameAllowed = regex('i')`
+    ^ ( container | media | scope | starting-style | supports ) $ `;
+};
 
 // MARK: Utils
 
 function roundStrNumbers(s: string): string {
-  return s.replace(/(\d+\.\d+|\d+\.|\.\d+)/g,
+  return s.replace(re.floats,
     (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
 }
 
@@ -153,7 +183,7 @@ function applyVarTransforms(name: string, tfs: RecolorVarTransform[]): string {
   return name;
 }
 
-function getPaletteColor(colorData: ColorData, palette: Palette, node: CnColor, opts: Options): PaletteColor {
+function getPaletteColor(colorData: ColorData, palette: Palette, node: CnColor, opts: Opts): PaletteColor {
   const [ colorRgbStr, colorOkLchStr ] = [ serializeRgb(colorData), serializeDisplayP3(colorData) ];
   const colorUniqueKey = `${colorRgbStr}/${colorOkLchStr}`;
   const colorIdent = getIdentColorName(colorData);
@@ -184,7 +214,7 @@ function getPaletteColor(colorData: ColorData, palette: Palette, node: CnColor, 
 
 // MARK: Recolor
 
-function recolorCnColor(node: CnColor, opts: Options): string {
+function recolorCnColor(node: CnColor, opts: Opts): string {
   type ColorComp = string | boolean | number;
 
   const colorVar = (i: number) =>
@@ -196,25 +226,25 @@ function recolorCnColor(node: CnColor, opts: Options): string {
   const colorAutoTheme = (orig: Cn.Node, expr: ColorComp) =>
     `light-dark(${orig.toString()}, ${expr})`;
 
-  return {
+  return ({
     get [ColorFormula.Dark]() { return colorOkLch(node, 1, 0, 0) },
     get [ColorFormula.DarkFull]() { return colorOkLch(node, 1, 1, 1) },
     get [ColorFormula.DarkAuto]() { return colorAutoTheme(node, this[ColorFormula.Dark]) },
     get [ColorFormula.DarkFullAuto]() { return colorAutoTheme(node, this[ColorFormula.DarkFull]) },
-  }[opts.formula];
+  } satisfies Record<ColorFormula, ColorComp>)[opts.formula];
 }
 
 // MARK: Generate CSS
 
-function buildPaletteRule(palette: Palette): Css.Rule {
-  return new Css.Rule({
+function buildPaletteRule(palette: Palette, opts: Opts): Css.Rule {
+  return Css.rule({
     selector: ':root',
     nodes: palette.colors
       .orderByDescending(c => c.count, compare)
       .thenBy(c => c.colorRgb, compare)
       .selectMany(c => [
-        new Css.Comment({ text: `!ath! color ${c.colorStr} n=${c.count} ${c.colorRgb} ${c.colorOkLch}` }),
-        new Css.Decl({ prop: c.name, value: c.expr }),
+        Css.comment({ text: `${opts.commentPrefix}color ${c.colorStr} n=${c.count} ${c.colorRgb} ${c.colorOkLch}` }),
+        Css.decl({ prop: c.name, value: c.expr }),
       ])
       .toArray(),
   });
@@ -223,20 +253,19 @@ function buildPaletteRule(palette: Palette): Css.Rule {
 function recolorCssAtRule(rule: Css.AtRule): false | void {
   //console.log(`rule: ${rule.name} = ${rule.params}`);
   // TODO: Support animating colors with @keyframes (parse at-rules with https://github.com/postcss/postcss-at-rule-parser)
-  if (rule.name === 'media' && reAtRuleMediaDark.test(rule.params) ||
-    !reAtRuleMediaNameAllowed.test(rule.name)) {
+  if (Kw.equals(rule.name, kw.atRule.media) && re.atRuleMediaDark.test(rule.params) ||
+    !re.atRuleMediaNameAllowed.test(rule.name)) {
     rule.remove();
   }
 }
 
-function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false | void {
-  let newDeclProp = '-';
+function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Opts): false | void {
+  let newDeclProp = noDecl;
   let newDeclValue: string | null = null;
-  let keepOldDecl = true;
   let isComplexValue = false;
   const newCns = Cn.replaceList(Cn.parseCommaList(decl.value), (node: Cn.Node) => {
-    isComplexValue ||= Cn.isFunction(node) && !reColorFunction.test(node.getName());
-    if (Cn.isFunction(node) && reColorFunction.test(node.getName()) || isCnTokenHashOrIdent(node)) {
+    isComplexValue ||= Cn.isFunction(node) && !re.colorFunction.test(node.getName());
+    if (Cn.isFunction(node) && re.colorFunction.test(node.getName()) || isCnTokenHashOrIdent(node)) {
       // TODO: Deal with color parser producing component value in color alpha property, plus other SyntaxFlag values
       const colorData = parseCssColor(node);
       if (!colorData) {
@@ -250,19 +279,16 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
       paletteColor.expr = recolorStr;
       const resultStr = opts.palette ? paletteStr : recolorStr;
 
-      if (reColorPropSimple.test(decl.prop) || decl.variable || isComplexValue) {
+      if (re.colorPropSimple.test(decl.prop) || decl.variable || isComplexValue) {
         //console.log(`simple: ${decl.prop} = ${node.toString()}`);
-        keepOldDecl = opts.mode === 'append';
         newDeclProp = decl.prop;
         return Cn.parse(resultStr);
-      } else if (reColorPropSplit.test(decl.prop)) {
+      } else if (re.colorPropSplit.test(decl.prop)) {
         //console.log(`split: ${decl.prop} = ... ${node.toString()} ...`);
-        keepOldDecl = opts.mode !== 'override';
         newDeclProp = `${decl.prop}-color`;
         newDeclValue = resultStr;
-      } else if (reColorPropComplexSplit.test(decl.prop)) {
+      } else if (re.colorPropComplexSplit.test(decl.prop)) {
         // TODO: Split complex values like border( -width | -style | -color )
-        keepOldDecl = opts.mode === 'append';
         newDeclProp = decl.prop;
         return Cn.parse(resultStr);
       } else {
@@ -271,32 +297,27 @@ function recolorCssDecl(decl: Css.Decl, palette: Palette, opts: Options): false 
     }
     return;
   });
-  if (newDeclProp !== '-') {
-    decl.cloneAfter({
+  if (newDeclProp !== noDecl) {
+    decl.cloneBefore({
       prop: newDeclProp,
       value: newDeclValue ?? Cn.stringifyList(newCns),
       important: decl.important,
     });
   }
-  if (!keepOldDecl) {
+  if (
+    newDeclProp === noDecl && opts.removeUnrelated ||
+    newDeclProp !== noDecl && opts.removeOriginal
+  ) {
+    if (debug)
+      console.log("recolor remove decl", decl.prop, "=", decl.value);
     decl.remove();
   }
 }
 
 // MARK: Plugin
 
-const defaultCompVars = [ 'l', 'm', 'c', 'd', 'h', 'i' ];
-
-export default PostCss.declarePlugin<RecolorPluginOptions>('recolor', {
-  mode: 'replace',
-  formula: ColorFormula.DarkFull,
-  palette: true,
-  paletteVar: "c-",
-  compVars: defaultCompVars,
-  renameVar: [
-    { find: '-var-', replace: '-', regex: null! },
-  ],
-}, (opts: Options) => {
+export default PostCss.declarePluginOpt<RecolorOptions>('recolor', defaultOpts, (options: RecolorOptions) => {
+  const opts = deepMerge(null, {}, defaultOpts, options) as Opts;
   opts.compVars = defaultCompVars.map((v, i) => opts?.compVars?.[i] ?? v);
   for (const transform of opts.renameVar)
     transform.regex ??= regexp(transform.find, 'gi');
@@ -310,7 +331,7 @@ export default PostCss.declarePlugin<RecolorPluginOptions>('recolor', {
       css.walkAtRules(rule => recolorCssAtRule(rule));
       css.walkDecls(decl => recolorCssDecl(decl, palette, opts));
       if (opts.palette)
-        css.prepend(buildPaletteRule(palette));
+        css.prepend(buildPaletteRule(palette, opts));
 
       css.cleanRaws();
     }
