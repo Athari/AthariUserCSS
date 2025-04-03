@@ -4,7 +4,7 @@ import * as Ct from './cssTokens.ts';
 import * as Kw from './cssKeywords.ts';
 import * as Cu from './cssUnits.ts';
 import {
-  LiteralUnion, Opt, ArrayGenerator, Guard,
+  LiteralUnion, Opt, Guard,
   isNull, isDefined, isObject, isArray, throwError,
   isFunction as isFn, isString as isStr,
 } from '../utils.ts';
@@ -69,45 +69,40 @@ export interface Value {
   readonly type: ValueType;
 }
 
-export interface Function<N extends KwAny = KwAny, V = AnyValue> extends Value, WithKeyword<N>, WithRaws {
-  readonly type: ValueType.Function;
+export interface ValueT<T extends ValueType> extends Value {
+  readonly type: T;
+}
+
+export interface Function<N extends KwAny = KwAny, V = AnyValue>
+  extends ValueT<ValueType.Function>, WithKeyword<N>, WithRaws {
   params: V[];
 }
 
 export interface Keyword<N extends KwAny = KwAny>
-  extends Value, WithKeyword<N>, WithRaws {
-  readonly type: ValueType.Keyword;
-}
+  extends ValueT<ValueType.Keyword>, WithKeyword<N>, WithRaws {}
 
 export interface Numeric<U extends KwAnyOpt = KwAnyOpt>
-  extends Value, WithNumber<U>, WithRaws {
-  readonly type: ValueType.Numeric;
-}
+  extends ValueT<ValueType.Numeric>, WithNumber<U>, WithRaws {}
 
 export interface NumericRange<U extends KwAnyOpt = KwAnyOpt>
-  extends Value, WithRange<Numeric<U>> {
-  readonly type: ValueType.NumericRange;
+  extends ValueT<ValueType.NumericRange>, WithRange<Numeric<U>> {
 }
 
 export interface NumericWithKeyword<N extends KwAny = KwAny, U extends KwAnyOpt = KwAnyOpt>
-  extends Value, WithKeyword<N>, WithNumber<U>, WithRaws {
-  readonly type: ValueType.NumericWithKeyword;
+  extends ValueT<ValueType.NumericWithKeyword>, WithKeyword<N>, WithNumber<U>, WithRaws {
 }
 
 export interface NumericRangeWithKeyword<N extends KwAny = KwAny, U extends KwAnyOpt = KwAnyOpt>
-  extends Value, WithKeyword<N>, WithRange<Numeric<U>> {
-  readonly type: ValueType.NumericRangeWithKeyword;
+  extends ValueT<ValueType.NumericRangeWithKeyword>, WithKeyword<N>, WithRange<Numeric<U>> {
 }
 
 export interface String<V extends KwAny = KwAny>
-  extends Value, WithRaws {
-  readonly type: ValueType.String;
+  extends ValueT<ValueType.String>, WithRaws {
   value: V;
 }
 
 export interface Url
-  extends Value, WithRaws {
-  readonly type: ValueType.Url;
+  extends ValueT<ValueType.Url>, WithRaws {
   url: URL;
 }
 
@@ -126,8 +121,8 @@ export type NumericOptLaxRange<U extends KwAnyOpt = KwAnyOpt> = NumericRange<KwU
 export type AnyValue = Function | Keyword | Numeric | NumericRange | NumericWithKeyword | NumericRangeWithKeyword | String | Url;
 
 type TokenToValue<T extends Ct.Token> =
-  T extends Ct.WithStringValue<Ct.Ident, any> ? Keyword<Ct.ValueOf<T>> :
-  T extends Ct.WithStringValue<Ct.String, any> ? String<Ct.ValueOf<T>> :
+  T extends Ct.WithValue<Ct.Ident, string> ? Keyword<Ct.ValueOf<T>> :
+  T extends Ct.WithValue<Ct.String, string> ? String<Ct.ValueOf<T>> :
   T extends Ct.Dimension ? Numeric<Ct.UnitOf<T>> :
   T extends Ct.Percentage ? Numeric<'%'> :
   T extends Ct.Number ? Numeric<null> :
@@ -231,7 +226,7 @@ export function fromTokenPeek<T extends Ct.Token>(ct: T, p: Ct.Tokenizer): Token
   return fromToken(ct, p.consumeRawsAfter(ct));
 }
 
-export function* toTokens(v: AnyValue): ArrayGenerator<Ct.Token> {
+export function* tokenize(v: AnyValue): ArrayIterator<Ct.Token> {
   const raws: Opt<Raws> = 'raws' in v ? v.raws : undefined;
 
   yield* raws?.before ?? [];
@@ -240,32 +235,32 @@ export function* toTokens(v: AnyValue): ArrayGenerator<Ct.Token> {
     case ValueType.Function:
       yield Ct.token(Ct.Type.Function, `${Kw.encodeIdent(v.name)}(`, { value: v.name });
       for (const p of v.params)
-        yield* toTokens(p);
+        yield* tokenize(p);
       yield Ct.token(Ct.Type.CloseParen);
       break;
 
     case ValueType.Keyword:
-      yield keywordToToken(v);
+      yield tokenizeKeyword(v);
       break;
 
     case ValueType.Numeric:
-      yield numericToToken(v);
+      yield tokenizeNumeric(v);
       break;
 
     case ValueType.NumericRange:
-      yield* rangeToTokens(v);
+      yield* tokenizeRange(v);
       break;
 
     case ValueType.NumericWithKeyword:
-      yield keywordToToken(v);
+      yield tokenizeKeyword(v);
       yield* raws?.between ?? [];
-      yield numericToToken(v);
+      yield tokenizeNumeric(v);
       break;
 
     case ValueType.NumericRangeWithKeyword:
-      yield keywordToToken(v);
+      yield tokenizeKeyword(v);
       yield* raws?.between ?? [];
-      yield* rangeToTokens(v);
+      yield* tokenizeRange(v);
       break;
 
     case ValueType.String:
@@ -280,21 +275,40 @@ export function* toTokens(v: AnyValue): ArrayGenerator<Ct.Token> {
 
   yield* raws?.after ?? [];
 
-  function keywordToToken(v: WithKeyword) {
+  function tokenizeKeyword(v: WithKeyword) {
     return Ct.token(Ct.Type.Ident, Kw.encodeIdent(v.name), { value: v.name });
   }
 
-  function numericToToken(v: WithNumber) {
+  function tokenizeNumeric(v: WithNumber) {
     // TODO: Preserve sign character in numbers
     return v.unit === null ?
       Ct.token(Ct.Type.Number, Kw.encodeNumber(v.value), Ct.numberData(v.value)) :
       Ct.token(Ct.Type.Dimension, `${Kw.encodeNumber(v.value)}${Kw.encodeIdent(v.unit)}`, Ct.numberData(v.value, v.unit));
   }
 
-  function* rangeToTokens(v: WithRange) {
-    yield* toTokens(v.start);
-    yield* toTokens(v.end);
+  function* tokenizeRange(v: WithRange) {
+    yield* tokenize(v.start);
+    yield* tokenize(v.end);
   }
+}
+
+export function* tokenizeList(vs: Iterable<AnyValue>, ...separator: Ct.Token[]): ArrayIterator<Ct.Token> {
+  let isFirst = true;
+  for (const v of vs) {
+    if (isFirst)
+      isFirst = false;
+    else
+      yield* separator;
+    yield* tokenize(v);
+  }
+}
+
+export function stringify(v: AnyValue): string {
+  return Ct.stringify(tokenize(v));
+}
+
+export function stringifyList(vs: Iterable<AnyValue>, ...separator: Ct.Token[]): string {
+  return Ct.stringify(tokenizeList(vs, ...separator));
 }
 
 // MARK: Create
@@ -420,11 +434,14 @@ export abstract class Parser {
 export function setShorthandProp<T extends Shorthand<KwAny, V> & Optional<Record<P, V>>, P extends Exclude<keyof T, 'props'>, V>(
   shorthand: T, propMap: Record<P, ShorthandKey<T>>, prop: P, value: T[P]
 ): T {
-  if (isDefined(value))
+  if (isDefined(value)) {
     shorthand.props.set(propMap[prop], value);
-  else
+    shorthand[prop] = value;
+  }
+  else {
     shorthand.props.delete(propMap[prop]);
-  shorthand[prop] = value;
+    delete shorthand[prop];
+  }
   return shorthand;
 }
 
@@ -436,25 +453,48 @@ export function setRawProp<T extends WithRaws, P extends keyof Raws>(value: T, p
   value.raws[prop] = raws;
 }
 
-export function convertAngle(from: Numeric<Cu.Angle>, toUnit: Cu.Angle): Numeric<Cu.Angle> {
+export function convertAngle(from: NumericOpt, toUnit: Cu.Angle): Numeric<Cu.Angle> {
+  return convertAngleStrict(from as Numeric<Cu.Angle>, toUnit);
+}
+
+export function convertAngleStrict(from: Numeric<Cu.Angle>, toUnit: Cu.Angle): Numeric<Cu.Angle> {
   return numeric(Cu.convertAngle(from.value, from.unit, toUnit), toUnit, from.raws);
 }
 
-export function convertFrequency(from: Numeric<Cu.Frequency>, toUnit: Cu.Frequency): Numeric<Cu.Frequency> {
+export function convertFrequency(from: NumericOpt, toUnit: Cu.Frequency): Numeric<Cu.Frequency> {
+  return convertFrequencyStrict(from as Numeric<Cu.Frequency>, toUnit);
+}
+
+export function convertFrequencyStrict(from: Numeric<Cu.Frequency>, toUnit: Cu.Frequency): Numeric<Cu.Frequency> {
   return numeric(Cu.convertFrequency(from.value, from.unit, toUnit), toUnit, from.raws);
 }
 
-export function convertLength(from: Numeric<Cu.AbsoluteLength>, toUnit: Cu.AbsoluteLength): Numeric<Cu.AbsoluteLength> {
+export function convertLength(from: NumericOpt, toUnit: Cu.AbsoluteLength): Numeric<Cu.AbsoluteLength> {
+  return convertLengthStrict(from as Numeric<Cu.AbsoluteLength>, toUnit);
+}
+
+export function convertLengthStrict(from: Numeric<Cu.AbsoluteLength>, toUnit: Cu.AbsoluteLength): Numeric<Cu.AbsoluteLength> {
   return numeric(Cu.convertLength(from.value, from.unit, toUnit), toUnit, from.raws);
 }
 
-export function convertPercent(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent): Numeric<Cu.Percent>;
-export function convertPercent(from: NumericOpt<Cu.Percent>, toUnit: null): Numeric<null>;
-export function convertPercent(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent | null): NumericOpt<Cu.Percent>;
-export function convertPercent(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent | null): NumericOpt<Cu.Percent> {
+export function convertPercent(from: NumericOpt, toUnit: Cu.Percent): Numeric<Cu.Percent>;
+export function convertPercent(from: NumericOpt, toUnit: null): Numeric<null>;
+export function convertPercent(from: NumericOpt, toUnit: Cu.Percent | null): NumericOpt<Cu.Percent>;
+export function convertPercent(from: NumericOpt, toUnit: Cu.Percent | null): NumericOpt<Cu.Percent> {
+  return convertPercentStrict(from as NumericOpt<Cu.Percent>, toUnit);
+}
+
+export function convertPercentStrict(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent): Numeric<Cu.Percent>;
+export function convertPercentStrict(from: NumericOpt<Cu.Percent>, toUnit: null): Numeric<null>;
+export function convertPercentStrict(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent | null): NumericOpt<Cu.Percent>;
+export function convertPercentStrict(from: NumericOpt<Cu.Percent>, toUnit: Cu.Percent | null): NumericOpt<Cu.Percent> {
   return numeric(Cu.convertPercent(from.value, from.unit, toUnit), toUnit, from.raws);
 }
 
-export function convertResolution(from: Numeric<Cu.Resolution>, toUnit: Cu.Resolution): Numeric<Cu.Resolution> {
+export function convertResolution(from: NumericOpt, toUnit: Cu.Resolution): Numeric<Cu.Resolution> {
+  return convertResolutionStrict(from as Numeric<Cu.Resolution>, toUnit);
+}
+
+export function convertResolutionStrict(from: Numeric<Cu.Resolution>, toUnit: Cu.Resolution): Numeric<Cu.Resolution> {
   return numeric(Cu.convertResolution(from.value, from.unit, toUnit), toUnit, from.raws);
 }

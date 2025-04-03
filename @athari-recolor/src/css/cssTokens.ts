@@ -3,7 +3,7 @@ import * as cssCt from '@csstools/css-tokenizer';
 import * as Kw from './cssKeywords.ts';
 import {
   Opt,
-  isDefined,  throwError, typed,
+  isDefined,  throwError,
   isString as isStr, isNumber as isNum,
 } from '../utils.ts';
 
@@ -19,35 +19,46 @@ export interface Token extends Array<any> {
   4: unknown;
 }
 
-//export type TokenT<T extends Type, U> = cssCt.Token<T, U>;
-export interface Simple extends Token { 0: TypeSimple; 4: undefined }
-export interface SimpleT<T extends TypeSimple> extends Simple { 0: T; 4: undefined }
+interface TokenT<N extends Type, V extends Token> extends Token {
+  0: N;
+  4: V[4];
+}
 
-export interface AtKeyword extends Token { [0]: Type.AtKeyword; [4]: cssCt.TokenAtKeyword[4] }
-export interface Delim extends Token { [0]: Type.Delim; [4]: cssCt.TokenDelim[4] }
-export interface Dimension extends Token { [0]: Type.Dimension; [4]: cssCt.TokenDimension[4] }
-export interface Function extends Token { [0]: Type.Function; [4]: cssCt.TokenFunction[4] }
-export interface Hash extends Token { [0]: Type.Hash; [4]: cssCt.TokenHash[4] }
-export interface Ident extends Token { [0]: Type.Ident; [4]: cssCt.TokenIdent[4] }
-export interface Number extends Token { [0]: Type.Number; [4]: cssCt.TokenNumber[4] }
-export interface Percentage extends Token { [0]: Type.Percentage; [4]: cssCt.TokenPercentage[4] }
-export interface String extends Token { [0]: Type.String; [4]: cssCt.TokenString[4] }
-export interface UnicodeRange extends Token { [0]: Type.UnicodeRange; [4]: cssCt.TokenUnicodeRange[4] }
-export interface Url extends Token { [0]: Type.URL; [4]: cssCt.TokenURL[4] }
+interface Simple extends Token {
+  0: TypeSimple;
+  4: undefined;
+}
 
-export type AnyToken = Simple | AtKeyword | Delim | Dimension | Function | Hash | Ident | Number | Percentage | String | Url | UnicodeRange;
-export type AnyWithData = Exclude<AnyToken, Simple>;
-export type AnyNumeric = Dimension | Number | Percentage;
+interface SimpleT<N extends TypeSimple> extends Simple {
+  0: N;
+  4: undefined;
+}
+
+export interface AtKeyword extends TokenT<Type.AtKeyword, cssCt.TokenAtKeyword> {}
+export interface Delim extends TokenT<Type.Delim, cssCt.TokenDelim> {}
+export interface Dimension extends TokenT<Type.Dimension, cssCt.TokenDimension> {}
+export interface Function extends TokenT<Type.Function, cssCt.TokenFunction> {}
+export interface Hash extends TokenT<Type.Hash, cssCt.TokenHash> {}
+export interface Ident extends TokenT<Type.Ident, cssCt.TokenIdent> {}
+export interface Number extends TokenT<Type.Number, cssCt.TokenNumber> {}
+export interface Percentage extends TokenT<Type.Percentage, cssCt.TokenPercentage> {}
+export interface String extends TokenT<Type.String, cssCt.TokenString> {}
+export interface UnicodeRange extends TokenT<Type.UnicodeRange, cssCt.TokenUnicodeRange> {}
+export interface Url extends TokenT<Type.URL, cssCt.TokenURL> {}
+
+type AnyToken = Simple | AtKeyword | Delim | Dimension | Function | Hash | Ident | Number | Percentage | String | Url | UnicodeRange;
+type AnyWithData = Exclude<AnyToken, Simple>;
+type AnyNumeric = Dimension | Number | Percentage;
 export type Raw = Extract<Simple, { 0: TypeRaw }>;
 
-export type TypeSimple =
+type TypeSimple =
   | Type.BadString | Type.BadURL | Type.CDC | Type.CDO | Type.Colon | Type.Comma | Type.Comment | Type.EOF | Type.Semicolon | Type.Whitespace
   | Type.CloseCurly | Type.CloseParen | Type.CloseSquare | Type.OpenCurly | Type.OpenParen | Type.OpenSquare;
 type TypeWithSingleValue =
   | Type.CDC | Type.CDO | Type.Colon | Type.Comma | Type.Semicolon
   | Type.CloseCurly | Type.CloseParen | Type.CloseSquare | Type.OpenCurly | Type.OpenParen | Type.OpenSquare;
-export type TypeWithData = AnyWithData[0];
-export type TypeRaw = Type.Comment | Type.Whitespace;
+type TypeWithData = AnyWithData[0];
+type TypeRaw = Type.Comment | Type.Whitespace;
 
 export import ParseError = cssCt.ParseError;
 export import ParseErrorWithToken = cssCt.ParseErrorWithToken;
@@ -57,25 +68,26 @@ export import Type = cssCt.TokenType;
 
 export const enum NumberRange { All, NonNegative, Integer, NonNegativeInteger, PositiveInteger };
 
-export type ParseErrorCallback = (error: ParseError) => void;
+type ParseErrorCallback = (error: ParseError) => void;
 
-export interface TokenStream {
+interface TokenStream {
   nextToken(): Token;
   endOfFile(): boolean;
 }
 
 export type AnyWithValue = AtKeyword | Delim | Function | Hash | Ident | Dimension | Number | Percentage | String | Url;
-export type AnyWithStringValue = AtKeyword | Delim | Function | Hash | Ident | String | Url;
-export type AnyWithNumberValue = Dimension | Number | Percentage;
+//type AnyWithStringValue = AtKeyword | Delim | Function | Hash | Ident | String | Url;
+//type AnyWithNumberValue = Dimension | Number | Percentage;
 export type ValueType = string | number;
 export type WithValue<T extends AnyWithValue, V extends ValueType> = Extract<T, { [4]: { value: V } }>;
-export type WithStringValue<T extends AnyWithStringValue, V extends string> = Extract<T, { [4]: { value: V } }>;
-export type WithNumberValue<T extends AnyWithNumberValue, V extends number> = Extract<T, { [4]: { value: V } }>;
+//type WithStringValue<T extends AnyWithStringValue, V extends string> = Extract<T, { [4]: { value: V } }>;
+//type WithNumberValue<T extends AnyWithNumberValue, V extends number> = Extract<T, { [4]: { value: V } }>;
 
 export type AnyWithType = Dimension | Hash | Number;
 export type TypeType = NumberType | HashType;
-export type WithType<T extends AnyWithType, V extends TypeType> = Extract<T, { [4]: { type: V } }>;
+//type WithType<T extends AnyWithType, N extends TypeType> = Extract<T, { [4]: { type: N } }>;
 
+//export type AnyWithUnit = Dimension;
 export type UnitType = string;
 export type WithUnit<V extends UnitType> = Extract<Dimension, { [4]: { unit: V } }>;
 
@@ -87,37 +99,38 @@ export type UnitOf<T extends Dimension> = DataOf<T>['unit'];
 // MARK: Guards
 
 export type Guard<T extends Token> = (ct: Token) => ct is T;
+export type GuardSimple<N extends TypeSimple> = (ct: Token) => ct is SimpleT<N>;
 
 export const isToken = (t: unknown): t is Token => cssCt.isToken(t);
 
-export const isBadString = (t: Token): t is SimpleT<Type.BadString> => cssCt.isTokenBadString(<CompatToken>t);
-export const isBadUrl = (t: Token): t is SimpleT<Type.BadURL> => cssCt.isTokenBadURL(<CompatToken>t);
-export const isCDC = (t: Token): t is SimpleT<Type.CDC> => cssCt.isTokenCDC(<CompatToken>t);
-export const isCDO = (t: Token): t is SimpleT<Type.CDO> => cssCt.isTokenCDO(<CompatToken>t);
-export const isCloseCurly = (t: Token): t is SimpleT<Type.CloseCurly> => cssCt.isTokenCloseCurly(<CompatToken>t);
-export const isCloseParen = (t: Token): t is SimpleT<Type.CloseParen> => cssCt.isTokenCloseParen(<CompatToken>t);
-export const isCloseSquare = (t: Token): t is SimpleT<Type.CloseSquare> => cssCt.isTokenCloseSquare(<CompatToken>t);
-export const isColon = (t: Token): t is SimpleT<Type.Colon> => cssCt.isTokenColon(<CompatToken>t);
-export const isComma = (t: Token): t is SimpleT<Type.Comma> => cssCt.isTokenComma(<CompatToken>t);
-export const isComment = (t: Token): t is SimpleT<Type.Comment> => cssCt.isTokenComment(<CompatToken>t);
-export const isDelim = (t: Token): t is Delim => cssCt.isTokenDelim(<CompatToken>t);
-export const isDimension = (t: Token): t is Dimension => cssCt.isTokenDimension(<CompatToken>t);
-export const isEof = (t: Token): t is SimpleT<Type.EOF> => cssCt.isTokenEOF(<CompatToken>t);
-export const isFunction = (t: Token): t is Function => cssCt.isTokenFunction(<CompatToken>t);
-export const isHash = (t: Token): t is Hash => cssCt.isTokenHash(<CompatToken>t);
-export const isIdent = (t: Token): t is Ident => cssCt.isTokenIdent(<CompatToken>t);
-export const isNumber = (t: Token): t is Number => cssCt.isTokenNumber(<CompatToken>t);
-export const isNumeric = (t: Token): t is AnyNumeric => cssCt.isTokenNumeric(<CompatToken>t);
-export const isOpenCurly = (t: Token): t is SimpleT<Type.OpenCurly> => cssCt.isTokenOpenCurly(<CompatToken>t);
-export const isOpenParen = (t: Token): t is SimpleT<Type.OpenParen> => cssCt.isTokenOpenParen(<CompatToken>t);
-export const isOpenSquare = (t: Token): t is SimpleT<Type.OpenSquare> => cssCt.isTokenOpenSquare(<CompatToken>t);
-export const isPercentage = (t: Token): t is Percentage => cssCt.isTokenPercentage(<CompatToken>t);
-export const isSemicolon = (t: Token): t is SimpleT<Type.Semicolon> => cssCt.isTokenSemicolon(<CompatToken>t);
-export const isString = (t: Token): t is String => cssCt.isTokenString(<CompatToken>t);
-export const isUrl = (t: Token): t is Url => cssCt.isTokenURL(<CompatToken>t);
-export const isUnicodeRange = (t: Token): t is UnicodeRange => cssCt.isTokenUnicodeRange(<CompatToken>t);
-export const isRaw = (t: Token): t is Raw => cssCt.isTokenWhiteSpaceOrComment(<CompatToken>t);
-export const isSpace = (t: Token): t is SimpleT<Type.Whitespace> => cssCt.isTokenWhitespace(<CompatToken>t);
+export const isBadString: GuardSimple<Type.BadString> = (t: Token): t is SimpleT<Type.BadString> => cssCt.isTokenBadString(<CompatToken>t);
+export const isBadUrl: GuardSimple<Type.BadURL> = (t: Token): t is SimpleT<Type.BadURL> => cssCt.isTokenBadURL(<CompatToken>t);
+export const isCDC: GuardSimple<Type.CDC> = (t: Token): t is SimpleT<Type.CDC> => cssCt.isTokenCDC(<CompatToken>t);
+export const isCDO: GuardSimple<Type.CDO> = (t: Token): t is SimpleT<Type.CDO> => cssCt.isTokenCDO(<CompatToken>t);
+export const isCloseCurly: GuardSimple<Type.CloseCurly> = (t: Token): t is SimpleT<Type.CloseCurly> => cssCt.isTokenCloseCurly(<CompatToken>t);
+export const isCloseParen: GuardSimple<Type.CloseParen> = (t: Token): t is SimpleT<Type.CloseParen> => cssCt.isTokenCloseParen(<CompatToken>t);
+export const isCloseSquare: GuardSimple<Type.CloseSquare> = (t: Token): t is SimpleT<Type.CloseSquare> => cssCt.isTokenCloseSquare(<CompatToken>t);
+export const isColon: GuardSimple<Type.Colon> = (t: Token): t is SimpleT<Type.Colon> => cssCt.isTokenColon(<CompatToken>t);
+export const isComma: GuardSimple<Type.Comma> = (t: Token): t is SimpleT<Type.Comma> => cssCt.isTokenComma(<CompatToken>t);
+export const isComment: GuardSimple<Type.Comment> = (t: Token): t is SimpleT<Type.Comment> => cssCt.isTokenComment(<CompatToken>t);
+export const isDelim: Guard<Delim> = (t: Token): t is Delim => cssCt.isTokenDelim(<CompatToken>t);
+export const isDimension: Guard<Dimension> = (t: Token): t is Dimension => cssCt.isTokenDimension(<CompatToken>t);
+export const isEof: GuardSimple<Type.EOF> = (t: Token): t is SimpleT<Type.EOF> => cssCt.isTokenEOF(<CompatToken>t);
+export const isFunction: Guard<Function> = (t: Token): t is Function => cssCt.isTokenFunction(<CompatToken>t);
+export const isHash: Guard<Hash> = (t: Token): t is Hash => cssCt.isTokenHash(<CompatToken>t);
+export const isIdent: Guard<Ident> = (t: Token): t is Ident => cssCt.isTokenIdent(<CompatToken>t);
+export const isNumber: Guard<Number> = (t: Token): t is Number => cssCt.isTokenNumber(<CompatToken>t);
+export const isNumeric: Guard<AnyNumeric> = (t: Token): t is AnyNumeric => cssCt.isTokenNumeric(<CompatToken>t);
+export const isOpenCurly: GuardSimple<Type.OpenCurly> = (t: Token): t is SimpleT<Type.OpenCurly> => cssCt.isTokenOpenCurly(<CompatToken>t);
+export const isOpenParen: GuardSimple<Type.OpenParen> = (t: Token): t is SimpleT<Type.OpenParen> => cssCt.isTokenOpenParen(<CompatToken>t);
+export const isOpenSquare: GuardSimple<Type.OpenSquare> = (t: Token): t is SimpleT<Type.OpenSquare> => cssCt.isTokenOpenSquare(<CompatToken>t);
+export const isPercentage: Guard<Percentage> = (t: Token): t is Percentage => cssCt.isTokenPercentage(<CompatToken>t);
+export const isSemicolon: GuardSimple<Type.Semicolon> = (t: Token): t is SimpleT<Type.Semicolon> => cssCt.isTokenSemicolon(<CompatToken>t);
+export const isString: Guard<String> = (t: Token): t is String => cssCt.isTokenString(<CompatToken>t);
+export const isUrl: Guard<Url> = (t: Token): t is Url => cssCt.isTokenURL(<CompatToken>t);
+export const isUnicodeRange: Guard<UnicodeRange> = (t: Token): t is UnicodeRange => cssCt.isTokenUnicodeRange(<CompatToken>t);
+export const isRaw: Guard<Raw> = (t: Token): t is Raw => cssCt.isTokenWhiteSpaceOrComment(<CompatToken>t);
+export const isSpace: GuardSimple<Type.Whitespace> = (t: Token): t is SimpleT<Type.Whitespace> => cssCt.isTokenWhitespace(<CompatToken>t);
 
 export function isTokenValue<T extends AnyWithValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V, ct: Token): ct is WithValue<T, V>;
 export function isTokenValue<T extends AnyWithValue, V extends ValueType>(g: Guard<T>, values: readonly V[] | V): Guard<WithValue<T, V>>;
@@ -150,27 +163,20 @@ export function isDimensionUnit<U extends string>(values: readonly U[] | U, ct: 
 
 // MARK: Create (extended)
 
-type TokenWithType<T extends Type> = Extract<AnyToken, { [0]: T }>;
+type TokenWithType<N extends Type> = Extract<AnyToken, { [0]: N }>;
 
-const singleTokenValues: Partial<Record<Type, string>> = typed<Record<TypeWithSingleValue, string>>({
-  [Type.CDC]: '-->',
-  [Type.CDO]: '<!--',
-  [Type.CloseCurly]: '}',
-  [Type.CloseParen]: ')',
-  [Type.CloseSquare]: ']',
-  [Type.Colon]: ':',
-  [Type.Comma]: ',',
-  [Type.Semicolon]: ';',
-  [Type.OpenCurly]: '{',
-  [Type.OpenParen]: '(',
-  [Type.OpenSquare]: '[',
-});
+const singleTokenValues: Partial<Record<Type, string>> = {
+  [Type.OpenCurly]: '{', [Type.OpenParen]: '(', [Type.OpenSquare]: '[',
+  [Type.CloseCurly]: '}', [Type.CloseParen]: ')', [Type.CloseSquare]: ']',
+  [Type.Colon]: ':', [Type.Comma]: ',', [Type.Semicolon]: ';',
+  [Type.CDC]: '-->', [Type.CDO]: '<!--',
+} satisfies Record<TypeWithSingleValue, string>;
 
-export function token<T extends TypeWithSingleValue>(type: T): TokenWithType<T>;
-export function token<T extends TypeSimple>(type: T, css: string): TokenWithType<T>;
-export function token<T extends TypeWithData>(type: T, css: string, value: TokenWithType<T>[4]): TokenWithType<T>;
-export function token<T extends Type>(type: T, css?: string, value?: TokenWithType<T>[4]): TokenWithType<T> {
-  return <TokenWithType<T>>[ type, singleTokenValues[type] ?? css, -1, -1, value ];
+export function token<N extends TypeWithSingleValue>(type: N): TokenWithType<N>;
+export function token<N extends TypeSimple>(type: N, css: string): TokenWithType<N>;
+export function token<N extends TypeWithData>(type: N, css: string, value: TokenWithType<N>[4]): TokenWithType<N>;
+export function token<N extends Type>(type: N, css?: string, value?: TokenWithType<N>[4]): TokenWithType<N> {
+  return <TokenWithType<N>>[ type, singleTokenValues[type] ?? css, -1, -1, value ];
 }
 
 export function delim(value: string): Delim {
@@ -246,17 +252,20 @@ class TokenizerImpl implements Tokenizer {
   peek(): Token {
     this.lastError = undefined;
     return this.#nextToken ??= this.#stream.nextToken();
+    //this.#nextToken ??= this.#stream.nextToken(); console.log("peek", this.#nextToken); return this.#nextToken;
   }
 
   consume(): Token {
     if (this.#nextToken) {
       const currentToken = this.#nextToken;
       this.#nextToken = undefined;
+      //console.log("consume cur", currentToken);
       return currentToken;
     } else {
       this.lastError = undefined;
       this.#nextToken = undefined;
       return this.#stream.nextToken();
+      //const t = this.#stream.nextToken(); console.log("consume", t); return t;
     }
   }
 
@@ -285,7 +294,6 @@ class TokenizerImpl implements Tokenizer {
     const ct = this.consumeIf(ctGuard);
     if (!isDefined(ct))
       return;
-    this.consume();
     return this.consumeRaws();
   }
 
