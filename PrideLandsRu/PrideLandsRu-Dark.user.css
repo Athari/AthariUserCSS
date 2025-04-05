@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           PrideLands.ru – Dark [Ath]
 @namespace      athari
-@version        1.4.0
+@version        1.5.0
 @description    Dark theme for ПрайдЛендс.ру (PrideLands.ru) with flexible layout and configurable fonts andd colors.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -509,11 +509,9 @@
         }
       }
     }
-    /* gallery */
-    td[background="i/tline.gif"] {
+    /*gallery*/
+    td:has(> img[src="i/lline.gif"]) + td > table[cellspacing="5"][cellpadding="0"]:not([width]):not([border]) {
       width: 100% !important;
-    }
-    td:has(> img[src="i/lline.gif"]) + td > table:not([width="550"]) {
       display: flex;
       gap: .4em;
       flex-flow: row wrap;
@@ -540,6 +538,16 @@
         }
       }
     }
+    /*music*/
+    td:has(> img[src="i/lline.gif"]) + td > table {
+      &[width] {
+        width: auto !important;
+        margin: 0 auto;
+      }
+      td.t0[width] {
+        width: auto !important;
+      }
+    }
     /*games*/
     table[border="0"][align="center"][width="550"] {
       width: auto !important;
@@ -550,6 +558,42 @@
       gap: 1em;
       > table {
         break-inside: avoid;
+      }
+    }
+    /*library - edit*/
+    form[action="?p=texts&a=modify"] {
+      column-width: 400px;
+      gap: 1em;
+      td[width="391"],
+      > table[width] {
+        width: 100% !important;
+        break-inside: avoid;
+        b {
+          display: flex;
+          flex-flow: row wrap;
+          input {
+            flex: 1;
+          }
+          + br {
+            display: none;
+          }
+        }
+        br + br {
+          display: none;
+        }
+        textarea {
+          field-sizing: content;
+          width: 100% !important;
+          height: auto !important;
+        }
+        td[background="i/fr_1.gif"] {
+          background-size: 100%;
+        }
+        td:has(> img[src="i/fr_3.gif"]) {
+          img[src="i/fr_3.gif"] {
+            width: 100%;
+          }
+        }
       }
     }
     /*msg head*/
@@ -582,7 +626,7 @@
     img[src="images/paw1.gif"],
     img[src="images/paw2.gif"],
     table[width="600"] img:is([src^="i/"]):not([src="i/tonew.gif"], [src="i/tolast.gif"], [src^="i/smile_"]) {
-      filter: invert(1) hue-rotate(calc(180deg + var(--h) * 1deg));
+      filter: invert(1) hue-rotate(180deg);
     }
     body {
       background: var(--mainbg);
@@ -650,6 +694,7 @@
 
   a:has(> img[src="images/midi.gif"]),
   a:has(> img[src="images/txt.gif"]),
+  a:has(> img[src="images/wav.gif"]),
   a:has(> img[src="images/mp32.gif"]) {
     position: relative;
     text-decoration: none;
@@ -676,6 +721,11 @@
   a:has(> img[src="images/txt.gif"]) {
     &::before, &::after {
       content: "TXT";
+    }
+  }
+  a:has(> img[src="images/wav.gif"]) {
+    &::before, &::after {
+      content: "WAV";
     }
   }
 
