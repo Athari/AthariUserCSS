@@ -24,7 +24,10 @@ interface Opts {
   removeOriginal: boolean;
   removeUnrelated: boolean;
   removeUnsupported: boolean;
-  commentPrefix: string,
+  includeLegacy: boolean;
+  includeLegacyDelta: boolean;
+  extraRootSelectors: string[];
+  commentPrefix: string;
 
   level: Granularity;
   important: boolean | null;
@@ -36,19 +39,20 @@ interface Opts {
   rootUnit: Cu.AbsoluteLength;
 
   sizeToRem: boolean;
-  sizeVars: boolean;
+  sizeCombine: boolean;
   sizeVarMin: Opt<string>;
   sizeVarMax: Opt<string>;
   sizeVarOffset: Opt<string>;
-  sizeVarPrefix: string;
+  sizeVarMult: Opt<string>;
+  sizeVarPrefix: Opt<string>;
 
   lineHeightToRem: boolean;
-  lineHeightVars: boolean;
+  lineHeightCombine: boolean;
   lineHeightVarMin: Opt<string>;
   lineHeightVarMax: Opt<string>;
   lineHeightVarOffset: Opt<string>;
   lineHeightVarMult: Opt<string>;
-  lineHeightVarPrefix: string;
+  lineHeightVarPrefix: Opt<string>;
 
   familyVars: boolean;
   familyVarPrefix: string;
@@ -59,6 +63,9 @@ const defaultOpts: Opts = {
   removeOriginal: true,
   removeUnrelated: false,
   removeUnsupported: false,
+  includeLegacy: false,
+  includeLegacyDelta: false,
+  extraRootSelectors: [],
   commentPrefix: '',
 
   level: 'decl',
@@ -71,18 +78,19 @@ const defaultOpts: Opts = {
   rootUnit: 'px',
 
   sizeToRem: true,
-  sizeVars: true,
-  sizeVarMin: 'sf',
-  sizeVarMax: 'st',
-  sizeVarOffset: 'so',
+  sizeCombine: true,
+  sizeVarMin: 's0',
+  sizeVarMax: 's1',
+  sizeVarMult: 'sa',
+  sizeVarOffset: 'sb',
   sizeVarPrefix: 's-',
 
   lineHeightToRem: true,
-  lineHeightVars: true,
-  lineHeightVarMin: 'lf',
-  lineHeightVarMax: 'lt',
-  lineHeightVarMult: 'lm',
-  lineHeightVarOffset: 'lk',
+  lineHeightCombine: true,
+  lineHeightVarMin: 'l0',
+  lineHeightVarMax: 'l1',
+  lineHeightVarMult: 'la',
+  lineHeightVarOffset: 'lb',
   lineHeightVarPrefix: 'l-',
 
   familyVars: true,
@@ -98,13 +106,13 @@ type KwRefontable = typeof kwRefontable[number];
 
 interface NumericPropOptions {
   prop: KwRefontable,
-  isResizeEnabled: boolean;
-  areVarsEnabled: boolean;
-  varMin: Opt<string>;
-  varMax: Opt<string>;
-  varMult: Opt<string>;
-  varOffset: Opt<string>;
-  varPrefix: string;
+  propToRem: boolean;
+  propCombine: boolean;
+  propMin: Opt<string>;
+  propMax: Opt<string>;
+  propMult: Opt<string>;
+  propOffset: Opt<string>;
+  propPrefix: Opt<string>;
 }
 
 interface VarEntry {
@@ -121,6 +129,8 @@ interface CreateDeclFn { (prop: KwRefontable, value: string): Css.Decl }
 class Refonter {
   #opts: Opts;
   #sizeOpts: CvFont.SizeOptions;
+  #fontSizeOpts: NumericPropOptions;
+  #lineHeightSizeOpts: NumericPropOptions;
   #result: PostCss.Result;
   #rootSize: Cv.Numeric<Cu.AbsoluteLength>;
   #vars = new Map<string, VarEntry>();
@@ -129,55 +139,77 @@ class Refonter {
     this.#rootSize = Cv.numeric(opts.rootSize, opts.rootUnit);
     this.#opts = opts;
     this.#sizeOpts = { defaultFontSize: Cv.convertLengthStrict(this.#rootSize, 'px').value };
+    this.#fontSizeOpts = this.#toNumericOpts('font-size', 'size');
+    this.#lineHeightSizeOpts = this.#toNumericOpts('line-height', 'lineHeight');
     this.#result = result;
   }
 
   *buildVars(): ArrayIterator<Css.NodeBase> {
     const self = this;
-    yield Css.comment({ text: `${this.#opts.commentPrefix}generated fonts` })
+    yield Css.comment({ text: `${this.#opts.commentPrefix}generated fonts` });
     yield Css.rule({
       selector: ':root',
-      nodes: [...function* () {
-        yield Css.decl({
+      nodes: [
+        Css.decl({
           prop: kw.prop.font.size,
           value: Cv.stringify(self.#rootSize),
-        });
-        yield* [...self.#vars.values()]
-          .orderBy(v => v.kind, compare)
-          .thenByDescending(v => v.count, compare)
-          .thenBy(v => v.prop, compare)
-          .selectMany(({ prop, value, kind, count }) => [
-            Css.comment({ text: `${self.#opts.commentPrefix}${kind} n=${count}` }),
-            Css.decl({ prop, value }),
-          ]);
-      }()],
+        }),
+      ],
+    });
+    yield Css.rule({
+      selectors: [ ':root', ...this.#opts.extraRootSelectors ],
+      nodes: [...self.#vars.values()]
+        .orderBy(v => v.kind, compare)
+        .thenByDescending(v => v.count, compare)
+        .thenBy(v => v.prop, compare)
+        .selectMany(({ prop, value, kind, count }) => [
+          Css.comment({ text: `${self.#opts.commentPrefix}${kind} n=${count}` }),
+          Css.decl({ prop, value }),
+        ])
+        .toArray(),
     });
   }
 
+  *buildLegacy(): ArrayIterator<Css.NodeBase> {
+    if (!this.#opts.includeLegacy && !this.#opts.includeLegacyDelta)
+      return;
+
+    if (this.#opts.includeLegacy) {
+      yield Css.comment({ text: `${this.#opts.commentPrefix}generated legacy fonts` });
+      for (const legacyFontSize of [ 1, 2, 3, 4, 5, 6, 7 ] as const) {
+        const fontSize = CvFont.getPixelSizeForFontTag(legacyFontSize, this.#sizeOpts);
+        const expr = this.buildNumericExpr(Cv.numeric(fontSize, 'px'), this.#fontSizeOpts);
+        yield createLegacyRule(legacyFontSize, expr);
+      }
+    }
+
+    // TODO: Clamp legacy delta font sizes
+    if (this.#opts.includeLegacyDelta) {
+      const deltaMult = 1.1;
+      for (const [ signChar, sign ] of [ [ '-', -1 ], [ '+', 1 ] ] as const) {
+        for (const legacyFontSizeDelta of [ 1, 2, 3, 4, 5 ] as const) {
+          const expr = `${Math.pow(deltaMult, legacyFontSizeDelta * sign).toFixed(this.#opts.precision)}em`;
+          yield createLegacyRule(`${signChar}${legacyFontSizeDelta}`, expr);
+        }
+      }
+    }
+
+    function createLegacyRule(legacyFontSize: string | number, value: string) {
+      return Css.rule({
+        selector: `font[size="${legacyFontSize}"]`,
+        nodes: [
+          Css.decl({ prop: kw.prop.font.size, value, important: true }),
+        ],
+      });
+    }
+  }
+
   *generateDecls(font: CvFont.Font, createDeclFn: CreateDeclFn): ArrayIterator<Css.Decl> {
-    const sizeDecl = this.#generateNumericDecl(font.size, createDeclFn, {
-      prop: 'font-size',
-      isResizeEnabled: this.#opts.sizeToRem,
-      areVarsEnabled: this.#opts.sizeVars,
-      varMin: this.#opts.sizeVarMin,
-      varMax: this.#opts.sizeVarMax,
-      varMult: undefined,
-      varOffset: this.#opts.sizeVarOffset,
-      varPrefix: this.#opts.sizeVarPrefix,
-    });
+    const sizeDecl = this.#generateNumericDecl(font.size, createDeclFn, this.#fontSizeOpts);
     if (isDefined(sizeDecl))
       yield sizeDecl;
 
-    const lineHeightDecl = this.#generateNumericDecl(font.lineHeight, createDeclFn, {
-      prop: 'line-height',
-      isResizeEnabled: this.#opts.lineHeightToRem,
-      areVarsEnabled: this.#opts.lineHeightVars,
-      varMin: this.#opts.lineHeightVarMin,
-      varMax: this.#opts.lineHeightVarMax,
-      varMult: this.#opts.lineHeightVarMult,
-      varOffset: this.#opts.lineHeightVarOffset,
-      varPrefix: this.#opts.lineHeightVarPrefix,
-    });
+    const lineHeightDecl = this.#generateNumericDecl(font.lineHeight, createDeclFn, this.#lineHeightSizeOpts);
     if (isDefined(lineHeightDecl))
       yield lineHeightDecl;
 
@@ -187,7 +219,7 @@ class Refonter {
   }
 
   #generateNumericDecl(cv: Opt<Cv.AnyValue>, createDeclFn: CreateDeclFn, opts: NumericPropOptions): Opt<Css.Decl> {
-    if (!opts.isResizeEnabled || !isDefined(cv))
+    if (!opts.propToRem || !isDefined(cv))
       return;
 
     const cvNum = this.#getActualValue(cv);
@@ -195,12 +227,12 @@ class Refonter {
       return;
 
     const expr = this.buildNumericExpr(cvNum, opts);
-    if (opts.areVarsEnabled) {
+    if (opts.propCombine) {
       delete cvNum.raws;
       const valueStr = Cv.stringify(cvNum);
       const varIdent = this.#opts.prettyVars
-        ? `--${opts.varPrefix}${this.#formatIdent(valueStr)}`
-        : Kw.encodeIdent(`--${opts.varPrefix}${valueStr}`);
+        ? `--${opts.propPrefix}${this.#formatIdent(valueStr)}`
+        : Kw.encodeIdent(`--${opts.propPrefix}${valueStr}`);
       const varName = this.#setVar({
         prop: varIdent,
         value: expr,
@@ -214,28 +246,28 @@ class Refonter {
 
   private buildNumericExpr(cvNum: Cv.Numeric<Cu.AbsoluteLength>, opts: NumericPropOptions) {
     const ref = (k: keyof NumericPropOptions, fallback: string) =>
-      this.#opts.fallbacks ? `var(--${opts[k]}, ${fallback})` : `var(--${opts[k]})`;
+      this.#opts.fallbacks ? `var(--${opts[k]},${fallback})` : `var(--${opts[k]})`;
 
     let expr = (Cv.convertLengthStrict(cvNum, this.#opts.rootUnit).value / this.#opts.rootSize).toFixed(2);
     expr = `${expr}rem`;
 
     // linear
-    if (isDefined(opts.varMult))
-      expr = `${ref('varMult', '1')} * ${expr}`;
-    if (isDefined(opts.varOffset))
-      expr = `${ref('varOffset', '0px')} + ${expr}`;
-    if (isDefined(opts.varMult) || isDefined(opts.varOffset))
+    if (isDefined(opts.propMult))
+      expr += ` * ${ref('propMult', '1')}`;
+    if (isDefined(opts.propOffset))
+      expr += ` + ${ref('propOffset', '0px')}`;
+    if (isDefined(opts.propMult) || isDefined(opts.propOffset))
       expr = `calc(${expr})`;
 
     // clamp
-    if (isDefined(opts.varMin) || isDefined(opts.varMax)) {
-      const refMin = ref('varMin', /*'-infinity'*/'0px');
-      const refMax = ref('varMax', /*'infinity'*/'1e9px');
-      if (isDefined(opts.varMin) && isDefined(opts.varMax))
+    if (isDefined(opts.propMin) || isDefined(opts.propMax)) {
+      const refMin = ref('propMin', '0px');
+      const refMax = ref('propMax', '1e9px');
+      if (isDefined(opts.propMin) && isDefined(opts.propMax))
         expr = `clamp(${refMin}, ${expr}, ${refMax})`;
-      else if (isDefined(opts.varMin))
+      else if (isDefined(opts.propMin))
         expr = `max(${refMin}, ${expr})`;
-      else if (isDefined(opts.varMax))
+      else if (isDefined(opts.propMax))
         expr = `min(${refMax}, ${expr})`;
     }
 
@@ -255,6 +287,16 @@ class Refonter {
       kind: 'font-family',
     });
     return createDeclFn(kw.prop.font.family, `var(${varName})`);
+  }
+
+  #toNumericOpts(prop: KwRefontable, name: 'size' | 'lineHeight'): NumericPropOptions {
+    return {
+      ...([ 'ToRem', 'Combine' ] as const).reduce(
+        (a, k) => (a[`prop${k}`] = this.#opts[`${name}${k}`], a),  <NumericPropOptions>{}),
+      ...([ 'Min', 'Max', 'Mult', 'Offset', 'Prefix' ] as const).reduce(
+        (a, k) => (a[`prop${k}`] = this.#opts[`${name}Var${k}`], a),  <NumericPropOptions>{}),
+      prop,
+    };
   }
 
   #getActualValue(cv: Cv.AnyValue): Opt<Cv.Numeric<Cu.AbsoluteLength>> {
@@ -385,6 +427,7 @@ export default PostCss.declarePluginOpt<RefontOptions>('refont', defaultOpts, (o
           root.walkRules(rule => processRule(rule, refonter, opts));
           break;
       }
+      root.prepend(...refonter.buildLegacy());
       root.prepend(...refonter.buildVars());
       root.cleanRaws();
     },

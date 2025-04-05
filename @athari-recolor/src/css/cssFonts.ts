@@ -583,8 +583,10 @@ export function getPixelSizeForKeyword(keyword: string, opts?: Opt<SizeOptions>)
 }
 
 /** Convert N from legacy `<font size=N>` to pixel font size. */
+export function getPixelSizeForFontTag(size: IntRange<0, 8>, opts?: Opt<SizeOptions>): number;
+export function getPixelSizeForFontTag(size: number, opts?: Opt<SizeOptions>): Opt<number>;
 export function getPixelSizeForFontTag(size: number, opts?: Opt<SizeOptions>): Opt<number> {
-  return getSizeProc(size + 1, opts);
+  return getSizeProc(size, opts);
 }
 
 function getSizeProc(col: number, opts?: Opt<SizeOptions>): Opt<number> {
