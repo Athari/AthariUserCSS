@@ -1,12 +1,14 @@
-import { fail } from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { isRegExp } from 'node:util/types';
 import { Optional, SetComplement } from 'utility-types';
 import { cssTokenRegExps } from '../commonUtils.ts';
 import { PostCss, Css, Sel } from '../css/index.ts';
 import {
-  GuardAny, SubUnion, Opt, OptOptObject, OneOrArray, KeyOfAny, Counter, RegExpTemplate,
-  isSome, isArray, isString, objectAssignedValues, objectEntries, toAssignedArrayIfNeeded, throwError, assertNever, inspectPretty,
+  GuardAny, SubUnion, Opt, OptObject, OneOrArray, KeyOfAny, Counter, RegExpTemplate,
+  isAssigned, isSome, isArray, isString, objectAssignedValues, objectEntries, toAssignedArrayIfNeeded, throwError, assertNever, inspectPretty,
 } from '../utils.ts';
+
+const debug = true as boolean;
 
 // MARK: Types: CSS
 
@@ -114,12 +116,35 @@ interface RegExpMatch<T extends Node> {
 
 type TransformerOptions<T extends Node> = {
   [N in keyof NodePropMap<T>]?: Opt<OneOrArray<TransOption<T, N>>>;
+} & {
+  defaultOperation?: Opt<TransOp<T>>;
 };
 
-export interface RegularTransformerPluginOptions {
-  css?: Opt<TransformerOptions<Css.ChildNode>>;
-  selector?: Opt<TransformerOptions<Sel.Node>>;
+interface Opts {
+  css: TransformerOptions<Css.ChildNode>;
+  selector: TransformerOptions<Sel.Node>;
 }
+
+export type RegularTransformerOptions = OptObject<Opts>;
+
+const defaultOpts: Opts = {
+  css: {
+    atrule: [],
+    comment: [],
+    decl: [],
+  },
+  selector: {
+    attribute: [],
+    class: [],
+    combinator: [],
+    comment: [],
+    id: [],
+    nesting: [],
+    pseudo: [],
+    tag: [],
+    universal: [],
+  },
+};
 
 const enum TransformCode { Matched = 1, MatchedBreak = 2, NotMatched = 3 };
 
@@ -188,7 +213,10 @@ function getTransformer<T extends Node>(
           if (testRegex(node, ctxOp, ctxNode) === TransformCode.NotMatched)
             return result;
 
-          for (const operation of toAssignedArrayIfNeeded(option.operations)) {
+          const operations = toAssignedArrayIfNeeded(option.operations);
+          if (isAssigned(options.defaultOperation))
+            operations.push({ operation: options.defaultOperation })
+          for (const operation of operations) {
             if (Css.isNode(node))
               result.merge(performCssOperation(node, operation as TransOpOption<Css.ChildNode>, ctxOp, ctxNode), operation.operation);
             else if (Sel.isNode(node))
@@ -287,7 +315,7 @@ function getTransformer<T extends Node>(
           return TransformCode.MatchedBreak;
         }
       }
-      fail(`Missing node parent`);
+      assert.fail(`Missing node parent`);
     }
   }
 
@@ -316,7 +344,7 @@ function getTransformer<T extends Node>(
       if (!matcher)
         continue;
 
-      const { re, find, flags, negate }: OptOptObject<{ re: RegExp, find: string[], flags: string, negate: boolean }> =
+      const { re, find, flags, negate }: Opt<OptObject<{ re: RegExp, find: string[], flags: string, negate: boolean }>> =
         isRegExp(matcher) ?
           { re: matcher } :
         isString(matcher) ?
@@ -331,11 +359,11 @@ function getTransformer<T extends Node>(
           { ...matcher, re: undefined, find: [ matcher.find ] } :
           assertNever(matcher.find);
 
-      yield {
+      yield dump("transform match", {
         prop: nodeProp,
         negate: negate ?? false,
         regex: re ?? buildRegex(find ?? [], flags ?? flagsDefault ?? 'i'),
-      };
+      });
     }
   }
 
@@ -343,7 +371,9 @@ function getTransformer<T extends Node>(
     const tpl = new RegExpTemplate(flags ?? 'i');
     tpl.appendRaw("^");
     for (const s of find) {
-      if (!s.includes('=')) {
+      if (s.startsWith('/') && s.endsWith('/')) {
+        tpl.appendRaw(s.slice(1, -2));
+      } else if (!s.includes('=')) {
         tpl.appendRawEscaped(s);
       } else {
         const [ name, key = "" ] = s.split('=', 2) as [ string, keyof typeof cssTokenRegExps ];
@@ -368,26 +398,18 @@ function getTransformer<T extends Node>(
   }
 }
 
+// MARK: Utils
+
+function dump<T>(msg: string, v: T): T {
+  if (debug)
+    console.log(msg, inspectPretty(v));
+  return v;
+}
+
 // MARK: Plugin
 
-export default PostCss.declarePluginOpt<RegularTransformerPluginOptions>('regular-transformer', {
-  css: {
-    atrule: [],
-    comment: [],
-    decl: [],
-  },
-  selector: {
-    attribute: [],
-    class: [],
-    combinator: [],
-    comment: [],
-    id: [],
-    nesting: [],
-    pseudo: [],
-    tag: [],
-    universal: [],
-  },
-}, (opts: RegularTransformerPluginOptions) => {
+export default PostCss.declarePluginOpt<RegularTransformerOptions>('regular-transformer', defaultOpts, (opts: RegularTransformerOptions) => {
+  dump("transform", opts);
   const cssTransforms = opts.css ? objectAssignedValues(getTransformer(opts.css, cssNodePropMap)).flat(1) : [];
   const selTransforms = opts.selector ? objectAssignedValues(getTransformer(opts.selector, selNodePropMap)).flat(1) : [];
 
