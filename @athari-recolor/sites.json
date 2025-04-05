@@ -29,9 +29,27 @@
         operator: '*=',
         insensitive: true,
       },
-      derandom: { enabled: false },
-      merge: { enabled: false },
-      remove: { enabled: false },
+      derandom: {
+        enabled: false,
+      },
+      merge: {
+        enabled: false,
+      },
+      remove: {
+        enabled: false,
+        css: { defaultOperation: 'remove' },
+        selector: { defaultOperation: 'removeSelector' },
+      },
+      removeRecolor: {
+        enabled: false,
+        css: { defaultOperation: 'remove' },
+        selector: { defaultOperation: 'removeSelector' },
+      },
+      removeRefont: {
+        enabled: false,
+        css: { defaultOperation: 'remove' },
+        selector: { defaultOperation: 'removeSelector' },
+      },
       encoding: 'utf-8',
       combine: true,
       refs: true,
@@ -216,7 +234,6 @@
         encoding: 'windows-1251',
         combine: true,
       },
-      // TODO: Transform absolute font units (px, pt) to relative
       html: [
         { name: "tracker.html", url: "https://nnmclub.to/forum/tracker.php" },
         { name: "agreement.html", url: "https://nnmclub.to/forum/info.php?show=user_agreement" },
@@ -226,11 +243,41 @@
       ],
     },
 
+    // MARK: PrideLands.ru
+    {
+      name: "pridelands.ru",
+      options: {
+        encoding: 'windows-1251',
+        combine: true,
+        refont: {
+          enabled: true,
+          includeLegacy: true,
+          includeLegacyDelta: false,
+          extraRootSelectors: [ 'table[width="640"]:nth-child(2)' ],
+        },
+        removeRecolor: {
+          enabled: true,
+          selector: {
+            class: { name: '/ men_ .* /' },
+          },
+        }
+      },
+      html: [
+        { name: "index.html", url: "http://pridelands.ru/?p=index_m" },
+        { name: "texts.html", url: "http://pridelands.ru/?p=texts" },
+        { name: "music.html", url: "http://pridelands.ru/?p=music-tlk" },
+        { name: "music-midi.html", url: "http://pridelands.ru/?p=music-midi" },
+        { name: "slovar.html", url: "http://pridelands.ru/?p=slovar2&q=+" },
+        { name: "forum-index.html", url: "http://pridelands.ru/forum.php" },
+        { name: "forum-profile.html", url: "http://pridelands.ru/forum.php?a=userinfo&id=1" },
+        { name: "forum-topic.html", url: "http://pridelands.ru/forum.php?tid=3" },
+      ],
+    },
+
     // MARK: Rule34.Paheal
     {
       name: "rule34.paheal.net",
       options: {},
-      // TODO: Find all elements styled in HTML: [...document.querySelectorAll('[style]')].map(e => e.getAttribute('style'))
       html: [
         //{ name: "index.html", url: "https://rule34.paheal.net/" },
       ],

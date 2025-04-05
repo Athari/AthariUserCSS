@@ -91,17 +91,19 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
 
   const runRefontCss = (css: string) => runPostCssSync(inputPath, css, [
     ...optionalPostCssPlugins(opts, {
+      removeRefont: plugins.regularTransformerPlugin,
       refont: plugins.refontPlugin,
     }),
   ]);
 
   const runRecolorCss = (css: string) => runPostCssSync(inputPath, css, [
     ...optionalPostCssPlugins(opts, {
+      removeRecolor: plugins.regularTransformerPlugin,
       recolor: plugins.recolorPlugin,
     }),
   ]);
 
-  const runCleanCss = (css: string) => runPostCssAsync(inputPath, css, [
+  const runCleanCss = (css: string) => runPostCssSync(inputPath, css, [
     plugins.regularTransformerPlugin({
       css: {
         comment: {
@@ -129,7 +131,7 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
     opts.recolor?.enabled === true ? recoloredCss : null,
     opts.refont?.enabled === true ? refontedCss : null,
   ].filter(s => !!s).join("\n\n");
-  const resultCss = await runCleanCss(combinedCss);
+  const resultCss = runCleanCss(combinedCss);
 
   const outputCssPretty = await site.prettifyCode(outputPath, resultCss, 'css');
   const outputCssUserstyle = (opts?.header + outputCssPretty).replace(/^/mg, "  ");

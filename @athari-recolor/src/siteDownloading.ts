@@ -29,9 +29,11 @@ export type PluginKeys = Assigned<{
 export class SiteOptions {
   recolor?: PluginOptions<plugins.RecolorOptions>;
   refont?: PluginOptions<plugins.RefontOptions>;
-  derandom?: PluginOptions<plugins.RegularTransformerPluginOptions>;
+  derandom?: PluginOptions<plugins.RegularTransformerOptions>;
   merge?: PluginOptions<plugins.MergeSelectorsOptions>;
-  remove?: PluginOptions<plugins.RegularTransformerPluginOptions>;
+  remove?: PluginOptions<plugins.RegularTransformerOptions>;
+  removeRecolor?: PluginOptions<plugins.RegularTransformerOptions>;
+  removeRefont?: PluginOptions<plugins.RegularTransformerOptions>;
   styleAttr?: PluginOptions<plugins.StyleAttrOptions>;
   encoding?: Opt<string> = 'utf-8';
   combine?: Opt<boolean> = true;

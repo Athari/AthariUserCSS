@@ -34,7 +34,7 @@
       "name": "Recolor CSS: current site",
       "cwd": "${workspaceFolder}/@athari-recolor",
       "program": "${workspaceFolder}/@athari-recolor/dist/index.js",
-      "args": ["recolor-site-css", "forum.ru-board.com"],
+      "args": ["recolor-site-css", "pridelands.ru"],
       "runtimeArgs": ["--preserve-symlinks"],
       "console": "integratedTerminal",
       "preLaunchTask": "tsc: build - tsconfig.json"
