@@ -10,6 +10,7 @@
 @preprocessor   default
 
 @var            select   ath-theme              "Theme"                  ["leaves:Leaves", "ice:Ice*", "flat:Flat", "custom:Custom"]
+@var            select   ath-background         "Background"             ["paws:Paws*", "black:Black", "gray:Gray", "white:White"]
 @var            checkbox ath-flexible-layout    "Flexible layout"        1
 @var            checkbox ath-flexible-menu      "Flexible menu"          1
 @var            range    ath-layout-width       "Layout width"           [1100, 750, 3000, 50, 'px']
@@ -49,10 +50,12 @@
     --c-black: oklch(from #000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color white n=10 rgb(255, 255, 255) oklch(1 0 180) */
     --c-white: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
-    /* color grey n=3 rgb(128, 128, 128) oklch(6 0 180) */
+    /* color grey n=5 rgb(128, 128, 128) oklch(6 0 180) */
     --c-grey: oklch(from grey calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #197319 n=3 rgb(25, 115, 25) oklch(6 13 21) */
     --c-197319: oklch(from #197319 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color red n=3 rgb(255, 0, 0) oklch(6 14 22) */
+    --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #3c9c61 n=3 rgb(60, 156, 97) oklch(6 14 22) */
     --c-3c9c61: oklch(from #3c9c61 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color silver n=2 rgb(192, 192, 192) oklch(6 0 180) */
@@ -63,8 +66,6 @@
     --c-e4e4e4: oklch(from #e4e4e4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #f0f0f0 n=2 rgb(240, 240, 240) oklch(6 0 180) */
     --c-f0f0f0: oklch(from #f0f0f0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
-    /* color red n=2 rgb(255, 0, 0) oklch(6 14 22) */
-    --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #24aa24 n=2 rgb(36, 170, 36) oklch(6 14 22) */
     --c-24aa24: oklch(from #24aa24 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color blue n=1 rgb(0, 0, 255) oklch(6 14 22) */
@@ -77,6 +78,8 @@
     --c-00c000: oklch(from #00c000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #787878 n=1 rgb(120, 120, 120) oklch(6 0 16) */
     --c-787878: oklch(from #787878 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color maroon n=1 rgb(128, 0, 0) oklch(6 14 22) */
+    --c-maroon: oklch(from maroon calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #8ae68a n=1 rgb(138, 230, 138) oklch(6 14 22) */
     --c-8ae68a: oklch(from #8ae68a calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #97c4aa n=1 rgb(151, 196, 170) oklch(6 14 22) */
@@ -93,6 +96,8 @@
     --c-d5d5d5: oklch(from #d5d5d5 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #d6d6d6 n=1 rgb(214, 214, 214) oklch(6 0 180) */
     --c-d6d6d6: oklch(from #d6d6d6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ff8000 n=1 rgb(255, 128, 0) oklch(6 14 21) */
+    --c-ff8000: oklch(from #ff8000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #30744e n=1 rgb(48, 116, 78) oklch(6 14 21) */
     --c-30744e: oklch(from #30744e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
   }
@@ -261,6 +266,18 @@
     /* font.ntext[color='#FF0000'] */
     color: var(--c-red);
   }
+  [style*="color: #ff0000" i] {
+    /* font[style] */
+    color: var(--c-red) !important;
+  }
+  [style*="border: #808080 solid 1px" i] {
+    /* table.stable[style] */
+    border: 1px solid var(--c-grey) !important;
+  }
+  [style*="border-right: #808080 solid 1px" i] {
+    /* td[style] */
+    border-right: 1px solid var(--c-grey) !important;
+  }
   [bgcolor="\#ffffff" i] {
     /* body[background='i/mainbg.jpg'][link='#197319'][vlink='#197319'][alink='#197319'][bgcolor='#FFFFFF'] */
     background-color: var(--c-white);
@@ -268,6 +285,14 @@
   [bgcolor="\#00c000" i] {
     /* td[width='86'][bgcolor='#00C000'] */
     background-color: var(--c-00c000);
+  }
+  [color="\#800000" i] {
+    /* font[color='#800000'] */
+    color: var(--c-maroon);
+  }
+  [color="\#ff8000" i] {
+    /* font[color='#FF8000'] */
+    color: var(--c-ff8000);
   }
   [bgcolor="\#30744e" i] {
     /* td.cop[background='i/copy_bg.gif'][bgcolor='#30744E'] */
@@ -433,7 +458,8 @@
     line-height: inherit;
   }
   input, textarea, select {
-    font-size: 0.8rem !important;
+    font-size: 0.9rem !important;
+    line-height: inherit;
   }
   body {
     margin: 0;
@@ -467,6 +493,12 @@
     border-radius: 8px;
     &:hover {
       filter: brightness(1.3);
+    }
+  }
+
+  a[href*="a=att"] {
+    img {
+      max-width: 100%;
     }
   }
 
@@ -645,7 +677,8 @@
       padding: .2em .4em;
     }
     /* controls */
-    input, textarea {
+    input,
+    textarea {
       padding: .3em .4em;
       background: var(--ath-gradient-gray-inv);
       box-shadow: var(--ath-box-shadow-3d-gray-inv), var(--ath-box-shadow);
@@ -655,7 +688,10 @@
         background: var(--ath-gradient-gray-inv-light);
       }
     }
-    button, select, input:is([type=button], [type=submit], [type=search]) {
+    button,
+    select,
+    input:is([type=button], [type=submit], [type=search]),
+    input[type=file]::-webkit-file-upload-button {
       padding: .3em .8em;
       background: var(--ath-gradient-gray);
       box-shadow: var(--ath-box-shadow-3d-gray), var(--ath-box-shadow);
@@ -668,6 +704,9 @@
         background: var(--ath-gradient-gray-inv-light);
         box-shadow: var(--ath-box-shadow-3d-gray-inv), var(--ath-box-shadow);
       }
+    }
+    input[type=file]::-webkit-file-upload-button {
+      margin: -.3em 1em -.4em -.4em;
     }
     option {
       background: var(--c-silver);
@@ -688,8 +727,17 @@
     table[width="600"] img:is([src^="i/"]):not([src="i/tonew.gif"], [src="i/tolast.gif"], [src^="i/smile_"]) {
       filter: invert(1) hue-rotate(180deg);
     }
-    body {
+    body:not(#\0) {
       background: var(--bg-paws);
+      @container style(--ath-background: black) {
+        background: black;
+      }
+      @container style(--ath-background: gray) {
+        background: gray;
+      }
+      @container style(--ath-background: white) {
+        background: white;
+      }
     }
   }
   img:is([src="i/tonew.gif"], [src="i/tolast.gif"]) {
@@ -943,6 +991,7 @@
     --c-e4e4e4: oklch(from var(--c-00c000) calc(l * 0.8) calc(c * 0.1) h);
     --c-f0f0f0: oklch(from var(--c-00c000) calc(l * 0.8) calc(c * 0.05) h);
     --c-grey: oklch(from var(--c-00c000) calc(l * 1.1) calc(c * 0.2) h);
+    --c-ff8000: oklch(from #960 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
 
     --menu-color-link: var(--c-black);
     --menu-color-inner: oklch(from var(--menu-color-main) calc(l * 0.5) c calc(h * 0.9) / 50%);
