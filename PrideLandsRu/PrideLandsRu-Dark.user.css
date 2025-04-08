@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           PrideLands.ru – Dark [Ath]
 @namespace      athari
-@version        2.2.0
+@version        2.3.0
 @description    Dark theme for ПрайдЛендс.ру (PrideLands.ru) with new themes, flexible layout and configurable fonts and colors.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -1115,6 +1115,8 @@
     --menu-3d-shadow:
       inset 2px 2px 4px 0 #ffa6,
       inset -2px -2px 4px 0 #001;
+    --menu-text-shadow:
+      1px 1px 2px #000c;
     --menu-gradient-side:
       var(--c-black) var(--menu-border-inner),
       #0000 var(--menu-border-inner),
@@ -1209,6 +1211,7 @@
       td:has(.men_s) {
         line-height: 1.0;
         background: var(--menu-color-inner);
+        text-shadow: var(--menu-text-shadow);
         &:hover {
           background: var(--c-008400);
         }
@@ -1378,6 +1381,7 @@
       border-color: #0000 var(--menu-color-border-mid) var(--menu-color-border-mid) #0000;
       border-radius: 0 0 2em 0;
       box-shadow: inset 2px 2px 2px 0 #0016;
+      text-shadow: var(--menu-text-shadow);
     }
     img[src="i/top_bg.gif"],
     img[src="i/capt_l.gif"],
