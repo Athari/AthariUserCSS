@@ -1,8 +1,8 @@
 /* ==UserStyle==
 @name           1000.menu – Dark [Ath]
 @namespace      athari
-@version        1.0.0
-@description    Dark theme for 1000.menu with several enhancements: flexible width, configurable colors.
+@version        1.1.0
+@description    Dark theme for 1000.menu with several enhancements: flexible width, hidden ads, configurable colors.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
 @supportURL     https://github.com/Athari/AthariUserCSS/issues
@@ -10,6 +10,8 @@
 @preprocessor   default
 
 @var            checkbox ath-flexible-width     "Flexible width"         1
+@var            checkbox ath-show-ads           "Show ads"               0
+@var            checkbox ath-show-social        "Show social links"      0
 @var            select   ath-color-scheme       "Controls color scheme"  ["light:Light", "dark:Dark*"]
 
 @var            range    l "Lightness base"     [1.0, -2.0, 2.0, 0.02]
@@ -46,12 +48,15 @@
    * url: https://static.1000.menu/style/css/cooking/page.v1689551599.css
    * name: cooking.embed1.css
    * name: cooking.embed2.css
+   * name: forum.v1688137269.css
+   * url: https://static.1000.menu/style/css/forum.v1688137269.css
+   * name: forum.embed1.css
    * name: inline-style-attrs.css
    */
   :root,
   body,
   footer {
-    /* color white n=88 rgb(255, 255, 255) oklch(1 0 180) */
+    /* color white n=91 rgb(255, 255, 255) oklch(1 0 180) */
     --c-white: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #f0f0f0 n=68 rgb(240, 240, 240) oklch(6 0 180) */
     --c-f0f0f0: oklch(from #f0f0f0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
@@ -121,6 +126,8 @@
     --c-0a0a0a: oklch(from #0a0a0a calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #656565 n=2 rgb(101, 101, 101) oklch(6 0 180) */
     --c-656565: oklch(from #656565 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #70c3d4 n=2 rgb(112, 195, 212) oklch(6 14 22) */
+    --c-70c3d4: oklch(from #70c3d4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #7a7a7a n=2 rgb(122, 122, 122) oklch(6 0 16) */
     --c-7a7a7a: oklch(from #7a7a7a calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color grey n=2 rgb(128, 128, 128) oklch(6 0 180) */
@@ -147,6 +154,8 @@
     --c-ebfffc: oklch(from #ebfffc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #ec4d00 n=2 rgb(236, 77, 0) oklch(6 14 22) */
     --c-ec4d00: oklch(from #ec4d00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #edf4f6 n=2 rgb(237, 244, 246) oklch(6 14 22) */
+    --c-edf4f6: oklch(from #edf4f6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #eff1fa n=2 rgb(239, 241, 250) oklch(6 14 22) */
     --c-eff1fa: oklch(from #eff1fa calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #eff5fb n=2 rgb(239, 245, 251) oklch(6 14 22) */
@@ -201,14 +210,18 @@
     --c-009e86: oklch(from #009e86 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #00c7a9 n=1 rgb(0, 199, 169) oklch(6 14 22) */
     --c-00c7a9: oklch(from #00c7a9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #6e8b29 n=1 rgb(110, 139, 41) oklch(6 14 22) */
+    --c-6e8b29: oklch(from #6e8b29 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #848484 n=1 rgb(132, 132, 132) oklch(6 0 180) */
     --c-848484: oklch(from #848484 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #868686 n=1 rgb(134, 134, 134) oklch(6 0 180) */
     --c-868686: oklch(from #868686 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
-    /* color #999eff n=1 rgb(153, 158, 255) oklch(6 14 22) */
-    --c-999eff: oklch(from #999eff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #9cb462 n=1 rgb(156, 180, 98) oklch(6 14 22) */
+    --c-9cb462: oklch(from #9cb462 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #104489 n=1 rgb(16, 68, 137) oklch(6 14 22) */
     --c-104489: oklch(from #104489 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #a899ff n=1 rgb(168, 153, 255) oklch(6 14 22) */
+    --c-a899ff: oklch(from #a899ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color darkgrey n=1 rgb(169, 169, 169) oklch(6 0 180) */
     --c-darkgrey: oklch(from #a9a9a9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #acaaaa n=1 rgb(172, 170, 170) oklch(6 14 22) */
@@ -231,6 +244,8 @@
     --c-lightgrey: oklch(from #d3d3d3 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #d8d7d7 n=1 rgb(216, 215, 215) oklch(6 14 21) */
     --c-d8d7d7: oklch(from #d8d7d7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #d9f1f6 n=1 rgb(217, 241, 246) oklch(6 13 21) */
+    --c-d9f1f6: oklch(from #d9f1f6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #dedede n=1 rgb(222, 222, 222) oklch(6 0 180) */
     --c-dedede: oklch(from #dedede calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #dfdfdf n=1 rgb(223, 223, 223) oklch(6 0 180) */
@@ -257,10 +272,12 @@
     --c-fbfbfb: oklch(from #fbfbfb calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color red n=1 rgb(255, 0, 0) oklch(6 14 22) */
     --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
-    /* color #ff99d1 n=1 rgb(255, 153, 209) oklch(6 14 22) */
-    --c-ff99d1: oklch(from #ff99d1 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ff6c44 n=1 rgb(255, 108, 68) oklch(6 14 22) */
+    --c-ff6c44: oklch(from #ff6c44 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #ffd257 n=1 rgb(255, 210, 87) oklch(6 14 22) */
     --c-ffd257: oklch(from #ffd257 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #fd9 n=1 rgb(255, 221, 153) oklch(6 14 22) */
+    --c-fd9: oklch(from #fd9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #ffecb8 n=1 rgb(255, 236, 184) oklch(6 14 22) */
     --c-ffecb8: oklch(from #ffecb8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #fff0ce n=1 rgb(255, 240, 206) oklch(6 14 22) */
@@ -281,6 +298,10 @@
     --c-3449a8: oklch(from #3449a8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #368ace n=1 rgb(54, 138, 206) oklch(6 13 21) */
     --c-368ace: oklch(from #368ace calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #39a7c0 n=1 rgb(57, 167, 192) oklch(6 14 22) */
+    --c-39a7c0: oklch(from #39a7c0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #39a7c1 n=1 rgb(57, 167, 193) oklch(6 13 21) */
+    --c-39a7c1: oklch(from #39a7c1 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #498de9 n=1 rgb(73, 141, 233) oklch(6 14 22) */
     --c-498de9: oklch(from #498de9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
     /* color #4d4d4d n=1 rgb(77, 77, 77) oklch(6 0 16) */
@@ -1960,6 +1981,35 @@
       color: var(--c-515151);
     }
   }
+  .table-head td {
+    background-color: var(--c-70c3d4);
+    color: var(--c-white);
+    text-shadow: 1px 1px 0 var(--c-39a7c1);
+  }
+  table.forum_table tr.table-title td {
+    background-color: var(--c-9cb462);
+    color: var(--c-white);
+    text-shadow: 1px 1px 0 var(--c-6e8b29);
+  }
+  .table-body:nth-child(odd) td {
+    background-color: var(--c-d9f1f6);
+    background-color: var(--c-edf4f6);
+  }
+  .forum-theme a {
+    text-shadow: 1px 1px 0 var(--c-white);
+  }
+  .forum_table tr:nth-child(odd) td {
+    background-color: var(--c-edf4f6);
+  }
+  .forum_table tr.table-head td {
+    background-color: var(--c-70c3d4);
+  }
+  .t-today {
+    color: var(--c-ff6c44);
+  }
+  .t-yesterday {
+    color: var(--c-39a7c0);
+  }
   [style*="border:1px solid #1b71e4" i] {
     /* div.info-preview[style] */
     border: 1px solid var(--c-1b71e4) !important;
@@ -1968,13 +2018,13 @@
     /* a[href='/vacancies'][target=_blank][style] */
     color: var(--c-656565) !important;
   }
-  [style*="background: hsl(327, 100%, 80%)" i] {
+  [style*="background: hsl(249, 100%, 80%)" i] {
     /* div#user-main-bg[style] */
-    background-color: var(--c-ff99d1) !important;
+    background-color: var(--c-a899ff) !important;
   }
-  [style*="background: hsl(237, 100%, 80%)" i] {
+  [style*="background: hsl(40, 100%, 80%)" i] {
     /* div#user-main-bg[style] */
-    background-color: var(--c-999eff) !important;
+    background-color: var(--c-fd9) !important;
   }
 
   /* fixes */
@@ -2022,9 +2072,36 @@
       max-width: 400px !important;
       margin: 0 !important;
     }
+    ol.instructions {
+      justify-content: center;
+      li {
+        max-width: 400px !important;
+        p.instruction {
+          margin-right: 1em;
+        }
+      }
+    }
+  }
 
-    ol.instructions li {
-      max-width: 400px !important;
+  @container style(--ath-show-ads: 0) {
+    iframe,
+    [class^="ad-"],
+    [class~="ads_enabled"],
+    [id^="ad-"],
+    [id^="google-"],
+    [id^="google_"],
+    [id^="yandex-"],
+    [id^="yandex_"],
+    #main-aside > div:has([id^="google_"], [id^="yandex_"])
+    {
+      display: none !important;
+    }
+  }
+
+  @container style(--ath-show-social: 0) {
+    #side_share,
+    .default:has(#soc_share_bt) {
+      display: none !important;
     }
   }
 
