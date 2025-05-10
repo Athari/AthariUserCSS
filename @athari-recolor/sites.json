@@ -88,6 +88,36 @@
       ],
     },
 
+    // MARK: 1000.menu
+    {
+      name: "1000.menu",
+      options: {
+        recolor: {
+          extraRootSelectors: [ 'footer' ],
+        },
+        remove: {
+          enabled: true,
+          selector: {
+            id: [{ name: '/ ( ad- | adfox_ ) .* /' }],
+            class: [{ name: '/ .* ( -ad-banner ) /' }],
+          },
+        },
+        merge: {
+          enabled: true,
+        },
+      },
+      html: [
+        { name: "index.html", url: "https://1000.menu/" },
+        { name: "catalog.html", url: "https://1000.menu/catalog/salaty" },
+        { name: "user.html", url: "https://1000.menu/user/2" },
+        { name: "cookbook.html", url: "https://1000.menu/user/2/book" },
+        { name: "mail.html", url: "https://1000.menu/user/564253/mail/compose/2" },
+        { name: "add.html", url: "https://1000.menu/cooking/add" },
+        { name: "contest.html", url: "https://1000.menu/contest" },
+        { name: "cooking.html", url: "https://1000.menu/cooking/100" },
+      ],
+    },
+
     // MARK: Archive
     {
       name: "archive.org",
