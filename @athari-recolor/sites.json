@@ -124,6 +124,88 @@
       ],
     },
 
+    // MARK: Foobar2000
+    {
+      name: "foobar2000.org",
+      options: {},
+      css: [
+        { name: "foo.css", url: "https://www.foobar2000.org/foo.css" },
+      ],
+    },
+    {
+      name: "foobar2000.org-hydrogenaudio.org",
+      options: {
+        remove: {
+          enabled: true,
+          css: {
+            atrule: [
+              {
+                name: 'media', value: 'screen',
+                operations: { operation: 'unwrap' },
+              },
+              {
+                name: 'supports', value: '/ .* mask-image .* /',
+                operations: { operation: 'unwrap' },
+              },
+            ],
+          },
+        },
+      },
+      html: [
+        { name: "forum-index.html", url: "https://hydrogenaudio.org/" },
+      ],
+    },
+    {
+      name: "foobar2000.org-wiki.hydrogenaudio.org",
+      options: {
+        derandom: {
+          enabled: true,
+          css: {
+            defaultOperation: 'unwrap',
+            atrule: [
+              {
+                name: 'media', value: 'screen',
+                operations: { operation: 'unwrap' },
+              },
+              {
+                name: 'supports', value: '/ .* mask-image .* /',
+                operations: { operation: 'unwrap' },
+              },
+            ],
+          },
+        },
+        remove: {
+          enabled: true,
+          css: {
+            atrule: [ { name: 'media', value: 'print' } ],
+          },
+          selector: {
+            class: [
+              {
+                name: '/ .* ( cdx-progress-bar | --action- | --fake- ) .* /',
+              },
+              {
+                name: 'vector-feature-zebra-design-disabled',
+                operations: { operation: 'replace', replace: '.client-js' },
+              }
+            ],
+          },
+        },
+        // merge: {
+        //   enabled: true,
+        // }
+      },
+      html: [
+        { name: "wiki-components.css", url: "https://wiki.hydrogenaudio.org/?title=Foobar2000:Components" },
+        { name: "wiki-foobar2000.css", url: "https://wiki.hydrogenaudio.org/?title=Foobar2000:Foobar2000" },
+        { name: "wiki-mainpage.css", url: "https://wiki.hydrogenaudio.org/?title=Hydrogenaudio_Knowledgebase:Main_Page" },
+        { name: "wiki-properties.css", url: "https://wiki.hydrogenaudio.org/?title=Foobar2000:Properties" },
+        { name: "wiki-shortcuts.css", url: "https://wiki.hydrogenaudio.org/?title=Foobar2000:Preferences:Keyboard_Shortcuts" },
+        { name: "wiki-tag.css", url: "https://wiki.hydrogenaudio.org/?title=Tag_(metadata)" },
+        { name: "wiki-titleformat.css", url: "https://wiki.hydrogenaudio.org/?title=Foobar2000:Title_Formatting_Reference" },
+      ],
+    },
+
     // MARK: FreePik
     {
       name: "freepik.com",
@@ -252,15 +334,15 @@
         refont: {
           enabled: true,
           includeLegacy: true,
-          includeLegacyDelta: false,
-          extraRootSelectors: [ 'table[width="640"]:nth-child(2)' ],
+          includeLegacyDelta: true,
+          // extraRootSelectors: [ 'table[width="640"]:nth-child(2)' ],
         },
-        removeRecolor: {
-          enabled: true,
-          selector: {
-            class: { name: '/ men_ .* /' },
-          },
-        }
+        // removeRecolor: {
+        //   enabled: true,
+        //   selector: {
+        //     class: { name: '/ men_ .* /' },
+        //   },
+        // }
       },
       html: [
         { name: "index.html", url: "http://pridelands.ru/?p=index_m" },
@@ -271,6 +353,7 @@
         { name: "forum-index.html", url: "http://pridelands.ru/forum.php" },
         { name: "forum-profile.html", url: "http://pridelands.ru/forum.php?a=userinfo&id=1" },
         { name: "forum-topic.html", url: "http://pridelands.ru/forum.php?tid=3" },
+        { name: "forum-topic-att1.html", url: "http://pridelands.ru/forum.php?tid=1736" },
       ],
     },
 

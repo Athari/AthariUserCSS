@@ -37,3 +37,8 @@
         * https://github.com/gvergnaud/ts-pattern
         * https://github.com/aidenybai/pattycake - babel plugin
         * TODO: Use pattern matching in transformerPlugin?
+
+* copy-paste
+
+    * reverse:
+        * oklch(from var(--c-000099-t) calc((l - var(--l)) / var(--m)) calc((c - var(--c)) / var(--d)) calc((h - var(--h)) / var(--i)));

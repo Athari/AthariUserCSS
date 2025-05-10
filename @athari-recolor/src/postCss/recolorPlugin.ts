@@ -24,6 +24,7 @@ interface Opts {
   removeOriginal: boolean;
   removeUnrelated: boolean;
   removeUnsupported: boolean;
+  extraRootSelectors: string[];
   commentPrefix: string,
   /**
    * How to modify original CSS code.
@@ -48,6 +49,7 @@ const defaultOpts: Opts = {
   removeOriginal: true,
   removeUnrelated: false,
   removeUnsupported: false,
+  extraRootSelectors: [],
   commentPrefix: '',
 
   formula: ColorFormula.DarkFull,
@@ -238,7 +240,7 @@ function recolorCnColor(node: CnColor, opts: Opts): string {
 
 function buildPaletteRule(palette: Palette, opts: Opts): Css.Rule {
   return Css.rule({
-    selector: ':root',
+    selectors: [ ':root', 'body', ...opts.extraRootSelectors ],
     nodes: palette.colors
       .orderByDescending(c => c.count, compare)
       .thenBy(c => c.colorRgb, compare)

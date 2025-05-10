@@ -21,6 +21,8 @@ declare module 'domhandler' {
     matches(this: Node, selector: Query<Element>): boolean;
     readonly innerText: string;
     readonly innerTextAll: string;
+    readonly innerHTML: string;
+    readonly outerHTML: string;
   }
 }
 
@@ -67,6 +69,8 @@ export import parseDocument = htmlParser.parseDocument;
 
 export import getInnerTextAll = htmlDomUtils.textContent;
 export import getInnerText = htmlDomUtils.innerText;
+export import getInnerHTML = htmlDomUtils.getInnerHTML;
+export import getOuterHTML = htmlDomUtils.getOuterHTML;
 
 // MARK: Query
 
@@ -97,5 +101,7 @@ export function extendPrototype() {
   Object.defineProperties(NodeBase.prototype, {
     innerText: { get: function (this: NodeBase) { return getInnerText(this as Node) } },
     innerTextAll: { get: function (this: NodeBase) { return getInnerTextAll(this as Node) } },
+    innerHTML: { get: function (this: NodeBase) { return getInnerHTML(this as Node) } },
+    outerHTML: { get: function (this: NodeBase) { return getOuterHTML(this as Node) } },
   });
 }

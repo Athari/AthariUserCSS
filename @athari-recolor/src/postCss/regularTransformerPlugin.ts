@@ -15,6 +15,7 @@ const debug = true as boolean;
 type MatchProps =
   | 'name' | 'value' | 'operator' | 'text' | 'namespace';
 
+type CssNode = Css.ChildNode;
 type CssTransNodeNames = SetComplement<Css.ChildNodeNames, 'rule'>;
 type CssMatchPropsOn<N extends CssTransNodeNames, V extends CssTransNodeNames, P extends MatchProps, Else> =
   N extends V ? SubUnion<MatchProps, P> : Else;
@@ -26,7 +27,7 @@ type CssMatchProps<N extends CssTransNodeNames> =
 
 const cssNodePropMap: {
   [N in CssTransNodeNames]: {
-    [K in MatchProps as CssMatchProps<N>]: KeyOfAny<Css.ChildNode>;
+    [K in MatchProps as CssMatchProps<N>]: KeyOfAny<CssNode>;
   }
 } = {
   atrule: { name: 'name', value: 'params' },
@@ -36,6 +37,7 @@ const cssNodePropMap: {
 
 // MARK: Types: Selector
 
+type SelNode = Sel.Node;
 type SelTransNodeNames = SetComplement<Sel.NodeNames, 'string' | 'selector' | 'root'>;
 type SelMatchPropsOn<N extends SelTransNodeNames, V extends SelTransNodeNames, P extends MatchProps, Else> =
   N extends V ? SubUnion<MatchProps, P> : Else;
@@ -53,7 +55,7 @@ type SelMatchProps<N extends SelTransNodeNames> =
 
 const selNodePropMap: {
   [N in SelTransNodeNames]: {
-    [K in MatchProps as SelMatchProps<N>]: KeyOfAny<Sel.Node>;
+    [K in MatchProps as SelMatchProps<N>]: KeyOfAny<SelNode>;
   }
 } = {
   attribute: { name: 'attribute', operator: 'operator', value: 'value', namespace: 'namespaceString' },
@@ -69,18 +71,18 @@ const selNodePropMap: {
 
 // MARK: Types: Options
 
-type Node = Css.ChildNode | Sel.Node;
+type Node = CssNode | SelNode;
 type NodeNames<T extends Node> = keyof NodePropMap<T>;
 type NodePropMap<T extends Node> =
-  T extends Css.ChildNode ? typeof cssNodePropMap :
-  T extends Sel.Node ? typeof selNodePropMap : never;
+  T extends CssNode ? typeof cssNodePropMap :
+  T extends SelNode ? typeof selNodePropMap : never;
 
-type CssOp = 'rename' | 'set' | 'replace' | 'remove';
+type CssOp = 'rename' | 'set' | 'replace' | 'remove' | 'unwrap';
 type SelOp = 'rename' | 'set' | 'replace' | 'remove' | 'removeSelector' | 'removeRule';
 type TransAnyOp = CssOp | SelOp;
 type TransOp<T extends Node> =
-  T extends Css.ChildNode ? CssOp :
-  T extends Sel.Node ? SelOp : never;
+  T extends CssNode ? CssOp :
+  T extends SelNode ? SelOp : never;
 
 type TransMatchesOption<T extends Node, N extends NodeNames<T>> = {
   [K in KeyOfAny<NodePropMap<T>[N]>]?: Opt<RegExpMatchOption>;
@@ -121,8 +123,8 @@ type TransformerOptions<T extends Node> = {
 };
 
 interface Opts {
-  css: TransformerOptions<Css.ChildNode>;
-  selector: TransformerOptions<Sel.Node>;
+  css: TransformerOptions<CssNode>;
+  selector: TransformerOptions<SelNode>;
 }
 
 export type RegularTransformerOptions = OptObject<Opts>;
@@ -214,13 +216,13 @@ function getTransformer<T extends Node>(
             return result;
 
           const operations = toAssignedArrayIfNeeded(option.operations);
-          if (isAssigned(options.defaultOperation))
-            operations.push({ operation: options.defaultOperation })
+          if (operations.length === 0 && isAssigned(options.defaultOperation))
+            operations.push({ operation: options.defaultOperation });
           for (const operation of operations) {
             if (Css.isNode(node))
-              result.merge(performCssOperation(node, operation as TransOpOption<Css.ChildNode>, ctxOp, ctxNode), operation.operation);
+              result.merge(performCssOperation(node, operation as TransOpOption<CssNode>, ctxOp, ctxNode), operation.operation);
             else if (Sel.isNode(node))
-              result.merge(performSelOperation(node, operation as TransOpOption<Sel.Node>, ctxOp, ctxNode), operation.operation);
+              result.merge(performSelOperation(node, operation as TransOpOption<SelNode>, ctxOp, ctxNode), operation.operation);
 
             if (result.code === TransformCode.MatchedBreak)
               return result;
@@ -232,7 +234,7 @@ function getTransformer<T extends Node>(
   }
 
   function performCssOperation(
-    node: Css.ChildNode, op: TransOpOption<Css.ChildNode>, ctxOp: OperationContext, ctxNode: NodeContext
+    node: CssNode, op: TransOpOption<CssNode>, ctxOp: OperationContext, ctxNode: NodeContext
   ): TransformCode {
     const replace = () => applyReplaceTemplate(op.replace, ctxNode);
 
@@ -259,13 +261,22 @@ function getTransformer<T extends Node>(
           setPropertyUnsafe(node, ctxOp.propMap.value, replace());
         return TransformCode.Matched;
 
+      case 'unwrap':
+        if (!Css.isContainer(node))
+          throwError(`Unsupported ${node.type} operation ${op.operation}`);
+        if (isAssigned(node.nodes))
+          node.replaceWith(...node.nodes.map(n => n.clone()));
+        else
+          node.remove();
+        return TransformCode.Matched;
+
       default:
         throwError(`Unknown operation ${op.operation}`);
     }
   }
 
   function performSelOperation(
-    node: Sel.Node, op: TransOpOption<Sel.Node>, ctxOp: OperationContext, ctxNode: NodeContext
+    node: SelNode, op: TransOpOption<SelNode>, ctxOp: OperationContext, ctxNode: NodeContext
   ): TransformCode {
     const replace = () => applyReplaceTemplate(op.replace, ctxNode);
     const isSelWithName = isSome(Sel.isAttribute, Sel.isClass, Sel.isCombinator, Sel.isPseudo, Sel.isTag);
@@ -308,8 +319,8 @@ function getTransformer<T extends Node>(
         throwError(`Unknown operation ${op.operation}`);
     }
 
-    function removeSelParent<T extends Sel.Node>(node: Opt<Sel.Node>, guard: GuardAny<T>): TransformCode {
-      for (node = node; !!node; node = <Sel.Node>node?.parent) {
+    function removeSelParent<T extends SelNode>(node: Opt<SelNode>, guard: GuardAny<T>): TransformCode {
+      for (node = node; !!node; node = <SelNode>node?.parent) {
         if (guard(node)) {
           node.remove();
           return TransformCode.MatchedBreak;
@@ -387,7 +398,9 @@ function getTransformer<T extends Node>(
   }
 
   function applyReplaceTemplate(replace: Opt<string>, ctxNode: NodeContext): string {
-    return (replace ?? throwError("Operation's replace not set")).template(ctxNode.matchGroups, "$<", ">");
+    const ret = (replace ?? throwError("Operation's replace not set")).template(ctxNode.matchGroups, "$<", ">").toString();
+    // console.log("replace", ctxNode.matchGroups, "=>", replace, "->", ret);
+    return ret;
   }
 
   function setPropertyUnsafe(o: unknown, k: PropertyKey, v: unknown) {
@@ -396,6 +409,59 @@ function getTransformer<T extends Node>(
       throwError(`Property ${String(k)} on ${typeof o} not found`);
     a[k] = v;
   }
+}
+
+// MARK: Run transforms
+
+function runTransforms(
+  cssRoot: Css.Root,
+  cssTransforms: Transform<CssNode>[],
+  selTransforms: Transform<SelNode>[],
+) {
+  if (cssTransforms.length === 0 && selTransforms.length === 0)
+    return;
+
+  const cssCounter = new Counter<`${NodeNames<CssNode>}-${TransAnyOp}`>();
+  const selCounter = new Counter<`${NodeNames<SelNode>}-${TransAnyOp}`>();
+
+  cssRoot.walk((cssNode: CssNode): false | void => {
+    for (const cssTransform of cssTransforms) {
+      const ret = cssTransform.transform(cssNode);
+      if (ret.code !== TransformCode.NotMatched)
+        cssCounter.increment(`${cssTransform.type}-${ret.operation}`);
+      if (ret.code === TransformCode.MatchedBreak)
+        break;
+    }
+
+    if (!Css.isRule(cssNode) || selTransforms.length === 0)
+      return;
+
+    const selRoot: Sel.Root = Sel.parseRoot(cssNode);
+    selRoot.walk((selNode: SelNode): false | void => {
+      for (const selTransform of selTransforms) {
+        const ret = selTransform.transform(selNode);
+        if (ret.code !== TransformCode.NotMatched)
+          selCounter.increment(`${selTransform.type}-${ret.operation}`);
+        if (ret.code === TransformCode.MatchedBreak)
+          break;
+      }
+    });
+
+    // for (const selSel of selRoot.nodes)
+    //   if (selSel.length === 0)
+    //     selSel.remove();
+    const newSelectors = selRoot.nodes.map(n => n.toString().trim()).filter(s => !!s);
+
+    if (selRoot.length === 0 || newSelectors.length === 0)
+      cssNode.remove();
+    else
+      cssNode.selectors = newSelectors;
+  });
+
+  if  (cssCounter.size > 0)
+    console.log(`Transformed ${cssCounter.total} CSS nodes`, inspectPretty(cssCounter.getCounts()));
+  if (selCounter.size > 0)
+    console.log(`Transformed ${selCounter.total} CSS selector nodes`, inspectPretty(selCounter.getCounts()));
 }
 
 // MARK: Utils
@@ -415,49 +481,7 @@ export default PostCss.declarePluginOpt<RegularTransformerOptions>('regular-tran
 
   return {
     OnceExit(cssRoot: Css.Root): void {
-      if (cssTransforms.length === 0 && selTransforms.length === 0)
-        return;
-
-      const cssCounter = new Counter<`${NodeNames<Css.ChildNode>}-${TransAnyOp}`>();
-      const selCounter = new Counter<`${NodeNames<Sel.Node>}-${TransAnyOp}`>();
-
-      cssRoot.walk((cssNode: Css.ChildNode): false | void => {
-        for (const cssTransform of cssTransforms) {
-          const ret = cssTransform.transform(cssNode);
-          if (ret.code !== TransformCode.NotMatched)
-            cssCounter.increment(`${cssTransform.type}-${ret.operation}`);
-          if (ret.code === TransformCode.MatchedBreak)
-            break;
-        }
-
-        if (!Css.isRule(cssNode) || selTransforms.length === 0)
-          return;
-
-        const selRoot: Sel.Root = Sel.parseRoot(cssNode);
-        selRoot.walk((selNode: Sel.Node): false | void => {
-          for (const selTransform of selTransforms) {
-            const ret = selTransform.transform(selNode);
-            if (ret.code !== TransformCode.NotMatched)
-              selCounter.increment(`${selTransform.type}-${ret.operation}`);
-            if (ret.code === TransformCode.MatchedBreak)
-              break;
-          }
-        });
-
-        for (const selSel of selRoot.nodes)
-          if (selSel.length === 0)
-            selSel.remove();
-
-        if (selRoot.length === 0)
-          cssNode.remove();
-        else
-          cssNode.selector = selRoot.toString();
-      });
-
-      if  (cssCounter.size > 0)
-        console.log(`Transformed ${cssCounter.total} CSS nodes`, inspectPretty(cssCounter.getCounts()));
-      if (selCounter.size > 0)
-        console.log(`Transformed ${selCounter.total} CSS selector nodes`, inspectPretty(selCounter.getCounts()));
+      runTransforms(cssRoot, cssTransforms, selTransforms);
     }
   };
 });

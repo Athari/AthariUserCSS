@@ -76,9 +76,9 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
   const runCompactCss = (css: string) => runPostCssAsync(inputPath, css, [
     autoPrefixerPlugin({ add: false }),
     ...optionalPostCssPlugins(opts, {
+      derandom: plugins.regularTransformerPlugin,
       remove: plugins.regularTransformerPlugin,
       merge: plugins.mergeSelectorsPlugin,
-      derandom: plugins.regularTransformerPlugin,
     }),
     cssNanoPlugin({
       preset: [

@@ -157,7 +157,7 @@ class Refonter {
       ],
     });
     yield Css.rule({
-      selectors: [ ':root', ...this.#opts.extraRootSelectors ],
+      selectors: [ ':root', 'body', ...this.#opts.extraRootSelectors ],
       nodes: [...self.#vars.values()]
         .orderBy(v => v.kind, compare)
         .thenByDescending(v => v.count, compare)

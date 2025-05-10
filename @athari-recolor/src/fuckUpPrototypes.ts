@@ -1,13 +1,13 @@
 import S from 'string';
-import { initializeLinq } from 'linq-to-typescript';
-import { installIntoGlobal as installIteratorHelpersIntoGlobal } from 'iterator-helpers-polyfill';
+import * as Linq from 'linq-to-typescript';
+import * as IteratorHelpersPolyfill from 'iterator-helpers-polyfill';
 import { Html } from './html/index.ts';
 
 // MARK: Hardcore prototype sex
 
-initializeLinq();
+Linq.initializeLinq();
 S.extendPrototype();
-installIteratorHelpersIntoGlobal();
+IteratorHelpersPolyfill.installIntoGlobal();
 Html.extendPrototype();
 
 String.prototype.ellipsis = function (this: string, maxLength: number): string {
