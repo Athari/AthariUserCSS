@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           VCPkg.io – Dark Enhanced [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.1.0
 @description    Dark theme for VCPkg.io with several enhancements: compact mode, configurable colors etc.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -9,8 +9,9 @@
 @license        MIT
 @preprocessor   default
 
-@var            checkbox ath-compact            "Compact"                       1
+@var            checkbox ath-compact            "Compact layout"                1
 @var            checkbox ath-show-features      "Show features in package list" 1
+@var            checkbox ath-show-all-tabs      "Always show all tabs"          1
 @var            select   ath-color-scheme       "Controls color scheme"         ["light:Light", "dark:Dark*"]
 
 @var            range    l "Lightness base"     [1.4, -2.0, 2.0, 0.02]
@@ -1093,6 +1094,30 @@
     .package-card {
       padding: .5rem 1.3rem;
     }
+
+    .feature-card {
+      margin: .5rem 0;
+      padding: .3rem 1.2rem .5rem;
+      .section-one,
+      .section-two {
+        margin: 0;
+        padding: 0;
+      }
+      .feature-dep-card {
+        margin-bottom: 5px;
+      }
+    }
+
+    #dependencies-content {
+      .card-container {
+        display: flex;
+        flex-flow: row wrap;
+        gap: .5em;
+        .dependency-card {
+          margin: 0;
+        }
+      }
+    }
   }
 
   @container style(--ath-show-features: 1) {
@@ -1118,6 +1143,34 @@
           border-radius: .5rem;
         }
       }
+    }
+  }
+
+  @container style(--ath-show-all-tabs: 1) {
+    .active-container {
+      > .tab-container {
+        display: none;
+      }
+      > .tab-content {
+        display: block !important;
+        border: none !important;
+        flex: 0 !important;
+      }
+      .active-header {
+        margin: .3rem 0;
+      }
+      #features-content:has(.no-features) {
+        display: none !important;
+      }
+    }
+    .sidebar-header,
+    .active-header {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .sidebar-header {
+      padding: 0;
+      margin: .3rem 0 .1rem;
     }
   }
 }
