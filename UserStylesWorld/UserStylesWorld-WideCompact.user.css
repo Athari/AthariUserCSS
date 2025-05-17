@@ -509,14 +509,11 @@
       }
     }
     &:has(#details .joined):not(:has(#password)) /*profile page*/ {
-      /*display: flex !important;
-      flex-flow: row wrap;
-      justify-content: center;
-      align-items: baseline;*/
       display: grid !important;
       grid-template-areas:
-        "detail bio    links "
-        "styles styles styles";
+        "detail  bio     links  "
+        "styles  styles  styles "
+        "reviews reviews reviews";
       grid-template-columns: 1fr auto 1fr;
       grid-template-rows: auto 1fr;
       gap: 10px;
@@ -539,6 +536,14 @@
       #styles {
         grid-area: styles;
         margin-bottom: auto;
+      }
+      .reviews {
+        grid-area: reviews;
+        columns: 30rem;
+        column-gap: 1em;
+        article {
+          break-inside: avoid;
+        }
       }
       section:not(#styles) {
         width: auto;
