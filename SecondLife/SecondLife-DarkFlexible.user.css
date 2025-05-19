@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Marketplace.SecondLife.com – Dark Flexible [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.1.0
 @description    Dark theme SecondLife Marketplace (Marketplace.SecondLife.com) with flexible layout and configurable colors.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -10,6 +10,7 @@
 @preprocessor   default
 
 @var            checkbox ath-flexible-layout    "Flexible layout"        1
+@var            checkbox ath-show-featured      "Show featured items"    0
 @var            select   ath-color-scheme       "Controls color scheme"  ["light:Light", "dark:Dark*"]
 
 @var            range    l "Lightness base"     [1.2, -2.0, 2.0, 0.02]
@@ -1867,7 +1868,13 @@
     }
   }
 
-  @container style(--ath-flexible-layout) {
+  @container style(--ath-show-featured: 0) {
+    #featured-items-category {
+      display: none;
+    }
+  }
+
+  @container style(--ath-flexible-layout: 1) {
     #body-shadow-repeating {
       width: auto;
     }
@@ -1879,6 +1886,7 @@
       #main-content,
       #search-results-container,
       #search-category,
+      #featured-items-category .featured-carousel-container,
       .product-listing,
       .product-listing .variant_result-row,
       .product-listing .variant_result-row .list-description {
@@ -1892,7 +1900,7 @@
           width: auto;
           float: none;
         }
-        .filter-options li {
+        .filter-options li:not(:has(ul)) {
           display: flex;
           flex-flow: row;
           gap: 0 1em;
@@ -1919,6 +1927,17 @@
         .list-description {
           flex: 1;
         }
+      }
+      #featured-items-category {
+        width: calc(100vw - 260px - 180px);
+      }
+      #featured-items-scrollable {
+        overflow: auto;
+        max-width: 100%;
+      }
+      .featured-carousel-container {
+        display: flex;
+        flex-flow: row;
       }
     }
   }
