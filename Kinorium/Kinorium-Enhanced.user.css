@@ -1,39 +1,44 @@
 /* ==UserStyle==
 @name           Kinorium.com – Enhanced [Ath]
 @namespace      athari
-@version        1.2.4
+@version        1.3.0
 @description    Kinorium.com: various usability enhancements.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
 @supportURL     https://github.com/Athari/AthariUserCSS/issues
 @license        MIT
 @preprocessor   default
-@var            checkbox ath-show-banners       "Show banners" 0
-@var            checkbox ath-show-genre-movies  "Show top genre movies" 1
-@var            checkbox ath-show-actual-movies "Show current movies" 1
-@var            checkbox ath-side-menus         "Side menus" 1
-@var            checkbox ath-native-sliders     "Native sliders (requires userscript)" 1
-@var            checkbox ath-recolor-scrollbars "Recolor scrollbars" 1
-@var            select   ath-hyphens            "Hyphens" ["auto:Automatic", "manual:Manual*"]
-@var            text     ath-font-family        "Font" "Segoe UI"
+
+@var            checkbox ath-show-emoji-reactions "Show emoji reactions"  1
+@var            checkbox ath-show-banners         "Show banners"          0
+@var            checkbox ath-show-genre-movies    "Show top genre movies" 1
+@var            checkbox ath-show-actual-movies   "Show current movies"   1
+@var            checkbox ath-side-menus           "Side menus"            1
+@var            checkbox ath-native-sliders       "Native sliders (requires userscript)" 1
+@var            checkbox ath-recolor-scrollbars   "Recolor scrollbars"    1
+@var            select   ath-hyphens              "Hyphens"               ["auto:Automatic", "manual:Manual*"]
+@var            text     ath-font-family          "Font"                  "Segoe UI"
 ==/UserStyle== */
 
 @-moz-document domain("kinorium.com") {
-  body {
-    container: if;
+  @container style(--ath-show-emoji-reactions: 0) {
+    .emojiPane {
+      display: none !important;
+    }
   }
 
-  @container if style(--ath-show-banners: 0) {
+  @container style(--ath-show-banners: 0) {
+    .proBan,
     .bwannners-left-box {
       display: none !important;
     }
   }
-  @container if style(--ath-show-genre-movies: 0) {
+  @container style(--ath-show-genre-movies: 0) {
     .recom-genre-slider {
       display: none !important;
     }
   }
-  @container if style(--ath-show-actual-movies: 0) {
+  @container style(--ath-show-actual-movies: 0) {
     .actual-slider {
       display: none !important;
     }
@@ -51,7 +56,7 @@
     font-size: 14rem;
   }
 
-  @container if style(--ath-recolor-scrollbars: 1) {
+  @container style(--ath-recolor-scrollbars: 1) {
     ::-webkit-scrollbar {
       background: #1c1c1c !important;
       opacity: 1 !important;
@@ -135,7 +140,8 @@
     table-layout: fixed;
   }
 
-  .film-page__buttons-cinema {
+  .film-page__buttons-cinema,
+  .ath-film-page__buttons-cinema {
     display: flex !important;
     flex-flow: row wrap;
     a {
@@ -156,7 +162,7 @@
     }
   }
 
-  .gallery.jsConnectionGallery {
+  .jsConnectionGallery {
     display: inline flex !important;
     flex-flow: column !important;
     max-width: 100%;
@@ -356,7 +362,7 @@
     }
   }
 
-  @container if style(--ath-native-sliders: 1) {
+  @container style(--ath-native-sliders: 1) {
     :is(.slider-container-film, .film-page__cast-block, .film-page__cast-main-block, .film-page__critics-slider, .film-page__gallery, .film-page__overview):not(#\0) {
       margin-right: 0 !important;
     }
@@ -459,7 +465,7 @@
       }
     }
   }
-  
+
   .addCommentPlaceHolder { /* fix random relative offset out of nowhere */
     .setCommentWindow, .setStatusWindow {
       position: static !important;
@@ -513,7 +519,7 @@
     }
   }
 
-  @container if style(--ath-side-menus: 1) {
+  @container style(--ath-side-menus: 1) {
     @media (min-width: 1800px) and (min-height: 800px) {
       .commentOverlay {
         z-index: 2;
