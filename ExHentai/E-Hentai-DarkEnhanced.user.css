@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           E-Hentai.org – Dark Enhanced [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.1.0
 @description    Dark theme for E-Hentai.org with several enhancements: layout improvements, configurable fonts and colors etc.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -9,21 +9,26 @@
 @license        MIT
 @preprocessor   default
 
-@var            checkbox ath-compact-search-layout  "Browse ⏵ Compact search form"     1
-@var            checkbox ath-compact-ext-layout     "Browse ⏵ Compact extended layout" 1
-@var            range    ath-compact-ext-tags-width "        Tags pane min width"      [200, 200, 800, 10, 'px']
-@var            range    ath-compact-ext-min-height "        Min height"               [200, 100, 350, 10, 'px']
-@var            range    ath-compact-ext-max-height "        Max height"               [350, 350, 600, 10, 'px']
-@var            checkbox ath-gallery-fixed-pagn     "Gallery ⏵ Fixed pagination"       1
-@var            checkbox ath-gallery-sidebar-layout "Gallery ⏵ Sidebar layout"         1
-@var            range    ath-gallery-sidebar-width  "        Sidebar width"            [400, 200, 800, 20, 'px']
-@var            checkbox ath-compact-view-layout    "View ⏵ Compact layout"            1
-@var            checkbox ath-comments-forum-layout  "Comments forum layout"            1
-@var            text     ath-font-family            "Font ⏵ Family"                    "Segoe UI, Tahoma, sans-serif"
-@var            number   ath-font-size              "        Size"                     [13, 'px']
-@var            number   ath-font-line-height       "        Line height"              [1.3, 0.8, 2, 0.05]
+@var            checkbox ath-compact-search-layout  "Browse ⏵ Compact search form"          1
+@var            checkbox ath-hide-by-rating         "Browse ⏵ Hide galleries rated this or lower" 0
+@var            checkbox ath-hide-unrated           "        Unrated"                        0
+@var            range    ath-hide-rated             "        Rated by others (0 = disabled)" [0, 0, 4, 0.5]
+@var            range    ath-hide-rated-self        "        Rated by me (0 = disabled)"     [1, 0, 4, 0.5]
+@var            select   ath-hide-rated-self-color  "        Rated by me (color)"            ["disabled:Disabled", "red:Red*", "green:Green"]
+@var            checkbox ath-compact-ext-layout     "Browse ⏵ Compact extended layout"       1
+@var            range    ath-compact-ext-tags-width "        Tags pane min width"            [200, 200, 800, 10, 'px']
+@var            range    ath-compact-ext-min-height "        Min height"                     [200, 100, 350, 10, 'px']
+@var            range    ath-compact-ext-max-height "        Max height"                     [350, 350, 600, 10, 'px']
+@var            checkbox ath-gallery-fixed-pagn     "Gallery ⏵ Fixed pagination"             1
+@var            checkbox ath-comments-forum-layout  "Gallery ⏵ Comments forum layout"        1
+@var            checkbox ath-gallery-sidebar-layout "Gallery ⏵ Sidebar layout"               1
+@var            range    ath-gallery-sidebar-width  "        Sidebar width"                  [400, 200, 800, 20, 'px']
+@var            checkbox ath-compact-view-layout    "View ⏵ Compact layout"                  1
+@var            text     ath-font-family            "Font ⏵ Family name"                     "Segoe UI, Tahoma, sans-serif"
+@var            number   ath-font-size              "        Size"                           [13, 'px']
+@var            number   ath-font-line-height       "        Line height"                    [1.3, 0.8, 2, 0.05]
 
-@var            select   ath-color-scheme-ex    "E-Hentai ⏵ Controls color scheme" ["light:Light", "dark:Dark*"]
+@var            select   ath-color-scheme-ex    "E-Hentai color scheme ⏵ Controls" ["light:Light", "dark:Dark*"]
 @var            range    lh "        Lightness base"     [1.1, -2.0, 2.0, 0.02]
 @var            range    mh "        Lightness contrast" [-0.84, -2.0, 2.0, 0.02]
 @var            range    ch "        Chroma base"        [0.0, 0.0, 0.40, 0.01]
@@ -31,7 +36,7 @@
 @var            range    hh "        Hue base"           [0, 0, 360, 2]
 @var            range    ih "        Hue contrast"       [1.0, -2.0, 2.0, 0.05]
 
-@var            select   ath-color-scheme-eh    "ExHentai ⏵ Controls color scheme" ["light:Light", "dark:Dark*"]
+@var            select   ath-color-scheme-eh    "ExHentai color scheme ⏵ Controls" ["light:Light", "dark:Dark*"]
 @var            range    lx "        Lightness base"     [0.0, -2.0, 2.0, 0.02]
 @var            range    mx "        Lightness contrast" [1.0, -2.0, 2.0, 0.02]
 @var            range    cx "        Chroma base"        [0.0, 0.0, 0.40, 0.01]
@@ -1975,7 +1980,7 @@
 
     @container style(--ath-compact-ext-layout: 1) {
       /* browse: extended compact */
-      table.itg.glte:not(:has(th[style])) {
+      table.itg.glte {
         display: grid;
         grid-template-columns: repeat(auto-fill, 260px minmax(var(--ath-compact-ext-tags-width), 1fr));
         gap: .5em 0;
@@ -2035,12 +2040,12 @@
           max-height: none;
           > div {
             position: static;
-            height: auto;
             padding: 0;
             line-height: 1;
+            align-self: center;
             &:not(.ir) {
               width: auto;
-              align-self: center;
+              height: auto;
             }
             &:has(a[href*="/uploader/"]) {
               display: none;
@@ -2083,6 +2088,16 @@
             &::-webkit-scrollbar-thumb {
               background: #fff4;
             }
+          }
+        }
+        /* fav checkbox */
+        .glfe .lc {
+          grid-area: meta;
+          place-self: end start;
+          height: 28px;
+          opacity: 0.5;
+          &:hover {
+            opacity: 1;
           }
         }
       }
@@ -2421,6 +2436,109 @@
         }
         .ptt {
           margin: 0 !important;
+        }
+      }
+    }
+
+    @container style(--ath-hide-by-rating: 1) {
+      /* 80 64 48 32 16 0 */
+      --ro: var(--ath-hide-rated);
+      --rs: var(--ath-hide-rated-self);
+      :is(table.itg tr, .itg > div) {
+        @container style(--ath-hide-unrated: 1) {
+          &:has(.ir[style*="opacity:0.33"]) {
+            display: none;
+          }
+        }
+        &:has(.ir[style*="-21"]:is([style*="n:-64"])) {
+          @container style(--ro: 0.5) or style(--ro: 1) or style(--ro: 1.5) or style(--ro: 2) or style(--ro: 2.5) or style(--ro: 3) or style(--ro: 3.5) or style(--ro: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir[style*="-1p"]:is([style*="n:-64"])) {
+          @container style(--ro: 1) or style(--ro: 1.5) or style(--ro: 2) or style(--ro: 2.5) or style(--ro: 3) or style(--ro: 3.5) or style(--ro: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir[style*="-21"]:is([style*="n:-48"])) {
+          @container style(--ro: 1.5) or style(--ro: 2) or style(--ro: 2.5) or style(--ro: 3) or style(--ro: 3.5) or style(--ro: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir[style*="-1p"]:is([style*="n:-48"])) {
+          @container style(--ro: 2) or style(--ro: 2.5) or style(--ro: 3) or style(--ro: 3.5) or style(--ro: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir[style*="-21"]:is([style*="n:-32"])) {
+          @container style(--ro: 2.5) or style(--ro: 3) or style(--ro: 3.5) or style(--ro: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir[style*="-1p"]:is([style*="n:-32"])) {
+          @container style(--ro: 3) or style(--ro: 3.5) or style(--ro: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir[style*="-21"]:is([style*="n:-16"])) {
+          @container style(--ro: 3.5) or style(--ro: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir[style*="-1p"]:is([style*="n:-16"])) {
+          @container style(--ro: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir:is(.irb, .irg, .irr)[style*="-21"]:is([style*="n:-64"])) {
+          @container style(--rs: 0.5) or style(--rs: 1) or style(--rs: 1.5) or style(--rs: 2) or style(--rs: 2.5) or style(--rs: 3) or style(--rs: 3.5) or style(--rs: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir:is(.irb, .irg, .irr)[style*="-1p"]:is([style*="n:-64"])) {
+          @container style(--rs: 1) or style(--rs: 1.5) or style(--rs: 2) or style(--rs: 2.5) or style(--rs: 3) or style(--rs: 3.5) or style(--rs: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir:is(.irb, .irg, .irr)[style*="-21"]:is([style*="n:-48"])) {
+          @container style(--rs: 1.5) or style(--rs: 2) or style(--rs: 2.5) or style(--rs: 3) or style(--rs: 3.5) or style(--rs: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir:is(.irb, .irg, .irr)[style*="-1p"]:is([style*="n:-48"])) {
+          @container style(--rs: 2) or style(--rs: 2.5) or style(--rs: 3) or style(--rs: 3.5) or style(--rs: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir:is(.irb, .irg, .irr)[style*="-21"]:is([style*="n:-32"])) {
+          @container style(--rs: 2.5) or style(--rs: 3) or style(--rs: 3.5) or style(--rs: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir:is(.irb, .irg, .irr)[style*="-1p"]:is([style*="n:-32"])) {
+          @container style(--rs: 3) or style(--rs: 3.5) or style(--rs: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir:is(.irb, .irg, .irr)[style*="-21"]:is([style*="n:-16"])) {
+          @container style(--rs: 3.5) or style(--rs: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir:is(.irb, .irg, .irr)[style*="-1p"]:is([style*="n:-16"])) {
+          @container style(--rs: 4) {
+            display: none;
+          }
+        }
+        &:has(.ir.irr) {
+          @container style(--ath-hide-rated-self-color: red) {
+            display: none;
+          }
+        }
+        &:has(.ir.irg) {
+          @container style(--ath-hide-rated-self-color: green) {
+            display: none;
+          }
         }
       }
     }
