@@ -22,6 +22,8 @@
         removeUnrelated: true,
         removeUnsupported: true,
         commentPrefix: '!ath! ',
+        rootSize: 16,
+        rootUnit: 'px',
       },
       styleAttr: {
         enabled: true,
@@ -115,6 +117,7 @@
         { name: "add.html", url: "https://1000.menu/cooking/add" },
         { name: "contest.html", url: "https://1000.menu/contest" },
         { name: "cooking.html", url: "https://1000.menu/cooking/100" },
+        { name: "forum.html", url: "https://1000.menu/forum" },
       ],
     },
 
@@ -151,6 +154,42 @@
       html: [
         { name: "index.html", url: "https://www.boxofficemojo.com/" },
         { name: "intl.html", url: "https://www.boxofficemojo.com/intl/" },
+      ],
+    },
+
+    // MARK: E-Hentai
+    {
+      name: "e-hentai.org",
+      options: {
+        recolor: {
+          extraRootSelectors: [ '.cs', '.cn' ],
+        },
+        refont: {
+          enabled: true,
+          rootSize: 10,
+          rootUnit: 'pt',
+        },
+      },
+      html: [
+        { name: "index.html", url: "https://e-hentai.org/?inline_set=dm_m" },
+      ],
+    },
+
+    // MARK: EXHentai
+    {
+      name: "exhentai.org",
+      options: {
+        recolor: {
+          extraRootSelectors: [ '.cs', '.cn' ],
+        },
+        refont: {
+          enabled: true,
+          rootSize: 10,
+          rootUnit: 'pt',
+        },
+      },
+      html: [
+        { name: "index.html", url: "https://exhentai.org/?inline_set=dm_m" },
       ],
     },
 
@@ -409,6 +448,30 @@
       },
       html: [
         { name: "index.html", url: "https://shigriyat.ru/" },
+      ],
+    },
+
+    // MARK: VcPkg
+    {
+      name: "vcpkg.io",
+      options: {
+        recolor: {
+          extraRootSelectors: [ '.footer' ],
+        },
+        remove: {
+          enabled: true,
+          css: {
+            atrule: [{ name: 'media', value: 'print' }],
+          },
+          selector: {
+            class: [{ name: '/ ( table | form-control | form-check | was-validated | list-group-item | btn | carousel | dropdown | dropleft | bg- | text- | shadow- | border- | custom- | badge-(?!primary) | alert- | progress- | bs- ) .* /' }],
+          },
+        },
+      },
+      html: [
+        { name: "index.html", url: "https://vcpkg.io/en/" },
+        { name: "package.html", url: "https://vcpkg.io/en/package/7zip" },
+        { name: "packages.html", url: "https://vcpkg.io/en/packages?query=zip" },
       ],
     },
 
