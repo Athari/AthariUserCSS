@@ -439,6 +439,31 @@
       ],
     },
 
+    // MARK: Secondlife
+    {
+      name: "marketplace.secondlife.com",
+      options: {
+        recolor: {
+          extraRootSelectors: [ 'nav.header', 'footer' ],
+        },
+        remove: {
+          enabled: true,
+          css: {
+            decl: [{ name: '/ -\\w+-box-shadow /' }],
+          },
+          selector: {
+            pseudo: [{
+              name: ':root',
+              operations: { operation: 'rename', replace: ':root, body, nav.header, footer' },
+            }],
+          },
+        }
+      },
+      html: [
+        { name: "index.html", url: "https://marketplace.secondlife.com/" },
+      ],
+    },
+
     // MARK: Shigriyat
     {
       name: "shigriyat.ru",

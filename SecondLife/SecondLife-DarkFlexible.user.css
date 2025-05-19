@@ -1,0 +1,1925 @@
+/* ==UserStyle==
+@name           Marketplace.SecondLife.com – Dark Flexible [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Dark theme SecondLife Marketplace (Marketplace.SecondLife.com) with flexible layout and configurable colors.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var            checkbox ath-flexible-layout    "Flexible layout"        1
+@var            select   ath-color-scheme       "Controls color scheme"  ["light:Light", "dark:Dark*"]
+
+@var            range    l "Lightness base"     [1.2, -2.0, 2.0, 0.02]
+@var            range    m "Lightness contrast" [-1.0, -2.0, 2.0, 0.02]
+@var            range    c "Chroma base"        [0.0, 0.0, 0.40, 0.01]
+@var            range    d "Chroma contrast"    [1.0, -2.0, 2.0, 0.02]
+@var            range    h "Hue base"           [0, 0, 360, 2]
+@var            range    i "Hue contrast"       [1.0, -2.0, 2.0, 0.05]
+@var            checkbox y "Invert images"      0
+==/UserStyle== */
+@-moz-document domain("marketplace.secondlife.com") {
+  /*
+   * generated
+   * formula: dark-full
+   * site: marketplace.secondlife.com
+   * name: screen-b200bbe2164ef6a6af568ae7e2e1cf87fdc5f320d86dfefe04b344476abc33a4.css
+   * url: https://marketplace.secondlife.com/assets/screen-b200bbe2164ef6a6af568ae7e2e1cf87fdc5f320d86dfefe04b344476abc33a4.css
+   * name: inline-style-attrs.css
+   */
+  :root,
+  body,
+  nav.header,
+  footer {
+    /*color #ccc n=68 rgb(204, 204, 204) oklch(6 0 16)*/
+    --c-ccc: oklch(from #ccc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color white n=57 rgb(255, 255, 255) oklch(1 0 180)*/
+    --c-white: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color transparent n=40 rgba(0, 0, 0, 0) oklch(0 0 0 / 0)*/
+    --c-transparent: oklch(from transparent calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #595c62 n=22 rgb(89, 92, 98) oklch(6 14 22)*/
+    --c-595c62: oklch(from #595c62 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #222 n=14 rgb(34, 34, 34) oklch(6 0 16)*/
+    --c-222: oklch(from #222 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e8e8e8 n=13 rgb(232, 232, 232) oklch(6 0 180)*/
+    --c-e8e8e8: oklch(from #e8e8e8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ddd n=9 rgb(221, 221, 221) oklch(6 0 16)*/
+    --c-ddd: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #1a1a1a n=9 rgb(26, 26, 26) oklch(6 0 180)*/
+    --c-1a1a1a: oklch(from #1a1a1a calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(121,121,229,.25) n=8 rgba(121, 121, 229, 20) oklch(6 14 22 / 32)*/
+    --c-rgba-121-121-229-17: oklch(from rgba(121, 121, 229, 0.25) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(79,79,221,.25) n=8 rgba(79, 79, 221, 18) oklch(6 14 22 / 32)*/
+    --c-rgba-79-79-221-15: oklch(from rgba(79, 79, 221, 0.25) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color black n=7 rgb(0, 0, 0) oklch(0 0 0)*/
+    --c-black: oklch(from #000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #666 n=7 rgb(102, 102, 102) oklch(6 0 16)*/
+    --c-666: oklch(from #666 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #8a1f11 n=6 rgb(138, 31, 17) oklch(6 14 22)*/
+    --c-8a1f11: oklch(from #8a1f11 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #aaa n=6 rgb(170, 170, 170) oklch(6 0 16)*/
+    --c-aaa: oklch(from #aaa calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fbe3e4 n=6 rgb(251, 227, 228) oklch(6 14 22)*/
+    --c-fbe3e4: oklch(from #fbe3e4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fff6bf n=6 rgb(255, 246, 191) oklch(6 14 22)*/
+    --c-fff6bf: oklch(from #fff6bf calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #9fa7ad n=5 rgb(159, 167, 173) oklch(6 14 22)*/
+    --c-9fa7ad: oklch(from #9fa7ad calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fefefe n=5 rgb(254, 254, 254) oklch(6 0 180)*/
+    --c-fefefe: oklch(from #fefefe calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color red n=5 rgb(255, 0, 0) oklch(6 14 22)*/
+    --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #333 n=5 rgb(51, 51, 51) oklch(6 0 180)*/
+    --c-333: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #514721 n=5 rgb(81, 71, 33) oklch(6 14 22)*/
+    --c-514721: oklch(from #514721 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #b7cb90 n=4 rgb(183, 203, 144) oklch(6 14 22)*/
+    --c-b7cb90: oklch(from #b7cb90 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #cdcdcf n=4 rgb(205, 205, 207) oklch(6 13 21)*/
+    --c-cdcdcf: oklch(from #cdcdcf calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e4fdb4 n=4 rgb(228, 253, 180) oklch(6 14 22)*/
+    --c-e4fdb4: oklch(from #e4fdb4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fbc2c4 n=4 rgb(251, 194, 196) oklch(6 14 22)*/
+    --c-fbc2c4: oklch(from #fbc2c4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #1c6293 n=4 rgb(28, 98, 147) oklch(6 14 22)*/
+    --c-1c6293: oklch(from #1c6293 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(0,0,0,.5) n=4 rgba(0, 0, 0, 14) oklch(0 0 0 / 14)*/
+    --c-rgba-0-0-0-11: oklch(from rgba(0, 0, 0, 0.5) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #6d9fc2 n=3 rgb(109, 159, 194) oklch(6 14 22)*/
+    --c-6d9fc2: oklch(from #6d9fc2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #848585 n=3 rgb(132, 133, 133) oklch(6 14 22)*/
+    --c-848585: oklch(from #848585 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #bbb n=3 rgb(187, 187, 187) oklch(6 0 16)*/
+    --c-bbb: oklch(from #bbb calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #eee n=3 rgb(238, 238, 238) oklch(6 0 180)*/
+    --c-eee: oklch(from #eee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f7911e n=3 rgb(247, 145, 30) oklch(6 14 21)*/
+    --c-f7911e: oklch(from #f7911e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fcefae n=3 rgb(252, 239, 174) oklch(6 13 21)*/
+    --c-fcefae: oklch(from #fcefae calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffd324 n=3 rgb(255, 211, 36) oklch(6 14 22)*/
+    --c-ffd324: oklch(from #ffd324 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #264409 n=3 rgb(38, 68, 9) oklch(6 14 22)*/
+    --c-264409: oklch(from #264409 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #336554 n=3 rgb(51, 101, 84) oklch(6 13 20)*/
+    --c-336554: oklch(from #336554 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #003eff n=2 rgb(0, 62, 255) oklch(6 13 21)*/
+    --c-003eff: oklch(from #003eff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #777620 n=2 rgb(119, 118, 32) oklch(6 14 21)*/
+    --c-777620: oklch(from #777620 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #84a0b3 n=2 rgb(132, 160, 179) oklch(6 14 22)*/
+    --c-84a0b3: oklch(from #84a0b3 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #88a3b7 n=2 rgb(136, 163, 183) oklch(6 14 22)*/
+    --c-88a3b7: oklch(from #88a3b7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #9aa1a7 n=2 rgb(154, 161, 167) oklch(6 14 22)*/
+    --c-9aa1a7: oklch(from #9aa1a7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #bf00ff n=2 rgb(191, 0, 255) oklch(6 13 20)*/
+    --c-bf00ff: oklch(from #bf00ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c5c5c5 n=2 rgb(197, 197, 197) oklch(6 0 16)*/
+    --c-c5c5c5: oklch(from #c5c5c5 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c6d880 n=2 rgb(198, 216, 128) oklch(6 14 22)*/
+    --c-c6d880: oklch(from #c6d880 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #cfefa7 n=2 rgb(207, 239, 167) oklch(6 14 22)*/
+    --c-cfefa7: oklch(from #cfefa7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d05d27 n=2 rgb(208, 93, 39) oklch(6 14 22)*/
+    --c-d05d27: oklch(from #d05d27 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #dad55e n=2 rgb(218, 213, 94) oklch(6 14 22)*/
+    --c-dad55e: oklch(from #dad55e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e5ecf9 n=2 rgb(229, 236, 249) oklch(6 14 21)*/
+    --c-e5ecf9: oklch(from #e5ecf9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e6efc2 n=2 rgb(230, 239, 194) oklch(6 14 22)*/
+    --c-e6efc2: oklch(from #e6efc2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #efe n=2 rgb(238, 255, 238) oklch(6 14 22)*/
+    --c-efe: oklch(from #efe calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #efefef n=2 rgb(239, 239, 239) oklch(6 0 16)*/
+    --c-efefef: oklch(from #efefef calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fae587 n=2 rgb(250, 229, 135) oklch(6 14 22)*/
+    --c-fae587: oklch(from #fae587 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f73 n=2 rgb(255, 119, 51) oklch(6 14 22)*/
+    --c-f73: oklch(from #f73 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fffa90 n=2 rgb(255, 250, 144) oklch(6 14 22)*/
+    --c-fffa90: oklch(from #fffa90 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #205791 n=2 rgb(32, 87, 145) oklch(6 14 22)*/
+    --c-205791: oklch(from #205791 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #2b2b2b n=2 rgb(43, 43, 43) oklch(6 0 180)*/
+    --c-2b2b2b: oklch(from #2b2b2b calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #313234 n=2 rgb(49, 50, 52) oklch(6 14 22)*/
+    --c-313234: oklch(from #313234 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #3a6481 n=2 rgb(58, 100, 129) oklch(6 14 22)*/
+    --c-3a6481: oklch(from #3a6481 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #454545 n=2 rgb(69, 69, 69) oklch(6 0 180)*/
+    --c-454545: oklch(from #454545 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #4c4f54 n=2 rgb(76, 79, 84) oklch(6 14 22)*/
+    --c-4c4f54: oklch(from #4c4f54 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #5cb192 n=2 rgb(92, 177, 146) oklch(6 14 22)*/
+    --c-5cb192: oklch(from #5cb192 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #5f3f3f n=2 rgb(95, 63, 63) oklch(6 14 22)*/
+    --c-5f3f3f: oklch(from #5f3f3f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #607c8f n=2 rgb(96, 124, 143) oklch(6 14 22)*/
+    --c-607c8f: oklch(from #607c8f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #616267 n=2 rgb(97, 98, 103) oklch(6 14 22)*/
+    --c-616267: oklch(from #616267 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(0,0,0,.3) n=2 rgba(0, 0, 0, 14) oklch(0 0 0 / 14)*/
+    --c-rgba-0-0-0-11: oklch(from rgba(0, 0, 0, 0.3) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #060 n=1 rgb(0, 102, 0) oklch(6 14 22)*/
+    --c-060: oklch(from #060 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #06c n=1 rgb(0, 102, 204) oklch(6 14 22)*/
+    --c-06c: oklch(from #06c calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #007fff n=1 rgb(0, 127, 255) oklch(6 14 22)*/
+    --c-007fff: oklch(from #007fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color green n=1 rgb(0, 128, 0) oklch(6 14 22)*/
+    --c-green: oklch(from green calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #09f n=1 rgb(0, 153, 255) oklch(6 14 22)*/
+    --c-09f: oklch(from #09f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color deepskyblue n=1 rgb(0, 191, 255) oklch(6 14 22)*/
+    --c-deepskyblue: oklch(from #00bfff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #002300 n=1 rgb(0, 35, 0) oklch(6 14 22)*/
+    --c-002300: oklch(from #002300 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #004d99 n=1 rgb(0, 77, 153) oklch(6 14 22)*/
+    --c-004d99: oklch(from #004d99 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #017ac1 n=1 rgb(1, 122, 193) oklch(6 14 22)*/
+    --c-017ac1: oklch(from #017ac1 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #010f37 n=1 rgb(1, 15, 55) oklch(6 14 22)*/
+    --c-010f37: oklch(from #010f37 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #01265b n=1 rgb(1, 38, 91) oklch(6 14 22)*/
+    --c-01265b: oklch(from #01265b calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #014a8e n=1 rgb(1, 74, 142) oklch(6 14 22)*/
+    --c-014a8e: oklch(from #014a8e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #653101 n=1 rgb(101, 49, 1) oklch(6 14 22)*/
+    --c-653101: oklch(from #653101 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #68016a n=1 rgb(104, 1, 106) oklch(6 14 22)*/
+    --c-68016a: oklch(from #68016a calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #7c7d83 n=1 rgb(124, 125, 131) oklch(6 14 22)*/
+    --c-7c7d83: oklch(from #7c7d83 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color grey n=1 rgb(128, 128, 128) oklch(6 0 180)*/
+    --c-grey: oklch(from gray calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #0d4700 n=1 rgb(13, 71, 0) oklch(6 13 21)*/
+    --c-0d4700: oklch(from #0d4700 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #8ae2ff n=1 rgb(138, 226, 255) oklch(6 14 22)*/
+    --c-8ae2ff: oklch(from #8ae2ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #8d0245 n=1 rgb(141, 2, 69) oklch(6 14 22)*/
+    --c-8d0245: oklch(from #8d0245 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #8e01a7 n=1 rgb(142, 1, 167) oklch(6 14 22)*/
+    --c-8e01a7: oklch(from #8e01a7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #8eb1c9 n=1 rgb(142, 177, 201) oklch(6 14 22)*/
+    --c-8eb1c9: oklch(from #8eb1c9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #92cae4 n=1 rgb(146, 202, 228) oklch(6 13 21)*/
+    --c-92cae4: oklch(from #92cae4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #900 n=1 rgb(153, 0, 0) oklch(6 14 22)*/
+    --c-900: oklch(from #900 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #999 n=1 rgb(153, 153, 153) oklch(6 0 180)*/
+    --c-999: oklch(from #999 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #9aa6af n=1 rgb(154, 166, 175) oklch(6 13 21)*/
+    --c-9aa6af: oklch(from #9aa6af calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #9b9ea6 n=1 rgb(155, 158, 166) oklch(6 14 22)*/
+    --c-9b9ea6: oklch(from #9b9ea6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #a1a6b4 n=1 rgb(161, 166, 180) oklch(6 14 22)*/
+    --c-a1a6b4: oklch(from #a1a6b4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #a4b9c7 n=1 rgb(164, 185, 199) oklch(6 14 21)*/
+    --c-a4b9c7: oklch(from #a4b9c7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #111 n=1 rgb(17, 17, 17) oklch(6 0 180)*/
+    --c-111: oklch(from #111 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #aaadb4 n=1 rgb(170, 173, 180) oklch(6 14 22)*/
+    --c-aaadb4: oklch(from #aaadb4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #acc6d8 n=1 rgb(172, 198, 216) oklch(6 14 22)*/
+    --c-acc6d8: oklch(from #acc6d8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ace401 n=1 rgb(172, 228, 1) oklch(6 14 22)*/
+    --c-ace401: oklch(from #ace401 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ac6206 n=1 rgb(172, 98, 6) oklch(6 14 22)*/
+    --c-ac6206: oklch(from #ac6206 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #b4b7c0 n=1 rgb(180, 183, 192) oklch(6 13 21)*/
+    --c-b4b7c0: oklch(from #b4b7c0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #bdd9ed n=1 rgb(189, 217, 237) oklch(6 14 22)*/
+    --c-bdd9ed: oklch(from #bdd9ed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #bdebcc n=1 rgb(189, 235, 204) oklch(6 14 22)*/
+    --c-bdebcc: oklch(from #bdebcc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #bdedff n=1 rgb(189, 237, 255) oklch(6 14 22)*/
+    --c-bdedff: oklch(from #bdedff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color silver n=1 rgb(192, 192, 192) oklch(6 0 180)*/
+    --c-silver: oklch(from silver calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c10144 n=1 rgb(193, 1, 68) oklch(6 14 22)*/
+    --c-c10144: oklch(from #c10144 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c3d9ff n=1 rgb(195, 217, 255) oklch(6 14 22)*/
+    --c-c3d9ff: oklch(from #c3d9ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c34a00 n=1 rgb(195, 74, 0) oklch(6 14 22)*/
+    --c-c34a00: oklch(from #c34a00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c5cdcf n=1 rgb(197, 205, 207) oklch(6 14 22)*/
+    --c-c5cdcf: oklch(from #c5cdcf calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c6ee4f n=1 rgb(198, 238, 79) oklch(6 14 21)*/
+    --c-c6ee4f: oklch(from #c6ee4f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c8d1d8 n=1 rgb(200, 209, 216) oklch(6 14 22)*/
+    --c-c8d1d8: oklch(from #c8d1d8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #cccfd7 n=1 rgb(204, 207, 215) oklch(6 14 22)*/
+    --c-cccfd7: oklch(from #cccfd7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d0d0d3 n=1 rgb(208, 208, 211) oklch(6 14 21)*/
+    --c-d0d0d3: oklch(from #d0d0d3 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d24dff n=1 rgb(210, 77, 255) oklch(6 14 22)*/
+    --c-d24dff: oklch(from #d24dff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d5edf8 n=1 rgb(213, 237, 248) oklch(6 14 22)*/
+    --c-d5edf8: oklch(from #d5edf8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #db8400 n=1 rgb(219, 132, 0) oklch(6 13 21)*/
+    --c-db8400: oklch(from #db8400 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #dbf5ff n=1 rgb(219, 245, 255) oklch(6 14 22)*/
+    --c-dbf5ff: oklch(from #dbf5ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #dcf58e n=1 rgb(220, 245, 142) oklch(6 14 22)*/
+    --c-dcf58e: oklch(from #dcf58e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #dee0e8 n=1 rgb(222, 224, 232) oklch(6 14 22)*/
+    --c-dee0e8: oklch(from #dee0e8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e0e0e0 n=1 rgb(224, 224, 224) oklch(6 0 180)*/
+    --c-e0e0e0: oklch(from #e0e0e0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e28aff n=1 rgb(226, 138, 255) oklch(6 14 22)*/
+    --c-e28aff: oklch(from #e28aff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e55c00 n=1 rgb(229, 92, 0) oklch(6 14 22)*/
+    --c-e55c00: oklch(from #e55c00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color lavender n=1 rgb(230, 230, 250) oklch(6 13 21)*/
+    --c-lavender: oklch(from #e6e6fa calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e7f1f8 n=1 rgb(231, 241, 248) oklch(6 14 22)*/
+    --c-e7f1f8: oklch(from #e7f1f8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e9e9e9 n=1 rgb(233, 233, 233) oklch(6 0 16)*/
+    --c-e9e9e9: oklch(from #e9e9e9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ebfbbc n=1 rgb(235, 251, 188) oklch(6 12 20)*/
+    --c-ebfbbc: oklch(from #ebfbbc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #eceef3 n=1 rgb(236, 238, 243) oklch(6 14 22)*/
+    --c-eceef3: oklch(from #eceef3 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ededed n=1 rgb(237, 237, 237) oklch(6 0 180)*/
+    --c-ededed: oklch(from #ededed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ed1d51 n=1 rgb(237, 29, 81) oklch(6 14 22)*/
+    --c-ed1d51: oklch(from #ed1d51 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #eebdff n=1 rgb(238, 189, 255) oklch(6 14 22)*/
+    --c-eebdff: oklch(from #eebdff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f0fbff n=1 rgb(240, 251, 255) oklch(6 14 22)*/
+    --c-f0fbff: oklch(from #f0fbff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f05d14 n=1 rgb(240, 93, 20) oklch(6 14 22)*/
+    --c-f05d14: oklch(from #f05d14 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f1a899 n=1 rgb(241, 168, 153) oklch(6 14 22)*/
+    --c-f1a899: oklch(from #f1a899 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f5ffd6 n=1 rgb(245, 255, 214) oklch(6 14 22)*/
+    --c-f5ffd6: oklch(from #f5ffd6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f68d20 n=1 rgb(246, 141, 32) oklch(6 14 22)*/
+    --c-f68d20: oklch(from #f68d20 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f6901e n=1 rgb(246, 144, 30) oklch(6 14 21)*/
+    --c-f6901e: oklch(from #f6901e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f6f6f6 n=1 rgb(246, 246, 246) oklch(6 0 16)*/
+    --c-f6f6f6: oklch(from #f6f6f6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f8e0ff n=1 rgb(248, 224, 255) oklch(6 14 22)*/
+    --c-f8e0ff: oklch(from #f8e0ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f8f9fc n=1 rgb(248, 249, 252) oklch(6 13 21)*/
+    --c-f8f9fc: oklch(from #f8f9fc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fbffeb n=1 rgb(251, 255, 235) oklch(6 14 22)*/
+    --c-fbffeb: oklch(from #fbffeb calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fddfdf n=1 rgb(253, 223, 223) oklch(6 13 21)*/
+    --c-fddfdf: oklch(from #fddfdf calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fdf0ff n=1 rgb(253, 240, 255) oklch(6 14 21)*/
+    --c-fdf0ff: oklch(from #fdf0ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ff8fab n=1 rgb(255, 143, 171) oklch(6 14 22)*/
+    --c-ff8fab: oklch(from #ff8fab calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ff9c6b n=1 rgb(255, 156, 107) oklch(6 14 22)*/
+    --c-ff9c6b: oklch(from #ff9c6b calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color orange n=1 rgb(255, 165, 0) oklch(6 14 22)*/
+    --c-orange: oklch(from orange calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffbdcd n=1 rgb(255, 189, 205) oklch(6 14 21)*/
+    --c-ffbdcd: oklch(from #ffbdcd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffbf00 n=1 rgb(255, 191, 0) oklch(6 14 22)*/
+    --c-ffbf00: oklch(from #ffbf00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffcc4d n=1 rgb(255, 204, 77) oklch(6 14 22)*/
+    --c-ffcc4d: oklch(from #ffcc4d calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffde85 n=1 rgb(255, 222, 133) oklch(6 14 22)*/
+    --c-ffde85: oklch(from #ffde85 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffe6ec n=1 rgb(255, 230, 236) oklch(6 14 22)*/
+    --c-ffe6ec: oklch(from #ffe6ec calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffecb8 n=1 rgb(255, 236, 184) oklch(6 14 22)*/
+    --c-ffecb8: oklch(from #ffecb8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fff3bf n=1 rgb(255, 243, 191) oklch(6 14 21)*/
+    --c-fff3bf: oklch(from #fff3bf calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fff5f7 n=1 rgb(255, 245, 247) oklch(6 14 22)*/
+    --c-fff5f7: oklch(from #fff5f7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fff6db n=1 rgb(255, 246, 219) oklch(6 14 22)*/
+    --c-fff6db: oklch(from #fff6db calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fffaeb n=1 rgb(255, 250, 235) oklch(6 14 21)*/
+    --c-fffaeb: oklch(from #fffaeb calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color yellow n=1 rgb(255, 255, 0) oklch(6 14 22)*/
+    --c-yellow: oklch(from #ff0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffc n=1 rgb(255, 255, 204) oklch(6 14 22)*/
+    --c-ffc: oklch(from #ffc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ff527d n=1 rgb(255, 82, 125) oklch(6 14 22)*/
+    --c-ff527d: oklch(from #ff527d calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #202122 n=1 rgb(32, 33, 34) oklch(6 13 21)*/
+    --c-202122: oklch(from #202122 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #217e01 n=1 rgb(33, 126, 1) oklch(6 14 22)*/
+    --c-217e01: oklch(from #217e01 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #2d011e n=1 rgb(45, 1, 30) oklch(6 14 22)*/
+    --c-2d011e: oklch(from #2d011e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #2d0123 n=1 rgb(45, 1, 35) oklch(6 14 22)*/
+    --c-2d0123: oklch(from #2d0123 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #313235 n=1 rgb(49, 50, 53) oklch(6 14 22)*/
+    --c-313235: oklch(from #313235 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #321b01 n=1 rgb(50, 27, 1) oklch(6 14 22)*/
+    --c-321b01: oklch(from #321b01 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #366 n=1 rgb(51, 102, 102) oklch(6 14 22)*/
+    --c-366: oklch(from #366 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #424448 n=1 rgb(66, 68, 72) oklch(6 14 22)*/
+    --c-424448: oklch(from #424448 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #460143 n=1 rgb(70, 1, 67) oklch(6 14 22)*/
+    --c-460143: oklch(from #460143 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #508e77 n=1 rgb(80, 142, 119) oklch(6 14 22)*/
+    --c-508e77: oklch(from #508e77 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #52d4ff n=1 rgb(82, 212, 255) oklch(6 14 22)*/
+    --c-52d4ff: oklch(from #52d4ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #555453 n=1 rgb(85, 84, 83) oklch(6 14 22)*/
+    --c-555453: oklch(from #555453 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #560130 n=1 rgb(86, 1, 48) oklch(6 13 21)*/
+    --c-560130: oklch(from #560130 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #5cad01 n=1 rgb(92, 173, 1) oklch(6 14 21)*/
+    --c-5cad01: oklch(from #5cad01 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #5e9ed6 n=1 rgb(94, 158, 214) oklch(6 14 22)*/
+    --c-5e9ed6: oklch(from #5e9ed6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #5eaade n=1 rgb(94, 170, 222) oklch(6 14 22)*/
+    --c-5eaade: oklch(from #5eaade calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #606166 n=1 rgb(96, 97, 102) oklch(6 14 20)*/
+    --c-606166: oklch(from #606166 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(0,0,0,.35) n=1 rgba(0, 0, 0, 14) oklch(0 0 0 / 14)*/
+    --c-rgba-0-0-0-11: oklch(from rgba(0, 0, 0, 0.35) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color hsla(0,0%,100%,.6) n=1 rgba(255, 255, 255, 20) oklch(1 0 180 / 16)*/
+    --c-hsla-0-0-100-15: oklch(from hsla(0, 0%, 100%, 0.6) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(33,33,33,.8) n=1 rgba(33, 33, 33, 17) oklch(6 0 180 / 22)*/
+    --c-rgba-33-33-33-14: oklch(from rgba(33, 33, 33, 0.8) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  .ui-widget.ui-widget-content {
+    border: 1px solid var(--c-c5c5c5);
+  }
+  .ui-widget-content {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ddd);
+    color: var(--c-333);
+  }
+  .ui-widget-content a {
+    color: var(--c-333);
+  }
+  .ui-widget-header {
+    background-color: var(--c-e9e9e9);
+    border: 1px solid var(--c-ddd);
+    color: var(--c-333);
+  }
+  .ui-widget-header a {
+    color: var(--c-333);
+  }
+  .ui-button,
+  .ui-state-default,
+  .ui-widget-content .ui-state-default,
+  .ui-widget-header .ui-state-default,
+  html .ui-button.ui-state-disabled:active,
+  html .ui-button.ui-state-disabled:hover {
+    background-color: var(--c-f6f6f6);
+    border: 1px solid var(--c-c5c5c5);
+    color: var(--c-454545);
+  }
+  .ui-button,
+  .ui-state-default a,
+  .ui-state-default a:link,
+  .ui-state-default a:visited,
+  a.ui-button,
+  a:link.ui-button,
+  a:visited.ui-button {
+    color: var(--c-454545);
+  }
+  .ui-button:focus,
+  .ui-button:hover,
+  .ui-state-focus,
+  .ui-state-hover,
+  .ui-widget-content .ui-state-focus,
+  .ui-widget-content .ui-state-hover,
+  .ui-widget-header .ui-state-focus,
+  .ui-widget-header .ui-state-hover {
+    background-color: var(--c-ededed);
+    border: 1px solid var(--c-ccc);
+    color: var(--c-2b2b2b);
+  }
+  .ui-state-focus a,
+  .ui-state-focus a:hover,
+  .ui-state-focus a:link,
+  .ui-state-focus a:visited,
+  .ui-state-hover a,
+  .ui-state-hover a:hover,
+  .ui-state-hover a:link,
+  .ui-state-hover a:visited,
+  a.ui-button:focus,
+  a.ui-button:hover {
+    color: var(--c-2b2b2b);
+  }
+  .ui-visual-focus {
+    box-shadow: 0 0 3px 1px var(--c-5e9ed6);
+  }
+  .ui-button.ui-state-active:hover,
+  .ui-button:active,
+  .ui-state-active,
+  .ui-widget-content .ui-state-active,
+  .ui-widget-header .ui-state-active,
+  a.ui-button:active {
+    background-color: var(--c-007fff);
+    border: 1px solid var(--c-003eff);
+    color: var(--c-white);
+  }
+  .ui-icon-background,
+  .ui-state-active .ui-icon-background {
+    background-color: var(--c-white);
+    border: var(--c-003eff);
+  }
+  .ui-state-active a,
+  .ui-state-active a:link,
+  .ui-state-active a:visited {
+    color: var(--c-white);
+  }
+  .ui-state-highlight,
+  .ui-widget-content .ui-state-highlight,
+  .ui-widget-header .ui-state-highlight {
+    background-color: var(--c-fffa90);
+    border: 1px solid var(--c-dad55e);
+    color: var(--c-777620);
+  }
+  .ui-state-checked {
+    background-color: var(--c-fffa90);
+    border: 1px solid var(--c-dad55e);
+  }
+  .ui-state-highlight a,
+  .ui-widget-content .ui-state-highlight a,
+  .ui-widget-header .ui-state-highlight a {
+    color: var(--c-777620);
+  }
+  .ui-state-error,
+  .ui-widget-content .ui-state-error,
+  .ui-widget-header .ui-state-error {
+    background-color: var(--c-fddfdf);
+    border: 1px solid var(--c-f1a899);
+    color: var(--c-5f3f3f);
+  }
+  .ui-state-error a,
+  .ui-state-error-text,
+  .ui-widget-content .ui-state-error a,
+  .ui-widget-content .ui-state-error-text,
+  .ui-widget-header .ui-state-error a,
+  .ui-widget-header .ui-state-error-text {
+    color: var(--c-5f3f3f);
+  }
+  .ui-widget-overlay {
+    background-color: var(--c-aaa);
+  }
+  .ui-widget-shadow {
+    box-shadow: 0 0 5px var(--c-666);
+  }
+  .ui-checkboxradio-label .ui-icon-background {
+    box-shadow: inset 1px 1px 1px var(--c-ccc);
+  }
+  .ui-selectable-helper {
+    border: 1px dotted var(--c-black);
+  }
+  body.bp {
+    color: var(--c-333);
+  }
+  body.bp h1,
+  body.bp h2,
+  body.bp h3,
+  body.bp h4,
+  body.bp h5,
+  body.bp h6 {
+    color: var(--c-222);
+  }
+  body.bp a {
+    color: var(--c-06c);
+  }
+  body.bp a:visited {
+    color: var(--c-004d99);
+  }
+  body.bp a:focus,
+  body.bp a:hover {
+    color: var(--c-09f);
+  }
+  body.bp a:active {
+    color: var(--c-bf00ff);
+  }
+  body.bp blockquote {
+    color: var(--c-666);
+  }
+  body.bp abbr,
+  body.bp acronym {
+    border-bottom: 1px dotted var(--c-666);
+  }
+  body.bp del {
+    color: var(--c-666);
+  }
+  body.bp thead th {
+    background-color: var(--c-c3d9ff);
+  }
+  body.bp table tr.even td,
+  body.bp table.striped tr:nth-child(2n) td {
+    background-color: var(--c-e5ecf9);
+  }
+  body.bp caption {
+    background-color: var(--c-eee);
+  }
+  body.bp .quiet {
+    color: var(--c-666);
+  }
+  body.bp .loud {
+    color: var(--c-111);
+  }
+  body.bp .showgrid {
+    background-image:
+      linear-gradient(0deg, var(--c-rgba-0-0-0-11) 5%, var(--c-transparent) 0),
+      linear-gradient(
+        90deg,
+        var(--c-transparent) 0,
+        var(--c-rgba-121-121-229-17) 0,
+        var(--c-rgba-79-79-221-15) 100px,
+        var(--c-transparent) 0,
+        var(--c-transparent) 120px,
+        var(--c-rgba-121-121-229-17) 0,
+        var(--c-rgba-79-79-221-15) 220px,
+        var(--c-transparent) 0,
+        var(--c-transparent) 240px,
+        var(--c-rgba-121-121-229-17) 0,
+        var(--c-rgba-79-79-221-15) 340px,
+        var(--c-transparent) 0,
+        var(--c-transparent) 360px,
+        var(--c-rgba-121-121-229-17) 0,
+        var(--c-rgba-79-79-221-15) 460px,
+        var(--c-transparent) 0,
+        var(--c-transparent) 480px,
+        var(--c-rgba-121-121-229-17) 0,
+        var(--c-rgba-79-79-221-15) 580px,
+        var(--c-transparent) 0,
+        var(--c-transparent) 600px,
+        var(--c-rgba-121-121-229-17) 0,
+        var(--c-rgba-79-79-221-15) 700px,
+        var(--c-transparent) 0,
+        var(--c-transparent) 720px,
+        var(--c-rgba-121-121-229-17) 0,
+        var(--c-rgba-79-79-221-15) 820px,
+        var(--c-transparent) 0,
+        var(--c-transparent) 840px,
+        var(--c-rgba-121-121-229-17) 0,
+        var(--c-rgba-79-79-221-15) 940px,
+        var(--c-transparent) 0,
+        var(--c-transparent) 960px
+      );
+  }
+  body.bp .alert,
+  body.bp .error,
+  body.bp .feedback,
+  body.bp .info,
+  body.bp .notice,
+  body.bp .success {
+    border: 2px solid var(--c-ddd);
+  }
+  body.bp .alert,
+  body.bp .error {
+    background-color: var(--c-fbe3e4);
+    border-color: var(--c-fbc2c4);
+    color: var(--c-8a1f11);
+  }
+  body.bp .alert a,
+  body.bp .error a {
+    color: var(--c-8a1f11);
+  }
+  body.bp .notice {
+    background-color: var(--c-fff6bf);
+    border-color: var(--c-ffd324);
+    color: var(--c-514721);
+  }
+  body.bp .notice a {
+    color: var(--c-514721);
+  }
+  body.bp .success {
+    background-color: var(--c-e6efc2);
+    border-color: var(--c-c6d880);
+    color: var(--c-264409);
+  }
+  body.bp .success a {
+    color: var(--c-264409);
+  }
+  body.bp .info {
+    background-color: var(--c-d5edf8);
+    border-color: var(--c-92cae4);
+    color: var(--c-205791);
+  }
+  body.bp .info a {
+    color: var(--c-205791);
+  }
+  body.bp .highlight {
+    background-color: var(--c-yellow);
+  }
+  body.bp .added {
+    background-color: var(--c-060);
+    color: var(--c-white);
+  }
+  body.bp .removed {
+    background-color: var(--c-900);
+    color: var(--c-white);
+  }
+  form.bp input.text,
+  form.bp input.title,
+  form.bp input[type="email"],
+  form.bp input[type="password"],
+  form.bp input[type="text"] {
+    background-color: var(--c-white);
+  }
+  form.bp fieldset {
+    border: 1px solid var(--c-ccc);
+  }
+  form.bp input.text,
+  form.bp input.title,
+  form.bp input[type="email"],
+  form.bp input[type="password"],
+  form.bp input[type="text"],
+  form.bp textarea {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-bbb);
+  }
+  form.bp input.text:focus,
+  form.bp input.title:focus,
+  form.bp input[type="email"]:focus,
+  form.bp input[type="password"]:focus,
+  form.bp input[type="text"]:focus,
+  form.bp textarea:focus {
+    border-color: var(--c-666);
+  }
+  form.bp select {
+    background-color: var(--c-white);
+  }
+  form.bp .box {
+    background-color: var(--c-e5ecf9);
+  }
+  form.bp .border {
+    border-right: 1px solid var(--c-ddd);
+  }
+  form.bp .colborder {
+    border-right: 1px solid var(--c-ddd);
+  }
+  form.bp hr,
+  form.bp hr.space {
+    background-color: var(--c-ddd);
+    color: var(--c-ddd);
+  }
+  form.bp hr.space {
+    background-color: var(--c-white);
+    color: var(--c-white);
+  }
+  h1,
+  h2 {
+    color: var(--c-222);
+  }
+  h3,
+  h5 {
+    color: var(--c-222);
+  }
+  .marketplace-sprite,
+  .modal .close {
+    background-color: var(--c-transparent);
+  }
+  .usage-req-sprite {
+    background-color: var(--c-transparent);
+  }
+  :root,
+  body,
+  footer,
+  nav.header {
+    --color-black: var(--c-black);
+    --color-transparent: var(--c-transparent);
+    --color-white: var(--c-white);
+    --color-acid-green-50: var(--c-fbffeb);
+    --color-acid-green-100: var(--c-f5ffd6);
+    --color-acid-green-200: var(--c-ebfbbc);
+    --color-acid-green-300: var(--c-dcf58e);
+    --color-acid-green-400: var(--c-c6ee4f);
+    --color-acid-green-500: var(--c-ace401);
+    --color-acid-green-600: var(--c-5cad01);
+    --color-acid-green-700: var(--c-217e01);
+    --color-acid-green-800: var(--c-0d4700);
+    --color-acid-green-900: var(--c-002300);
+    --color-fluor-red-50: var(--c-fff5f7);
+    --color-fluor-red-100: var(--c-ffe6ec);
+    --color-fluor-red-200: var(--c-ffbdcd);
+    --color-fluor-red-300: var(--c-ff8fab);
+    --color-fluor-red-400: var(--c-ff527d);
+    --color-fluor-red-500: var(--c-ed1d51);
+    --color-fluor-red-600: var(--c-c10144);
+    --color-fluor-red-700: var(--c-8d0245);
+    --color-fluor-red-800: var(--c-560130);
+    --color-fluor-red-900: var(--c-2d011e);
+    --color-fuchsia-50: var(--c-fdf0ff);
+    --color-fuchsia-100: var(--c-f8e0ff);
+    --color-fuchsia-200: var(--c-eebdff);
+    --color-fuchsia-300: var(--c-e28aff);
+    --color-fuchsia-400: var(--c-d24dff);
+    --color-fuchsia-500: var(--c-bf00ff);
+    --color-fuchsia-600: var(--c-8e01a7);
+    --color-fuchsia-700: var(--c-68016a);
+    --color-fuchsia-800: var(--c-460143);
+    --color-fuchsia-900: var(--c-2d0123);
+    --color-gray-50: var(--c-f8f9fc);
+    --color-gray-100: var(--c-eceef3);
+    --color-gray-200: var(--c-dee0e8);
+    --color-gray-300: var(--c-cccfd7);
+    --color-gray-400: var(--c-b4b7c0);
+    --color-gray-500: var(--c-9b9ea6);
+    --color-gray-600: var(--c-7c7d83);
+    --color-gray-700: var(--c-606166);
+    --color-gray-800: var(--c-424448);
+    --color-gray-900: var(--c-313235);
+    --color-gray-950: var(--c-202122);
+    --color-played-out-orange-400: var(--c-ff9c6b);
+    --color-played-out-orange-500: var(--c-f73);
+    --color-played-out-orange-600: var(--c-f05d14);
+    --color-school-bus-50: var(--c-fffaeb);
+    --color-school-bus-100: var(--c-fff6db);
+    --color-school-bus-200: var(--c-ffecb8);
+    --color-school-bus-300: var(--c-ffde85);
+    --color-school-bus-400: var(--c-ffcc4d);
+    --color-school-bus-500: var(--c-ffbf00);
+    --color-school-bus-600: var(--c-db8400);
+    --color-school-bus-700: var(--c-ac6206);
+    --color-school-bus-800: var(--c-653101);
+    --color-school-bus-900: var(--c-321b01);
+    --color-sl-blue-50: var(--c-f0fbff);
+    --color-sl-blue-100: var(--c-dbf5ff);
+    --color-sl-blue-200: var(--c-bdedff);
+    --color-sl-blue-300: var(--c-8ae2ff);
+    --color-sl-blue-400: var(--c-52d4ff);
+    --color-sl-blue-500: var(--c-deepskyblue);
+    --color-sl-blue-600: var(--c-017ac1);
+    --color-sl-blue-700: var(--c-014a8e);
+    --color-sl-blue-800: var(--c-01265b);
+    --color-sl-blue-900: var(--c-010f37);
+    --drop-shadow-300: var(--c-rgba-0-0-0-11);
+  }
+  .alert {
+    color: var(--c-red);
+  }
+  #flash #flash_error,
+  #site-wide-message #flash_error {
+    background-color: var(--c-fbe3e4);
+    border-color: var(--c-fbc2c4);
+    color: var(--c-8a1f11);
+  }
+  #flash #flash_notice,
+  #site-wide-message #flash_notice {
+    background-color: var(--c-bdebcc);
+    color: var(--c-336554);
+  }
+  #flash #flash_beta,
+  #site-wide-message #flash_beta {
+    background-color: var(--c-lavender);
+    color: var(--c-336554);
+  }
+  #flash #flash_warning,
+  #site-wide-message #flash_warning {
+    background-color: var(--c-fff6bf);
+    border-color: var(--c-ffd324);
+    color: var(--c-514721);
+  }
+  #site-wide-message #message p {
+    color: var(--c-222);
+  }
+  .no-cssgradients #site-wide-message,
+  .no-js #site-wide-message {
+    background-color: var(--c-fcefae);
+  }
+  .cssgradients #site-wide-message.notice {
+    background-image: -moz-linear-gradient(0 75% 90deg, var(--c-fae587), var(--c-fcefae));
+    background-image: -webkit-gradient(linear, 0 0, 0 75%, from(var(--c-fcefae)), to(var(--c-fae587)));
+  }
+  .assistant_orders table.index,
+  .assistant_products table.index,
+  .assistant_subscriptions table.index,
+  .csr_orders_index table.index,
+  .csr_orders_search table.index,
+  .csr_orders_simple table.index {
+    border: 1px solid var(--c-ccc);
+  }
+  .assistant_orders table.index thead,
+  .assistant_products table.index thead,
+  .assistant_subscriptions table.index thead,
+  .csr_orders_index table.index thead,
+  .csr_orders_search table.index thead,
+  .csr_orders_simple table.index thead {
+    background-color: var(--c-e8e8e8);
+  }
+  .assistant_orders table.index td,
+  .assistant_products table.index td,
+  .assistant_subscriptions table.index td,
+  .csr_orders_index table.index td,
+  .csr_orders_search table.index td,
+  .csr_orders_simple table.index td {
+    border-top: 1px solid var(--c-ccc);
+  }
+  .assistant_orders table.index tr.alt td,
+  .assistant_products table.index tr.alt td,
+  .assistant_subscriptions table.index tr.alt td,
+  .csr_orders_index table.index tr.alt td,
+  .csr_orders_search table.index tr.alt td,
+  .csr_orders_simple table.index tr.alt td {
+    background-color: var(--c-efefef);
+  }
+  .assistant_orders table.index .green th,
+  .assistant_products table.index .green th,
+  .assistant_subscriptions table.index .green th,
+  .csr_orders_index table.index .green th,
+  .csr_orders_search table.index .green th,
+  .csr_orders_simple table.index .green th {
+    background-color: var(--c-cfefa7);
+    border-color: var(--c-e4fdb4) var(--c-b7cb90) var(--c-b7cb90) var(--c-e4fdb4);
+  }
+  .assistant_orders table.index .green td,
+  .assistant_products table.index .green td,
+  .assistant_subscriptions table.index .green td,
+  .csr_orders_index table.index .green td,
+  .csr_orders_search table.index .green td,
+  .csr_orders_simple table.index .green td {
+    background-color: var(--c-efe);
+  }
+  .no-cssgradients .footer-paginate,
+  .no-cssgradients .paginate,
+  .no-cssgradients .sort-header,
+  .no-cssgradients table.default thead,
+  .no-cssgradients table.index thead,
+  .no-js .footer-paginate,
+  .no-js .paginate,
+  .no-js .sort-header,
+  .no-js table.default thead,
+  .no-js table.index thead {
+    background-color: var(--c-e8e8e8);
+  }
+  .cssgradients .footer-paginate,
+  .cssgradients .paginate,
+  .cssgradients .sort-header,
+  .cssgradients table.default thead,
+  .cssgradients table.index thead {
+    background-image: -moz-linear-gradient(0 100% 90deg, var(--c-e8e8e8), var(--c-fefefe));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(var(--c-fefefe)), to(var(--c-e8e8e8)));
+  }
+  .localized-content {
+    background-color: var(--c-e8e8e8);
+  }
+  .dropdown .dropdown-content {
+    box-shadow: 0 2px 4px 0 var(--c-rgba-0-0-0-11);
+  }
+  .dropdown .marker {
+    border-left: 5px solid var(--c-transparent);
+    border-right: 5px solid var(--c-transparent);
+  }
+  .item .item-description {
+    background-color: var(--c-rgba-33-33-33-14);
+    color: var(--c-aaadb4);
+  }
+  .item .item-description h3 {
+    color: var(--c-white);
+  }
+  .item .item-description a.more {
+    color: var(--c-5eaade);
+  }
+  #featured-items h2,
+  #featured-items-category h2 {
+    background-color: var(--c-88a3b7);
+    color: var(--c-white);
+  }
+  #featured-items .featured-carousel,
+  #featured-items-category .featured-carousel {
+    background-color: var(--c-c8d1d8);
+    border: 1px solid var(--c-9aa6af);
+  }
+  #featured-items .featured-carousel .featured-carousel-container .gallery-item,
+  #featured-items-category .featured-carousel .featured-carousel-container .gallery-item {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-a4b9c7);
+  }
+  #featured-items .featured-carousel .featured-carousel-container .gallery-item .item-price .demo,
+  #featured-items-category .featured-carousel .featured-carousel-container .gallery-item .item-price .demo {
+    border: 1px solid var(--c-ccc);
+  }
+  .no-cssgradients #featured-items h2,
+  .no-cssgradients #featured-items-category h2,
+  .no-js #featured-items h2,
+  .no-js #featured-items-category h2 {
+    background-color: var(--c-88a3b7);
+  }
+  .cssgradients #featured-items h2,
+  .cssgradients #featured-items-category h2 {
+    background-image: -moz-linear-gradient(0 100% 90deg, var(--c-607c8f), var(--c-84a0b3));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(var(--c-84a0b3)), to(var(--c-607c8f)));
+  }
+  .next-slide,
+  .prev-slide {
+    color: var(--c-white);
+  }
+  .dot {
+    background-color: var(--c-hsla-0-0-100-15);
+  }
+  .dot.active {
+    background-color: var(--c-white);
+  }
+  fieldset {
+    border: 1px solid var(--c-ccc);
+  }
+  input.text,
+  input.title,
+  input[type="text"],
+  select,
+  textarea {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-bbb);
+  }
+  input.text:focus,
+  input.title:focus,
+  input[type="text"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--c-666);
+  }
+  .show-order-type a.active {
+    color: var(--c-222);
+  }
+  .error,
+  .notice,
+  .success,
+  body.bp .alert {
+    border: 1px solid var(--c-ddd);
+  }
+  .error,
+  body.bp .alert {
+    background-color: var(--c-fbe3e4);
+    border-color: var(--c-fbc2c4);
+    color: var(--c-8a1f11);
+  }
+  .notice {
+    background-color: var(--c-fff6bf);
+    border-color: var(--c-ffd324);
+    color: var(--c-514721);
+  }
+  .success {
+    background-color: var(--c-e6efc2);
+    border-color: var(--c-c6d880);
+    color: var(--c-264409);
+  }
+  .fieldWithErrors {
+    background-color: var(--c-red);
+  }
+  .errorExplanation {
+    background-color: var(--c-fbe3e4);
+    border: 1px solid var(--c-fbc2c4);
+    color: var(--c-8a1f11);
+  }
+  .errorExplanation h2 {
+    color: var(--c-8a1f11);
+  }
+  .ac_results {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-black);
+  }
+  .ac_loading {
+    background-color: var(--c-white);
+  }
+  .ac_odd {
+    background-color: var(--c-ccc);
+  }
+  .ac_over {
+    background-color: var(--c-3a6481);
+    color: var(--c-white);
+  }
+  body {
+    background: linear-gradient(180deg, var(--c-313234), var(--c-616267));
+    color: var(--c-222);
+  }
+  #centered-page {
+    background-color: var(--c-fefefe);
+    box-shadow: 0 4px 8px 2px var(--c-rgba-0-0-0-11);
+  }
+  #footer,
+  #header {
+    color: var(--c-9fa7ad);
+  }
+  #masquerade {
+    background-color: var(--c-orange);
+    color: var(--c-black);
+  }
+  #sl-toolbar {
+    color: var(--c-9fa7ad);
+  }
+  #sl-toolbar a {
+    color: var(--c-508e77);
+  }
+  #breadcrumb--legacy {
+    color: var(--c-595c62);
+  }
+  .no-js.logged-in,
+  .no-js.logged-in body {
+    background: linear-gradient(180deg, var(--c-313234), var(--c-616267));
+  }
+  .no-js #sl-toolbar {
+    background-color: var(--c-222);
+  }
+  .no-js #canvas-container {
+    background-color: var(--c-fefefe);
+  }
+  .close-icon {
+    background-color: var(--c-transparent);
+    border: 0 solid var(--c-transparent);
+  }
+  .close-icon:after {
+    background-color: var(--c-silver);
+    color: var(--c-white);
+  }
+  a.manager-permissions-help {
+    color: var(--c-black);
+  }
+  #category-menu ul {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  .advertisement,
+  .advertisement-horizontal {
+    border: 1px solid var(--c-ccc);
+  }
+  .advertisement img,
+  .advertisement-horizontal img {
+    background-color: var(--c-e8e8e8);
+  }
+  .advertisement-horizontal img {
+    background-color: var(--c-e8e8e8);
+  }
+  #sl-toolbar #language-picker a {
+    color: var(--c-9fa7ad);
+  }
+  #sl-toolbar #language-picker.selected {
+    background-color: var(--c-4c4f54);
+  }
+  #sl-toolbar #language-picker.selected span#language-label {
+    color: var(--c-white);
+  }
+  #sl-toolbar #language-picker ul {
+    background-color: var(--c-4c4f54);
+    border-bottom: 1px solid var(--c-ccc);
+    border-right: 1px solid var(--c-ccc);
+  }
+  #sl-toolbar #language-picker ul li a {
+    color: var(--c-white);
+  }
+  #my-marketplace a {
+    border-color: var(--c-transparent);
+    color: var(--c-9fa7ad);
+  }
+  #my-marketplace ul {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+    border-top: 0 solid var(--c-ccc);
+  }
+  #my-marketplace.selected a#my-marketplace-link {
+    border: solid var(--c-ccc);
+  }
+  #my-marketplace.selected a {
+    background-color: var(--c-white);
+    color: var(--c-222) !important;
+  }
+  #my-marketplace.selected li a {
+    background-color: var(--c-transparent);
+  }
+  #my-marketplace.selected li a:hover {
+    background-color: var(--c-1c6293);
+    color: var(--c-white) !important;
+  }
+  a#marketplace-help,
+  a#marketplace-home {
+    color: var(--c-9fa7ad);
+  }
+  a#join-sl:hover {
+    background-color: var(--c-f6901e);
+  }
+  .csr_orders_show tr.odd,
+  .csr_pipeline tr.odd,
+  .slm_admin_status tr.odd {
+    background-color: var(--c-eee);
+  }
+  .csr_orders_show tr.even,
+  .csr_pipeline tr.even,
+  .slm_admin_status tr.even {
+    background-color: var(--c-white);
+  }
+  .csr_orders_show td,
+  .csr_orders_show th,
+  .csr_pipeline td,
+  .csr_pipeline th,
+  .slm_admin_status td,
+  .slm_admin_status th {
+    border: 1px solid var(--c-white);
+  }
+  #marketer-dashboard #create-advertisement form {
+    background-color: var(--c-e8e8e8);
+  }
+  .csr_pipeline tr.odd {
+    background-color: var(--c-eee);
+  }
+  .csr_pipeline th {
+    background-color: var(--c-ddd);
+    border: 1px solid var(--c-white);
+  }
+  #ip-takedown-tab h2,
+  .csr-dashboard h2 {
+    color: var(--c-595c62);
+  }
+  .csr_orders_show table {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-aaa);
+  }
+  .listing-enhancement-chooser ul#listing-enhancement-types {
+    border-top: 1px solid var(--c-ccc);
+  }
+  .listing-enhancement-chooser ul#listing-enhancement-types li.listing-enhancement {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  .marketer_carousel_items h4 {
+    color: var(--c-black);
+  }
+  .marketer_listing_enhancements #listing-enhancements {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  .modal {
+    background-color: var(--c-white);
+  }
+  .modal .thumbnails .selected {
+    border: 3px solid var(--c-f68d20);
+  }
+  .send-as-gift-overlay {
+    background-color: var(--c-fff3bf);
+    border: 1px solid var(--c-ccc);
+  }
+  .confirmation-overlay,
+  .edit-overlay {
+    background-color: var(--c-1c6293);
+    color: var(--c-white);
+  }
+  .confirmation-overlay h3,
+  .edit-overlay h3 {
+    color: var(--c-white);
+  }
+  .edit-overlay table {
+    color: var(--c-222);
+  }
+  .item-contents-overlay .placeholder {
+    background-color: var(--c-white);
+  }
+  .confirmation-overlay .cancel {
+    color: var(--c-8eb1c9);
+  }
+  .confirmation-overlay .placeholder {
+    background-color: var(--c-white);
+  }
+  .product-listing.list div span,
+  .product-listing.thumbnails div span {
+    color: var(--c-1a1a1a);
+  }
+  .product-listing.gallery .offer,
+  .product-listing.list .offer,
+  .product-listing.thumbnails .offer {
+    color: var(--c-c34a00);
+  }
+  .product-listing.list .result-row {
+    border-top: 1px solid var(--c-ccc);
+  }
+  .product-listing.list .list-price span {
+    color: var(--c-1a1a1a);
+  }
+  .product-listing.list .list-price .demo {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+    color: var(--c-595c62);
+  }
+  .product-listing.gallery .gallery-item {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+  }
+  .product-listing.gallery .gallery-item .item-price .demo {
+    border: 1px solid var(--c-ccc);
+  }
+  #product-main .version {
+    color: var(--c-595c62);
+  }
+  .prices {
+    color: var(--c-1a1a1a);
+  }
+  #recently-purchased,
+  .new-items-by-seller {
+    border-top: 1px solid var(--c-e0e0e0);
+  }
+  #recently-purchased .recently-purchased-item span,
+  .new-items-by-seller .recently-purchased-item span {
+    color: var(--c-1a1a1a);
+  }
+  #product-details,
+  .cart-form {
+    border-bottom-color: var(--c-ccc);
+  }
+  #product-details ul span,
+  .cart-form ul span {
+    color: var(--c-222);
+  }
+  span#rating-distribution-link span.marketplace-sprite {
+    border: 1px solid var(--c-ccc);
+  }
+  #main-feature {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  #recently-purchased .top-row,
+  .new-items-by-seller .top-row {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  h1.results-title,
+  h2.results-message {
+    color: var(--c-595c62);
+  }
+  span.filter-trail {
+    color: var(--c-595c62);
+  }
+  span.filter-trail a {
+    background-color: var(--c-transparent);
+  }
+  #merchant-search-category,
+  #search-menu {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #merchant-search-category label,
+  #search-menu label {
+    color: var(--c-595c62);
+  }
+  #merchant-search-category h3,
+  #search-menu h3 {
+    color: var(--c-595c62);
+  }
+  #merchant-search-category h4,
+  #search-menu h4 {
+    color: var(--c-595c62);
+  }
+  #merchant-search-category div input.blur,
+  #search-menu div input.blur {
+    color: var(--c-a1a6b4);
+  }
+  #merchant-search-category div.filter-options,
+  #search-menu div.filter-options {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #merchant-search-category div.filter-options li .related-count,
+  #search-menu div.filter-options li .related-count {
+    color: var(--c-595c62);
+  }
+  #merchant-search-category div.filter-options li a,
+  #merchant-search-category div.filter-options p a,
+  #search-menu div.filter-options li a,
+  #search-menu div.filter-options p a {
+    color: var(--c-3a6481);
+  }
+  #merchant-search-category div.filter-options li span,
+  #merchant-search-category div.filter-options p span,
+  #search-menu div.filter-options li span,
+  #search-menu div.filter-options p span {
+    color: var(--c-595c62);
+  }
+  #merchant-search-category div.filter-options li.selected span.current-category,
+  #merchant-search-category div.filter-options p.selected,
+  #search-menu div.filter-options li.selected span.current-category,
+  #search-menu div.filter-options p.selected {
+    background-color: var(--c-6d9fc2);
+  }
+  #merchant-search-category div.filter-options li.selected span.current-category a,
+  #merchant-search-category div.filter-options li.selected span.current-category span,
+  #merchant-search-category div.filter-options p.selected a,
+  #merchant-search-category div.filter-options p.selected span,
+  #search-menu div.filter-options li.selected span.current-category a,
+  #search-menu div.filter-options li.selected span.current-category span,
+  #search-menu div.filter-options p.selected a,
+  #search-menu div.filter-options p.selected span {
+    color: var(--c-white);
+  }
+  #merchant-search-category div.filter-options li.selected span.current-category,
+  #search-menu div.filter-options li.selected span.current-category {
+    color: var(--c-595c62);
+  }
+  #merchant-search-category .utility-button,
+  #search-menu .utility-button {
+    border: 1px solid var(--c-ccc);
+  }
+  #product-reviews .ratings .histogram li .bar-background {
+    background-color: var(--c-d0d0d3);
+  }
+  #product-reviews .ratings .histogram li .bar-fill {
+    background-color: var(--c-f73);
+  }
+  .comment .review-date,
+  .product-review .review-date {
+    color: var(--c-595c62);
+  }
+  .comment .review-actions p.small span.already-flagged,
+  .product-review .review-actions p.small span.already-flagged {
+    color: var(--c-595c62);
+  }
+  #review-product-info .gallery-item {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+  }
+  #review-product-info .gallery-item .item-price .demo {
+    border: 1px solid var(--c-ccc);
+  }
+  #post-comment form input,
+  #post-comment form textarea,
+  #post-review form input,
+  #post-review form textarea {
+    border: 1px solid var(--c-c5cdcf);
+  }
+  #comments #comment-options {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  #comments .comment .comment-author {
+    color: var(--c-595c62);
+  }
+  #comments .comment .comment-author strong {
+    color: var(--c-222);
+  }
+  .assistant_orders .label em,
+  .assistant_orders .pseudo-label em,
+  .assistant_orders label em,
+  .assistant_products .label em,
+  .assistant_products .pseudo-label em,
+  .assistant_products label em,
+  .csr_flags .label em,
+  .csr_flags .pseudo-label em,
+  .csr_flags label em,
+  .csr_orders_index .label em,
+  .csr_orders_index .pseudo-label em,
+  .csr_orders_index label em,
+  .csr_orders_search .label em,
+  .csr_orders_search .pseudo-label em,
+  .csr_orders_search label em,
+  .csr_orders_simple .label em,
+  .csr_orders_simple .pseudo-label em,
+  .csr_orders_simple label em,
+  .csr_products .label em,
+  .csr_products .pseudo-label em,
+  .csr_products label em,
+  .csr_stores .label em,
+  .csr_stores .pseudo-label em,
+  .csr_stores label em {
+    color: var(--c-red);
+  }
+  .assistant_orders .required em,
+  .assistant_products .required em,
+  .csr_flags .required em,
+  .csr_orders_index .required em,
+  .csr_orders_search .required em,
+  .csr_orders_simple .required em,
+  .csr_products .required em,
+  .csr_stores .required em {
+    color: var(--c-red);
+  }
+  #product-category-chooser-tabs .tab {
+    color: var(--c-1c6293);
+  }
+  #copy-product-search-results ul li a.select-product:hover,
+  #copy-product-search-results ul li a.select-this-category:hover,
+  #demo-product-search-results ul li a.select-product:hover,
+  #demo-product-search-results ul li a.select-this-category:hover,
+  #related-products-search-results ul li a.select-product:hover,
+  #related-products-search-results ul li a.select-this-category:hover,
+  div.category-search-results ul li a.select-product:hover,
+  div.category-search-results ul li a.select-this-category:hover {
+    background-color: var(--c-fff6bf);
+  }
+  .demo-item-form,
+  .distributions-form,
+  .image-form,
+  .listing-enhancement-items,
+  .managers-form,
+  .related-items-form {
+    background-color: var(--c-ffc);
+    border-bottom: 1px solid var(--c-aaa);
+    border-top: 1px solid var(--c-aaa);
+  }
+  table.default,
+  table.index {
+    border: 1px solid var(--c-ccc);
+  }
+  table.default thead,
+  table.index thead {
+    background-color: var(--c-e8e8e8);
+  }
+  table.default td,
+  table.index td {
+    border-top: 1px solid var(--c-ccc);
+  }
+  table.default tr.blocked td,
+  table.index tr.blocked td {
+    background-color: var(--c-fff6bf);
+    color: var(--c-514721);
+  }
+  table.default tr.listing-error td,
+  table.index tr.listing-error td {
+    background-color: var(--c-fbe3e4);
+  }
+  table.default tr.listing-success-details td,
+  table.index tr.listing-success-details td {
+    color: var(--c-336554);
+  }
+  table.default tr.listing-success-details td strong,
+  table.index tr.listing-success-details td strong {
+    background-color: var(--c-transparent);
+  }
+  table.default tr.listing-error-details td,
+  table.index tr.listing-error-details td {
+    background-color: var(--c-fbe3e4);
+  }
+  table.default tr.alt td,
+  table.index tr.alt td {
+    background-color: var(--c-efefef);
+  }
+  table.default .green th,
+  table.index .green th {
+    background-color: var(--c-cfefa7);
+    border-color: var(--c-e4fdb4) var(--c-b7cb90) var(--c-b7cb90) var(--c-e4fdb4);
+  }
+  table.default .green td,
+  table.index .green td {
+    background-color: var(--c-efe);
+  }
+  table.default form.button_to input,
+  table.index form.button_to input {
+    background-color: var(--c-transparent);
+  }
+  table.inventory tr.multiple-items-alert div {
+    background-color: var(--c-e7f1f8);
+    border: 1px solid var(--c-bdd9ed);
+  }
+  table.inventory div.actions-container ul.inventory-actions {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+    color: var(--c-222);
+  }
+  table.inventory div.actions-container.active {
+    color: var(--c-white);
+  }
+  #localized-product-content .input-row {
+    border-color: var(--c-white);
+  }
+  .input-row {
+    border-bottom: 2px solid var(--c-ccc);
+  }
+  .input-row .disabled {
+    color: var(--c-aaa);
+  }
+  #listing-enhancements .listing-enhancement-item td {
+    border-bottom: 1px solid var(--c-aaa);
+  }
+  .category-browse-tab ul span.content:hover {
+    background-color: var(--c-fff6bf);
+  }
+  .category-browse-tab ul li.open > span.content .has-children,
+  .category-browse-tab ul li > span.content .has-children {
+    background-color: var(--c-transparent);
+  }
+  .assistant_limited_quantity_inventories .return-items {
+    border: 1px solid var(--c-acc6d8);
+    text-shadow: 1px 1px 2px var(--c-white);
+  }
+  form#search_flags label,
+  form#search_orders label,
+  form#search_products label {
+    color: var(--c-595c62);
+  }
+  .redeliveries-table td.complete {
+    color: var(--c-green);
+  }
+  .redeliveries-table td.failed {
+    color: var(--c-red);
+  }
+  table.ple .terminated {
+    color: var(--c-grey);
+  }
+  .no-cssgradients .button.cart-button,
+  .no-js .button.cart-button {
+    background-color: var(--c-f7911e);
+  }
+  .no-cssgradients .button.utility-button,
+  .no-js .button.utility-button {
+    background-color: var(--c-cdcdcf);
+  }
+  .cssgradients .button.cart-button {
+    background-image: -moz-linear-gradient(0 100% 90deg, var(--c-d05d27), var(--c-f7911e));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(var(--c-f7911e)), to(var(--c-d05d27)));
+  }
+  .cssgradients .button.utility-button {
+    background-image: -moz-linear-gradient(0 100% 90deg, var(--c-cdcdcf), var(--c-white));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(var(--c-white)), to(var(--c-cdcdcf)));
+  }
+  .unavailable {
+    background-color: var(--c-ccc);
+  }
+  .continue {
+    background-color: var(--c-white);
+  }
+  .continue:hover {
+    background-color: var(--c-fefefe);
+  }
+  .utility-button {
+    background-color: var(--c-cdcdcf);
+    border: 1px solid var(--c-ccc);
+  }
+  .utility-button:hover {
+    background-color: var(--c-white);
+  }
+  .edit-item-sm {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+  }
+  .button-link {
+    color: var(--c-1c6293);
+  }
+  #checkout .cart-merchant .items-by-merchant .line-item-actions .giftee,
+  #checkout .cart-merchant .items-by-merchant .line-item-name .giftee,
+  #shopping-cart .cart-merchant .items-by-merchant .line-item-actions .giftee,
+  #shopping-cart .cart-merchant .items-by-merchant .line-item-name .giftee {
+    color: var(--c-555453);
+  }
+  #checkout .cart-merchant .items-by-merchant .line-item-actions .sold-by,
+  #checkout .cart-merchant .items-by-merchant .line-item-name .sold-by,
+  #shopping-cart .cart-merchant .items-by-merchant .line-item-actions .sold-by,
+  #shopping-cart .cart-merchant .items-by-merchant .line-item-name .sold-by {
+    color: var(--c-848585);
+  }
+  #checkout .cart-merchant .items-by-merchant .line-item-actions .line-item-notification,
+  #checkout .cart-merchant .items-by-merchant .line-item-name .line-item-notification,
+  #shopping-cart .cart-merchant .items-by-merchant .line-item-actions .line-item-notification,
+  #shopping-cart .cart-merchant .items-by-merchant .line-item-name .line-item-notification {
+    color: var(--c-e55c00);
+  }
+  #checkout .cart-merchant .usage .usage-title,
+  #shopping-cart .cart-merchant .usage .usage-title {
+    color: var(--c-5cb192);
+  }
+  #checkout .cart-merchant .cart-merchant-header th,
+  #shopping-cart .cart-merchant .cart-merchant-header th {
+    border-top: 1px solid var(--c-ccc);
+    color: var(--c-848585);
+  }
+  #checkout .cart-merchant .cart-merchant-header .cart-merchant-name h2,
+  #shopping-cart .cart-merchant .cart-merchant-header .cart-merchant-name h2 {
+    color: var(--c-222);
+  }
+  #checkout .cart-merchant .line-item-row,
+  #shopping-cart .cart-merchant .line-item-row {
+    color: var(--c-1a1a1a);
+  }
+  #checkout .cart-merchant .row-marker td,
+  #shopping-cart .cart-merchant .row-marker td {
+    border-top: 1px solid var(--c-ccc);
+  }
+  .cart-form-total {
+    border-bottom: 1px solid var(--c-ccc);
+    border-top: 1px solid var(--c-ccc);
+  }
+  #shopping-cart-sidebar .checkout-notice,
+  #shopping-cart-sidebar .edit-cart-text {
+    color: var(--c-595c62);
+  }
+  #shopping-cart-sidebar #order-summary {
+    color: var(--c-1a1a1a);
+  }
+  #shopping-cart-sidebar #order-summary ul {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #shopping-cart-sidebar #order-summary ul li {
+    border-bottom: 4px solid var(--c-ccc);
+  }
+  #shopping-cart-sidebar #order-summary .checkout div.loc-en label {
+    background-color: var(--c-transparent);
+  }
+  #shopping-cart-sidebar #order-summary .checkout div.loc-es label {
+    background-color: var(--c-transparent);
+  }
+  #shopping-cart-sidebar #order-summary .checkout div.loc-ja label {
+    background-color: var(--c-transparent);
+  }
+  #shopping-cart-sidebar #order-summary .checkout div.loc-pt label {
+    background-color: var(--c-transparent);
+  }
+  #shopping-cart-sidebar #order-summary .checkout div.loc-fr label {
+    background-color: var(--c-transparent);
+  }
+  #shopping-cart-sidebar #order-summary .checkout div.loc-de label {
+    background-color: var(--c-transparent);
+  }
+  #selected-payment {
+    color: var(--c-1a1a1a);
+  }
+  .cart-title {
+    background-color: var(--c-transparent);
+  }
+  a.rates {
+    color: var(--c-595c62);
+  }
+  div#rates {
+    border-top: 1px solid var(--c-ccc);
+  }
+  .merchant-listing.list .result-row {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #merchant-top-nav li.active a,
+  #merchant-top-nav li.off:hover a,
+  #merchant-top-nav li.on:hover a {
+    color: var(--c-white);
+  }
+  #merchant-top-nav li ul {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+  }
+  #merchant-side-nav ul li {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  .inventory-sort a.active {
+    color: var(--c-222);
+  }
+  .inventory-sort .pseudo-label {
+    color: var(--c-595c62);
+  }
+  .bulk-inventory-control label,
+  .inventory-search label {
+    color: var(--c-595c62);
+  }
+  .csr-flag-paginate,
+  .paginate {
+    background-color: var(--c-e8e8e8);
+    border: 1px solid var(--c-ccc);
+  }
+  .paginate .pagination {
+    color: var(--c-9aa1a7);
+  }
+  .paginate .pagination em.current {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+    color: var(--c-1a1a1a);
+  }
+  .sync {
+    border: 1px solid var(--c-ccc);
+  }
+  .merchant-home #commerce-blog-announcements,
+  .merchant-home #commerce-blog-feed,
+  .merchant-home #technical-announcement {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  .merchant-home #commerce-blog-announcements ul li a:hover,
+  .merchant-home #commerce-blog-feed ul li a:hover,
+  .merchant-home #technical-announcement ul li a:hover {
+    background-color: var(--c-e8e8e8);
+  }
+  #user-account {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #user-account-nav ul li a.active {
+    background-color: var(--c-6d9fc2);
+    color: var(--c-white);
+  }
+  #user-account-nav .help-resources {
+    border-top: 1px solid var(--c-ccc);
+  }
+  li a.expanded {
+    color: var(--c-black);
+  }
+  .footer-paginate,
+  .sort-header {
+    background-color: var(--c-e8e8e8);
+    border: 1px solid var(--c-ccc);
+  }
+  .footer-paginate .pagination {
+    color: var(--c-9aa1a7);
+  }
+  .footer-paginate .pagination em.current {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ccc);
+    color: var(--c-1a1a1a);
+  }
+  .order {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #gifts .sold-by,
+  #order-history .sold-by {
+    color: var(--c-848585);
+  }
+  table.line_items td {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #merchant-metadata .merchant-profile dt {
+    color: var(--c-595c62);
+  }
+  #merchant-metadata .merchant-profile dt.closed {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  #merchant-metadata .merchant-profile dd {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  #merchant-metadata .merchant-profile .profile-detail,
+  #merchant-metadata .merchant-profile a.profile-detail-link {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  #merchant-metadata #merchant-categories {
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  #merchant-metadata #merchant-categories h4 {
+    color: var(--c-595c62);
+  }
+  #merchant-metadata #merchant-categories p.selected {
+    background-color: var(--c-6d9fc2);
+  }
+  #merchant-metadata #merchant-categories p.selected a {
+    color: var(--c-white);
+  }
+  #about-notifications .container {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #about-notifications pre code {
+    background-color: var(--c-e8e8e8);
+    border: 1px solid var(--c-ccc);
+    color: var(--c-366);
+  }
+  .ui-autocomplete {
+    background-color: var(--c-white);
+  }
+  .ui-autocomplete .ui-menu-item #ui-active-menuitem {
+    background-color: var(--c-5cb192);
+    color: var(--c-white);
+  }
+  .reviews div.rating-cancel,
+  .reviews div.star-rating {
+    background-color: var(--c-transparent);
+  }
+  .reviews div.star-rating {
+    background-color: var(--c-transparent) !important;
+  }
+  #policies table tbody th {
+    border-top: 1px solid var(--c-ccc);
+  }
+  #policies table tbody td {
+    border-left: 1px solid var(--c-ccc);
+  }
+  #email_settings_container h2 {
+    border-bottom: 1px solid var(--c-999);
+  }
+  #email_settings_container .description {
+    color: var(--c-bbb);
+  }
+  .search-container #scrim-overlay {
+    background-color: var(--c-rgba-0-0-0-11);
+  }
+  ::backdrop {
+    background-color: var(--c-rgba-0-0-0-11);
+  }
+  .product-image .image-carousel .left svg,
+  .product-image .image-carousel .right svg,
+  .product-image-modal-layout .image-carousel .left svg,
+  .product-image-modal-layout .image-carousel .right svg {
+    box-shadow: 0 4px 4px 1px var(--c-rgba-0-0-0-11);
+  }
+
+  /* fixes */
+  :root {
+    color-scheme: var(--ath-color-scheme);
+  }
+  :root, body, nav.header {
+    --c-rgba-0-0-0-11: #0008;
+  }
+
+  svg,
+  .marketplace-sprite,
+  #details .permitted:before,
+  .input-container .select-wrapper::after {
+    filter: invert(1) hue-rotate(0.5turn);
+  }
+
+  body {
+    background: linear-gradient(180deg, #222, #333);
+  }
+  nav.header, footer {
+    --l: 0;
+    --m: 1;
+  }
+  .no-js .button.utility-button, .no-cssgradients .button.utility-button,
+  .no-js table.default thead, .no-js table.index thead, .no-js .paginate, .no-js .footer-paginate, .no-js .sort-header, .no-cssgradients table.default thead, .no-cssgradients table.index thead, .no-cssgradients .paginate, .no-cssgradients .footer-paginate, .no-cssgradients .sort-header {
+    background-image: none;
+  }
+
+  .footer-paginate, .sort-header {
+    height: auto;
+  }
+  .pagination {
+    > span {
+      display: inline-block;
+      min-width: 3ch;
+      padding: .2em .5em;
+      background: #0004;
+      border-radius: 4px;
+      text-align: center;
+      a {
+        display: block;
+      }
+    }
+  }
+
+  @container style(--ath-flexible-layout) {
+    #body-shadow-repeating {
+      width: auto;
+    }
+    #centered-page {
+      width: auto;
+      margin: 0 40px;
+    }
+    #canvas:has(#main-content.span-8):has(#search-menu):has(#search-results-container) {
+      #main-content,
+      #search-results-container,
+      #search-category,
+      .product-listing,
+      .product-listing .variant_result-row,
+      .product-listing .variant_result-row .list-description {
+        width: auto;
+      }
+      #search-menu,
+      #merchant-search-category {
+        min-width: 260px;
+        #search-category,
+        #search-category * {
+          width: auto;
+          float: none;
+        }
+        .filter-options li {
+          display: flex;
+          flex-flow: row;
+          gap: 0 1em;
+          float: none;
+          justify-content: space-between;
+        }
+      }
+      #search-results-container {
+        display: flex;
+        flex-flow: column;
+      }
+      #main-content,
+      .variant_result-row {
+        display: flex;
+        flex-flow: row;
+        float: none;
+      }
+      #main-content {
+        > * {
+          float: none;
+        }
+      }
+      .variant_result-row {
+        .list-description {
+          flex: 1;
+        }
+      }
+    }
+  }
+}

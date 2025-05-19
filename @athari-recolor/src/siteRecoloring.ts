@@ -130,7 +130,7 @@ export async function recolorCss(site: Site, inputPath: string, outputPath: stri
   const combinedCss = [
     opts.recolor?.enabled === true ? recoloredCss : null,
     opts.refont?.enabled === true ? refontedCss : null,
-  ].filter(s => !!s).join("\n\n");
+  ].filter(s => !!s).join("\n\n").replaceAll("\r", "").replaceAll("\n", "\r\n").replaceAll(" */", "*/");
   const resultCss = runCleanCss(combinedCss);
 
   const outputCssPretty = await site.prettifyCode(outputPath, resultCss, 'css');
