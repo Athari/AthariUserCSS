@@ -1,0 +1,3114 @@
+/* ==UserStyle==
+@name           WatchCartoonOnline.cc – Dark Enhanced [Ath]
+@namespace      athari
+@version        1.0.0
+@description    Dark theme for WatchCartoonOnline/WCO/WCOAnimeDub/WCOAnimeSub with several enhancements: hiding ads, reordering of blocks, configurable colors.
+@author         Athari (https://github.com/Athari)
+@homepageURL    https://github.com/Athari/AthariUserCSS
+@supportURL     https://github.com/Athari/AthariUserCSS/issues
+@license        MIT
+@preprocessor   default
+
+@var            checkbox ath-show-ads           "Show ads"               0
+@var            checkbox ath-fuck-anime         "Deprioritize anime"     0
+@var            select   ath-color-scheme       "Controls color scheme"  ["light:Light", "dark:Dark*"]
+
+@var            range    l "Lightness base"     [1.2, -2.0, 2.0, 0.02]
+@var            range    m "Lightness contrast" [-1.0, -2.0, 2.0, 0.02]
+@var            range    c "Chroma base"        [0.0, 0.0, 0.40, 0.01]
+@var            range    d "Chroma contrast"    [1.0, -2.0, 2.0, 0.02]
+@var            range    h "Hue base"           [0, 0, 360, 2]
+@var            range    i "Hue contrast"       [1.0, -2.0, 2.0, 0.05]
+
+-var            checkbox y "Invert images"      0
+==/UserStyle== */
+
+@-moz-document domain("wco.tv") {
+  /*
+   * generated
+   * formula: dark-full
+   * site: wco.tv
+   * name: style.cssv1.css
+   * url: https://www.wco.tv/theme/style.css?v=1
+   * name: index.embed1.css
+   * name: index.embed2.css
+   * name: movie.embed1.css
+   * name: movie.embed2.css
+   * name: movie.embed3.css
+   * name: style.css
+   * url: https://www.wco.tv/theme/page-design/style.css
+   * name: cartoon-list.embed1.css
+   * name: cartoon-list.embed2.css
+   * name: cartoon-list.embed3.css
+   * name: inline-style-attrs.css
+   */
+  :root,
+  body {
+    /* color white n=35 rgb(255, 255, 255) oklch(1 0 180)*/
+    --c-white: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ff7c00 n=31 rgb(255, 124, 0) oklch(6 14 22)*/
+    --c-ff7c00: oklch(from #ff7c00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #1e262f n=22 rgb(30, 38, 47) oklch(6 14 22)*/
+    --c-1e262f: oklch(from #1e262f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f68b1f n=9 rgb(246, 139, 31) oklch(6 14 22)*/
+    --c-f68b1f: oklch(from #f68b1f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #fcf5f5 n=8 rgb(252, 245, 245) oklch(6 14 22)*/
+    --c-fcf5f5: oklch(from #fcf5f5 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f26522 n=6 rgb(242, 101, 34) oklch(6 14 22)*/
+    --c-f26522: oklch(from #f26522 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ae5400 n=5 rgb(174, 84, 0) oklch(6 14 22)*/
+    --c-ae5400: oklch(from #ae5400 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e6e6e6 n=5 rgb(230, 230, 230) oklch(6 0 180)*/
+    --c-e6e6e6: oklch(from #e6e6e6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f9af6f n=4 rgb(249, 175, 111) oklch(6 14 22)*/
+    --c-f9af6f: oklch(from #f9af6f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color black n=3 rgb(0, 0, 0) oklch(0 0 0)*/
+    --c-black: oklch(from #000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #d45928 n=3 rgb(212, 89, 40) oklch(6 14 22)*/
+    --c-d45928: oklch(from #d45928 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #d74207 n=3 rgb(215, 66, 7) oklch(6 13 21)*/
+    --c-d74207: oklch(from #d74207 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e0e0e0 n=3 rgb(224, 224, 224) oklch(6 0 180)*/
+    --c-e0e0e0: oklch(from #e0e0e0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ec8304 n=3 rgb(236, 131, 4) oklch(6 14 22)*/
+    --c-ec8304: oklch(from #ec8304 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f9f9f9 n=3 rgb(249, 249, 249) oklch(6 0 180)*/
+    --c-f9f9f9: oklch(from #f9f9f9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4e443c n=3 rgb(78, 68, 60) oklch(6 14 22)*/
+    --c-4e443c: oklch(from #4e443c calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #df5006 n=2 rgb(223, 80, 6) oklch(6 14 22)*/
+    --c-df5006: oklch(from #df5006 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ef4923 n=2 rgb(239, 73, 35) oklch(6 14 22)*/
+    --c-ef4923: oklch(from #ef4923 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f0efe7 n=2 rgb(240, 239, 231) oklch(6 13 21)*/
+    --c-f0efe7: oklch(from #f0efe7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color aliceblue n=2 rgb(240, 248, 255) oklch(6 14 22)*/
+    --c-aliceblue: oklch(from #f0f8ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f44336 n=2 rgb(244, 67, 54) oklch(6 14 22)*/
+    --c-f44336: oklch(from #f44336 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #202020 n=2 rgb(32, 32, 32) oklch(6 0 16)*/
+    --c-202020: oklch(from #202020 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #635b6b n=2 rgb(99, 91, 107) oklch(6 14 22)*/
+    --c-635b6b: oklch(from #635b6b calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color transparent n=2 rgba(0, 0, 0, 0) oklch(0 0 0 / 0)*/
+    --c-transparent: oklch(from transparent calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color green n=1 rgb(0, 128, 0) oklch(6 14 22)*/
+    --c-green: oklch(from green calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #73ad21 n=1 rgb(115, 173, 33) oklch(6 14 22)*/
+    --c-73ad21: oklch(from #73ad21 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ad471f n=1 rgb(173, 71, 31) oklch(6 14 22)*/
+    --c-ad471f: oklch(from #ad471f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #aeaeae n=1 rgb(174, 174, 174) oklch(6 0 16)*/
+    --c-aeaeae: oklch(from #aeaeae calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #b85128 n=1 rgb(184, 81, 40) oklch(6 14 22)*/
+    --c-b85128: oklch(from #b85128 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #141414 n=1 rgb(20, 20, 20) oklch(6 0 180)*/
+    --c-141414: oklch(from #141414 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #c9c9c9 n=1 rgb(201, 201, 201) oklch(6 0 180)*/
+    --c-c9c9c9: oklch(from #c9c9c9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ccc n=1 rgb(204, 204, 204) oklch(6 0 16)*/
+    --c-ccc: oklch(from #ccc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ced4da n=1 rgb(206, 212, 218) oklch(6 14 22)*/
+    --c-ced4da: oklch(from #ced4da calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ddd n=1 rgb(221, 221, 221) oklch(6 0 16)*/
+    --c-ddd: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e2e2e2 n=1 rgb(226, 226, 226) oklch(6 0 180)*/
+    --c-e2e2e2: oklch(from #e2e2e2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f0cece n=1 rgb(240, 206, 206) oklch(6 13 21)*/
+    --c-f0cece: oklch(from #f0cece calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f1dada n=1 rgb(241, 218, 218) oklch(6 14 21)*/
+    --c-f1dada: oklch(from #f1dada calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f2f2f2 n=1 rgb(242, 242, 242) oklch(6 0 180)*/
+    --c-f2f2f2: oklch(from #f2f2f2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f3e2a9 n=1 rgb(243, 226, 169) oklch(6 14 22)*/
+    --c-f3e2a9: oklch(from #f3e2a9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f5a383 n=1 rgb(245, 163, 131) oklch(6 14 22)*/
+    --c-f5a383: oklch(from #f5a383 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f87101 n=1 rgb(248, 113, 1) oklch(6 13 21)*/
+    --c-f87101: oklch(from #f87101 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #fcfcf9 n=1 rgb(252, 252, 249) oklch(6 14 22)*/
+    --c-fcfcf9: oklch(from #fcfcf9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color red n=1 rgb(255, 0, 0) oklch(6 14 22)*/
+    --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ffc119 n=1 rgb(255, 193, 25) oklch(6 13 21)*/
+    --c-ffc119: oklch(from #ffc119 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #212529 n=1 rgb(33, 37, 41) oklch(6 14 22)*/
+    --c-212529: oklch(from #212529 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #232128 n=1 rgb(35, 33, 40) oklch(6 14 22)*/
+    --c-232128: oklch(from #232128 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #333 n=1 rgb(51, 51, 51) oklch(6 0 180)*/
+    --c-333: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #3f474e n=1 rgb(63, 71, 78) oklch(6 14 22)*/
+    --c-3f474e: oklch(from #3f474e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4caf50 n=1 rgb(76, 175, 80) oklch(6 13 21)*/
+    --c-4caf50: oklch(from #4caf50 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4d4d4d n=1 rgb(77, 77, 77) oklch(6 0 16)*/
+    --c-4d4d4d: oklch(from #4d4d4d calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #555 n=1 rgb(85, 85, 85) oklch(6 0 16)*/
+    --c-555: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #605f61 n=1 rgb(96, 95, 97) oklch(6 14 22)*/
+    --c-605f61: oklch(from #605f61 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body {
+    background-color: var(--c-3f474e);
+    color: var(--c-333);
+  }
+  .header-top {
+    color: var(--c-1e262f);
+  }
+  .header-top a {
+    color: var(--c-1e262f);
+  }
+  .header-top a:hover {
+    color: var(--c-b85128);
+  }
+  .header-top a:visited {
+    color: var(--c-1e262f);
+  }
+  .footer-bottom {
+    background-color: var(--c-ff7c00);
+    color: var(--c-1e262f);
+  }
+  .button1 {
+    background-color: var(--c-f87101);
+    border: 1px solid var(--c-df5006);
+    color: var(--c-white);
+  }
+  .button1:hover {
+    background-color: var(--c-df5006);
+    color: var(--c-white);
+  }
+  .sidebar-all {
+    background-color: var(--c-fcf5f5);
+    border: 2px solid var(--c-ff7c00);
+  }
+  .sidebar-header {
+    background-color: var(--c-ff7c00);
+    background-image: linear-gradient(var(--c-f68b1f), var(--c-f26522));
+    color: var(--c-white);
+  }
+  .sidebar-titles {
+    color: var(--c-1e262f);
+  }
+  .recent-release {
+    background-color: var(--c-ff7c00);
+    background-image: linear-gradient(var(--c-f68b1f), var(--c-f26522));
+    color: var(--c-white);
+  }
+  .recent-release a {
+    color: var(--c-white);
+  }
+  .recent-release2 {
+    color: var(--c-1e262f);
+  }
+  .recent-release2 a {
+    color: var(--c-white);
+  }
+  .category {
+    border: 2px solid var(--c-ff7c00);
+  }
+  .today-buton {
+    background-color: var(--c-ff7c00);
+  }
+  .today-buton:hover {
+    background-color: var(--c-f9af6f);
+    color: var(--c-white);
+  }
+  .genre-buton {
+    background-color: var(--c-ff7c00);
+  }
+  .genre-buton:hover {
+    background-color: var(--c-f9af6f);
+  }
+  .genre-buton2 a {
+    background-color: var(--c-white);
+  }
+  .genre-buton2 a:hover {
+    background-color: var(--c-f9af6f);
+  }
+  .video-title2 {
+    background-color: var(--c-ff7c00);
+    background-image: linear-gradient(var(--c-f26522), var(--c-f68b1f));
+    color: var(--c-white);
+  }
+  .episode-descp {
+    color: var(--c-1e262f);
+  }
+  .episode-descp a {
+    color: var(--c-ec8304);
+  }
+  .header-tag {
+    color: var(--c-1e262f);
+  }
+  .header-tag a {
+    color: var(--c-white);
+  }
+  .header-tag h2 {
+    color: var(--c-ec8304);
+  }
+  .h1-tag {
+    color: var(--c-white);
+  }
+  .video-title {
+    background-color: var(--c-ff7c00);
+    background-image: linear-gradient(var(--c-f68b1f), var(--c-f26522));
+    color: var(--c-white);
+  }
+  .video-title a {
+    color: var(--c-1e262f);
+  }
+  .video-title4 {
+    background-color: var(--c-ff7c00);
+    color: var(--c-white);
+  }
+  #sidebar_right {
+    background-color: var(--c-fcf5f5);
+    border-color: var(--c-ff7c00);
+    color: var(--c-aliceblue);
+  }
+  #sidebar_cat,
+  #sidebar_today {
+    background-color: var(--c-fcf5f5);
+    border-color: var(--c-ff7c00);
+  }
+  #sidebar_cat {
+    color: var(--c-1e262f);
+  }
+  #sidebar_cat a {
+    color: var(--c-1e262f);
+  }
+  #sidebar_today a {
+    color: var(--c-white);
+  }
+  #sidebar_right2,
+  #sidebar_right3 {
+    background-color: var(--c-fcf5f5);
+    border-color: var(--c-ff7c00);
+  }
+  #sidebar_right3 a:visited {
+    color: var(--c-f5a383);
+  }
+  #sidebar_right4 {
+    background-color: var(--c-fcf5f5);
+    border-color: var(--c-ff7c00);
+  }
+  .div1 {
+    border: 3px solid var(--c-73ad21);
+  }
+  .cat-eps {
+    border-bottom: 1px dashed var(--c-ff7c00);
+  }
+  .cat-eps a {
+    color: var(--c-1e262f);
+  }
+  .cat-eps:hover {
+    background-color: var(--c-ff7c00);
+  }
+  .ad300 {
+    border: 1px solid var(--c-black);
+  }
+  .footer-kismi {
+    border-top: 2px solid var(--c-ff7c00);
+    color: var(--c-aliceblue);
+  }
+  .cerceve2 {
+    background-color: var(--c-white);
+  }
+  .cerceve2:hover {
+    background-color: var(--c-635b6b);
+  }
+  .cerceve2 a {
+    color: var(--c-ff7c00);
+  }
+  .cerceve2 a:visited {
+    color: var(--c-ae5400);
+  }
+  .cerceve2 a:hover {
+    color: var(--c-d74207);
+  }
+  .cerceve:hover {
+    background-color: var(--c-635b6b);
+  }
+  .cerceve a {
+    color: var(--c-1e262f);
+  }
+  .cerceve a:visited {
+    color: var(--c-ae5400);
+  }
+  .cerceve a:hover {
+    color: var(--c-white);
+  }
+  .todays-anime-main,
+  .video-top {
+    background-color: var(--c-white);
+    border: 2px solid var(--c-ff7c00);
+    color: var(--c-1e262f);
+  }
+  .todays-anime {
+    background-color: var(--c-ff7c00);
+    color: var(--c-1e262f);
+  }
+  .sidebar-titles li {
+    border-bottom: 1px dashed var(--c-ff7c00);
+  }
+  .sidebar-titles a,
+  .sidebar-titles a:visited {
+    color: var(--c-1e262f);
+  }
+  .sidebar-titles a:hover {
+    color: var(--c-d74207);
+  }
+  .episode-titles a,
+  .episode-titles a:visited {
+    color: var(--c-1e262f);
+  }
+  .episode-titles a:hover {
+    color: var(--c-d74207);
+  }
+  ul.episode-titles li {
+    border-bottom: 1px solid var(--c-ff7c00);
+  }
+  .episode-titles li:hover {
+    background-color: var(--c-f3e2a9);
+  }
+  .row {
+    background-color: var(--c-white);
+    border-left: 2px solid var(--c-202020);
+    border-right: 2px solid var(--c-202020);
+  }
+  .nav-bar {
+    background-color: var(--c-ff7c00);
+    background-image: linear-gradient(var(--c-ef4923), var(--c-f68b1f));
+  }
+  .nav-bar > li.active {
+    background-color: var(--c-ae5400);
+    border-color: var(--c-ff7c00);
+  }
+  .nav-bar > li.active > a {
+    color: var(--c-white);
+  }
+  .nav-bar > li.active:hover {
+    background-color: var(--c-ae5400);
+  }
+  .nav-bar > li:hover {
+    background-color: var(--c-ae5400);
+  }
+  .nav-bar > li a {
+    color: var(--c-e6e6e6);
+  }
+  .nav-bar > li.has-flyout > a:first-child:after {
+    border: 4px solid var(--c-transparent);
+    border-top-color: var(--c-e6e6e6);
+  }
+  .nav-bar > li.has-flyout.is-touch > a.flyout-toggle {
+    border-left: 1px dashed var(--c-ff7c00);
+  }
+  .nav-bar.vertical > li.has-flyout > a:first-child:after {
+    border: 4px solid var(--c-transparent);
+    border-left-color: var(--c-e6e6e6);
+  }
+  @media only screen and (max-width: 768px) {
+    .nav-bar > li > a.main {
+      border-top: 1px solid var(--c-ddd);
+    }
+    .nav-bar > li.has-flyout > a.flyout-toggle:hover span {
+      border-top-color: var(--c-141414);
+    }
+  }
+  label {
+    color: var(--c-4d4d4d);
+  }
+  span.postfix,
+  span.prefix {
+    background-color: var(--c-f2f2f2);
+    border: 1px solid var(--c-ccc);
+  }
+  ul.items li p.name a {
+    color: var(--c-ffc119);
+  }
+  ul.items li p.name a:hover {
+    color: var(--c-white);
+  }
+  .recent-release-episodes a {
+    color: var(--c-1e262f);
+  }
+  .recent-release-episodes a:hover {
+    color: var(--c-ff7c00);
+  }
+  .recent-release-episodes a:visited {
+    color: var(--c-ad471f);
+  }
+  .prev-fln {
+    color: var(--c-1e262f);
+  }
+  .prev-next {
+    background-color: var(--c-ff7c00);
+  }
+  .prev-fln a {
+    color: var(--c-e6e6e6);
+  }
+  .prev-next:hover {
+    background-color: var(--c-f9af6f);
+  }
+  .slider-titles a {
+    color: var(--c-1e262f);
+  }
+  .anti-ad {
+    border: 1px dashed var(--c-d45928);
+  }
+  .anti-ad a {
+    color: var(--c-d45928);
+  }
+  .jcarousel-wrapper {
+    background-color: var(--c-fcf5f5);
+  }
+  .jcarousel li {
+    border: 3px solidvar(--c-fcf5f5);
+  }
+  .jcarousel-control-next,
+  .jcarousel-control-prev {
+    background-color: var(--c-ff7c00);
+    box-shadow: 0 0 4px var(--c-f0efe7);
+    color: var(--c-white);
+    text-shadow: 0 0 1px var(--c-black);
+  }
+  .jcarousel-pagination a {
+    background-color: var(--c-white);
+    box-shadow: 0 0 2px var(--c-4e443c);
+    color: var(--c-4e443c);
+  }
+  .jcarousel-pagination a.active {
+    background-color: var(--c-4e443c);
+    box-shadow: 0 0 2px var(--c-f0efe7);
+    color: var(--c-white);
+  }
+  a.reklam_kapat {
+    background-color: var(--c-605f61);
+    border: 1px solid var(--c-aeaeae);
+    color: var(--c-white);
+  }
+  .wco-footer,
+  .wco-footer a {
+    color: var(--c-d45928);
+  }
+  .hover-img1:hover {
+    background-color: var(--c-4caf50);
+  }
+  #btnTopPage {
+    background-color: var(--c-red);
+    color: var(--c-white);
+  }
+  #btnTopPage:hover {
+    background-color: var(--c-555);
+  }
+  .alert {
+    background-color: var(--c-f44336);
+    color: var(--c-white);
+  }
+  a {
+    color: var(--c-1e262f);
+  }
+  a:hover,
+  a:visited {
+    color: var(--c-ff7c00);
+  }
+  #sidebar_right {
+    background-color: var(--c-white);
+    border-color: var(--c-c9c9c9);
+  }
+  .blog2 {
+    border: 10px solid var(--c-ff7c00);
+  }
+  #blog div.letter li {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e2e2e2);
+  }
+  .letter a {
+    color: var(--c-black);
+  }
+  #blog div.letter li a:hover {
+    background-color: var(--c-ff7c00);
+    color: var(--c-white);
+  }
+  #blog div.ddmcc {
+    border-bottom: 1px solid var(--c-e0e0e0);
+  }
+  #blog .ddmcc h2 {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e0e0e0);
+  }
+  .ddmcc p.sep {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e0e0e0);
+  }
+  .form-control {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ced4da);
+    color: var(--c-212529);
+  }
+  .ftr_p a,
+  .ftr_p a:visited {
+    color: var(--c-white);
+  }
+  [style*="background-color: #f44336" i] {
+    /* div#top-alert.alert[style]*/
+    background-color: var(--c-f44336) !important;
+  }
+  [style*="color: white" i] {
+    /* span.closebtn[onclick='closeAlert(); return false'][style]*/
+    color: var(--c-white) !important;
+  }
+  [style*="background:#fcf5f5" i] {
+    /* div[style]*/
+    background-color: var(--c-fcf5f5) !important;
+  }
+  [style*="border: 2px solid #f26522" i] {
+    /* div.header-tag[style]*/
+    border: 2px solid var(--c-f26522) !important;
+  }
+  [style*="background: #f68b1f" i] {
+    /* div.header-tag[style]*/
+    background-color: var(--c-f68b1f) !important;
+  }
+  [style*="background-image: radial-gradient(#f68b1f, #f68b1f, #f26522)" i] {
+    /* div.header-tag[style]*/
+    background-image: radial-gradient(var(--c-f68b1f), var(--c-f68b1f), var(--c-f26522)) !important;
+  }
+  [style*="color: #fff" i] {
+    /* div.header-tag[style]*/
+    color: var(--c-white) !important;
+  }
+  [style*="color:#ec8304" i] {
+    /* span[style]*/
+    color: var(--c-ec8304) !important;
+  }
+  [style*="color:#1e262f" i] {
+    /* p[style]*/
+    color: var(--c-1e262f) !important;
+  }
+  [style*="color:white" i] {
+    /* a[target=_blank][href='https://user.wco.tv/wp-login.php?action=register'][style]*/
+    color: var(--c-white) !important;
+  }
+  [style*="background: green" i] {
+    /* a[target=_blank][href='https://user.wco.tv/wp-login.php?action=register'][style]*/
+    background-color: var(--c-green) !important;
+  }
+  [style*="background: #f1dada" i] {
+    /* div#hide-anime-video-0[style]*/
+    background-color: var(--c-f1dada) !important;
+  }
+  [style*="background-image:linear-gradient(#f68b1f, #ef4923)" i] {
+    /* div#hide-anime-video-0[style]*/
+    background-image: linear-gradient(var(--c-f68b1f), var(--c-ef4923)) !important;
+  }
+  [style*="color: rgb(255, 255, 255)" i] {
+    /* div.addthis_sharing_toolbox_i7jo_pcho[style]*/
+    color: var(--c-white) !important;
+  }
+  [style*="background: rgb(240, 206, 206) none repeat scroll 0% 0%" i] {
+    /* div.addthis_sharing_toolbox_i7jo_pcho[style]*/
+    background-color: var(--c-f0cece) !important;
+  }
+  [style*="background-color:#fcfcf9" i] {
+    /* div[style]*/
+    background-color: var(--c-fcfcf9) !important;
+  }
+  [style*="color:#e6e6e6" i] {
+    /* a[href='https://www.wco.tv/contact'][style]*/
+    color: var(--c-e6e6e6) !important;
+  }
+  [style*="color:#232128" i] {
+    /* p[style]*/
+    color: var(--c-232128) !important;
+  }
+  [style*="color:#fff" i] {
+    /* p.ftr_p[align=center][style]*/
+    color: var(--c-white) !important;
+  }
+}
+@-moz-document domain("wcoanimedub.tv") {
+  /*
+   * generated
+   * formula: dark-full
+   * site: wcoanimedub.tv
+   * name: style.css
+   * url: https://www.wcoanimedub.tv/theme/style.css
+   * name: index.embed1.css
+   * name: index.embed2.css
+   * name: movie.embed1.css
+   * name: movie.embed2.css
+   * name: style.css
+   * url: https://www.wcoanimedub.tv/theme/page-design/style.css
+   * name: cartoon-list.embed1.css
+   * name: cartoon-list.embed2.css
+   * name: cartoon-list.embed3.css
+   * name: cartoon-list.embed4.css
+   * name: inline-style-attrs.css
+   */
+  :root,
+  body {
+    /* color #994e96 n=33 rgb(153, 78, 150) oklch(6 14 22)*/
+    --c-994e96: oklch(from #994e96 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color white n=32 rgb(255, 255, 255) oklch(1 0 180)*/
+    --c-white: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #1e262f n=22 rgb(30, 38, 47) oklch(6 14 22)*/
+    --c-1e262f: oklch(from #1e262f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #6d346b n=17 rgb(109, 52, 107) oklch(6 14 22)*/
+    --c-6d346b: oklch(from #6d346b calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #fcfcf9 n=9 rgb(252, 252, 249) oklch(6 14 22)*/
+    --c-fcfcf9: oklch(from #fcfcf9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color black n=5 rgb(0, 0, 0) oklch(0 0 0)*/
+    --c-black: oklch(from #000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e6e6e6 n=5 rgb(230, 230, 230) oklch(6 0 180)*/
+    --c-e6e6e6: oklch(from #e6e6e6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #d45928 n=3 rgb(212, 89, 40) oklch(6 14 22)*/
+    --c-d45928: oklch(from #d45928 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e0e0e0 n=3 rgb(224, 224, 224) oklch(6 0 180)*/
+    --c-e0e0e0: oklch(from #e0e0e0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f9f9f9 n=3 rgb(249, 249, 249) oklch(6 0 180)*/
+    --c-f9f9f9: oklch(from #f9f9f9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4e443c n=3 rgb(78, 68, 60) oklch(6 14 22)*/
+    --c-4e443c: oklch(from #4e443c calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f0efe7 n=2 rgb(240, 239, 231) oklch(6 13 21)*/
+    --c-f0efe7: oklch(from #f0efe7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color aliceblue n=2 rgb(240, 248, 255) oklch(6 14 22)*/
+    --c-aliceblue: oklch(from #f0f8ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f1dada n=2 rgb(241, 218, 218) oklch(6 14 21)*/
+    --c-f1dada: oklch(from #f1dada calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color red n=2 rgb(255, 0, 0) oklch(6 14 22)*/
+    --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #202020 n=2 rgb(32, 32, 32) oklch(6 0 16)*/
+    --c-202020: oklch(from #202020 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #635b6b n=2 rgb(99, 91, 107) oklch(6 14 22)*/
+    --c-635b6b: oklch(from #635b6b calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color transparent n=2 rgba(0, 0, 0, 0) oklch(0 0 0 / 0)*/
+    --c-transparent: oklch(from transparent calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color green n=1 rgb(0, 128, 0) oklch(6 14 22)*/
+    --c-green: oklch(from green calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #73ad21 n=1 rgb(115, 173, 33) oklch(6 14 22)*/
+    --c-73ad21: oklch(from #73ad21 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #91588f n=1 rgb(145, 88, 143) oklch(6 13 21)*/
+    --c-91588f: oklch(from #91588f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ad471f n=1 rgb(173, 71, 31) oklch(6 14 22)*/
+    --c-ad471f: oklch(from #ad471f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #aeaeae n=1 rgb(174, 174, 174) oklch(6 0 16)*/
+    --c-aeaeae: oklch(from #aeaeae calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #b85128 n=1 rgb(184, 81, 40) oklch(6 14 22)*/
+    --c-b85128: oklch(from #b85128 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #141414 n=1 rgb(20, 20, 20) oklch(6 0 180)*/
+    --c-141414: oklch(from #141414 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #c9c9c9 n=1 rgb(201, 201, 201) oklch(6 0 180)*/
+    --c-c9c9c9: oklch(from #c9c9c9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #c934c4 n=1 rgb(201, 52, 196) oklch(6 14 22)*/
+    --c-c934c4: oklch(from #c934c4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ccc n=1 rgb(204, 204, 204) oklch(6 0 16)*/
+    --c-ccc: oklch(from #ccc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ced4da n=1 rgb(206, 212, 218) oklch(6 14 22)*/
+    --c-ced4da: oklch(from #ced4da calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ddd n=1 rgb(221, 221, 221) oklch(6 0 16)*/
+    --c-ddd: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e2e2e2 n=1 rgb(226, 226, 226) oklch(6 0 180)*/
+    --c-e2e2e2: oklch(from #e2e2e2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f2f2f2 n=1 rgb(242, 242, 242) oklch(6 0 180)*/
+    --c-f2f2f2: oklch(from #f2f2f2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f3e2a9 n=1 rgb(243, 226, 169) oklch(6 14 22)*/
+    --c-f3e2a9: oklch(from #f3e2a9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ff7c00 n=1 rgb(255, 124, 0) oklch(6 14 22)*/
+    --c-ff7c00: oklch(from #ff7c00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ffc119 n=1 rgb(255, 193, 25) oklch(6 13 21)*/
+    --c-ffc119: oklch(from #ffc119 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #212529 n=1 rgb(33, 37, 41) oklch(6 14 22)*/
+    --c-212529: oklch(from #212529 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #232128 n=1 rgb(35, 33, 40) oklch(6 14 22)*/
+    --c-232128: oklch(from #232128 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #333 n=1 rgb(51, 51, 51) oklch(6 0 180)*/
+    --c-333: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #3f474e n=1 rgb(63, 71, 78) oklch(6 14 22)*/
+    --c-3f474e: oklch(from #3f474e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4caf50 n=1 rgb(76, 175, 80) oklch(6 13 21)*/
+    --c-4caf50: oklch(from #4caf50 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4d4d4d n=1 rgb(77, 77, 77) oklch(6 0 16)*/
+    --c-4d4d4d: oklch(from #4d4d4d calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #555 n=1 rgb(85, 85, 85) oklch(6 0 16)*/
+    --c-555: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #605f61 n=1 rgb(96, 95, 97) oklch(6 14 22)*/
+    --c-605f61: oklch(from #605f61 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body {
+    background-color: var(--c-3f474e);
+    color: var(--c-333);
+  }
+  .header-top {
+    background-color: var(--c-994e96);
+    color: var(--c-1e262f);
+  }
+  .header-top a {
+    color: var(--c-1e262f);
+  }
+  .header-top a:hover {
+    color: var(--c-b85128);
+  }
+  .header-top a:visited {
+    color: var(--c-1e262f);
+  }
+  .footer-bottom {
+    background-color: var(--c-994e96);
+    color: var(--c-1e262f);
+  }
+  .button1 {
+    background-color: var(--c-994e96);
+    border: 1px solid var(--c-6d346b);
+    color: var(--c-white);
+  }
+  .button1:hover {
+    background-color: var(--c-6d346b);
+    color: var(--c-white);
+  }
+  .sidebar-all {
+    background-color: var(--c-fcfcf9);
+    border: 2px solid var(--c-994e96);
+  }
+  .sidebar-header {
+    background-color: var(--c-994e96);
+    color: var(--c-white);
+  }
+  .sidebar-titles {
+    color: var(--c-1e262f);
+  }
+  .recent-release {
+    background-color: var(--c-994e96);
+    color: var(--c-white);
+  }
+  .recent-release a {
+    color: var(--c-white);
+  }
+  .recent-release2 {
+    color: var(--c-1e262f);
+  }
+  .recent-release2 a {
+    color: var(--c-white);
+  }
+  .category {
+    border: 2px solid var(--c-994e96);
+  }
+  .today-buton {
+    background-color: var(--c-994e96);
+  }
+  .today-buton:hover {
+    background-color: var(--c-6d346b);
+    color: var(--c-white);
+  }
+  .genre-buton {
+    background-color: var(--c-994e96);
+  }
+  .genre-buton:hover {
+    background-color: var(--c-6d346b);
+  }
+  .genre-buton2 a {
+    background-color: var(--c-white);
+  }
+  .genre-buton2 a:hover {
+    background-color: var(--c-6d346b);
+  }
+  .video-title2 {
+    background-color: var(--c-994e96);
+    color: var(--c-white);
+  }
+  .episode-descp {
+    color: var(--c-1e262f);
+  }
+  .episode-descp a {
+    color: var(--c-6d346b);
+  }
+  .header-tag {
+    color: var(--c-1e262f);
+  }
+  .header-tag a {
+    color: var(--c-6d346b);
+  }
+  .header-tag h2 {
+    color: var(--c-6d346b);
+  }
+  .h1-tag {
+    color: var(--c-white);
+  }
+  .video-title {
+    background-color: var(--c-994e96);
+    color: var(--c-white);
+  }
+  .video-title a {
+    color: var(--c-1e262f);
+  }
+  .video-title4 {
+    background-color: var(--c-994e96);
+    color: var(--c-white);
+  }
+  #sidebar_right {
+    background-color: var(--c-fcfcf9);
+    border-color: var(--c-994e96);
+    color: var(--c-aliceblue);
+  }
+  #sidebar_cat,
+  #sidebar_today {
+    background-color: var(--c-fcfcf9);
+    border-color: var(--c-994e96);
+  }
+  #sidebar_cat {
+    color: var(--c-1e262f);
+  }
+  #sidebar_cat a {
+    color: var(--c-1e262f);
+  }
+  #sidebar_today a {
+    color: var(--c-white);
+  }
+  #sidebar_right2,
+  #sidebar_right3 {
+    background-color: var(--c-fcfcf9);
+    border-color: var(--c-994e96);
+  }
+  #sidebar_right3 a:visited {
+    color: var(--c-c934c4);
+  }
+  #sidebar_right3 a:hover {
+    color: var(--c-white);
+  }
+  #sidebar_right4 {
+    background-color: var(--c-fcfcf9);
+    border-color: var(--c-994e96);
+  }
+  .div1 {
+    border: 3px solid var(--c-73ad21);
+  }
+  .cat-eps {
+    border-bottom: 1px dashed var(--c-994e96);
+  }
+  .cat-eps a {
+    color: var(--c-1e262f);
+  }
+  .cat-eps:hover {
+    background-color: var(--c-994e96);
+  }
+  .ad300 {
+    border: 1px solid var(--c-black);
+  }
+  .footer-kismi {
+    border-top: 2px solid var(--c-994e96);
+    color: var(--c-aliceblue);
+  }
+  .cerceve2 {
+    background-color: var(--c-white);
+  }
+  .cerceve2:hover {
+    background-color: var(--c-635b6b);
+  }
+  .cerceve2 a {
+    color: var(--c-994e96);
+  }
+  .cerceve2 a:visited {
+    color: var(--c-6d346b);
+  }
+  .cerceve2 a:hover {
+    color: var(--c-6d346b);
+  }
+  .cerceve:hover {
+    background-color: var(--c-635b6b);
+  }
+  .cerceve a {
+    color: var(--c-1e262f);
+  }
+  .cerceve a:visited {
+    color: var(--c-6d346b);
+  }
+  .cerceve a:hover {
+    color: var(--c-white);
+  }
+  .todays-anime-main,
+  .video-top {
+    background-color: var(--c-white);
+    border: 2px solid var(--c-994e96);
+    color: var(--c-1e262f);
+  }
+  .todays-anime {
+    background-color: var(--c-994e96);
+    color: var(--c-1e262f);
+  }
+  .sidebar-titles li {
+    border-bottom: 1px dashed var(--c-994e96);
+  }
+  .sidebar-titles a,
+  .sidebar-titles a:visited {
+    color: var(--c-1e262f);
+  }
+  .sidebar-titles a:hover {
+    color: var(--c-91588f);
+  }
+  .episode-titles a,
+  .episode-titles a:visited {
+    color: var(--c-1e262f);
+  }
+  .episode-titles a:hover {
+    color: var(--c-6d346b);
+  }
+  ul.episode-titles li {
+    border-bottom: 1px solid var(--c-994e96);
+  }
+  .episode-titles li:hover {
+    background-color: var(--c-f3e2a9);
+  }
+  .row {
+    background-color: var(--c-white);
+    border-left: 2px solid var(--c-202020);
+    border-right: 2px solid var(--c-202020);
+  }
+  .nav-bar {
+    background-color: var(--c-994e96);
+  }
+  .nav-bar > li.active {
+    background-color: var(--c-6d346b);
+    border-color: var(--c-994e96);
+  }
+  .nav-bar > li.active > a {
+    color: var(--c-white);
+  }
+  .nav-bar > li.active:hover {
+    background-color: var(--c-6d346b);
+  }
+  .nav-bar > li:hover {
+    background-color: var(--c-6d346b);
+  }
+  .nav-bar > li a {
+    color: var(--c-e6e6e6);
+  }
+  .nav-bar > li.has-flyout > a:first-child:after {
+    border: 4px solid var(--c-transparent);
+    border-top-color: var(--c-e6e6e6);
+  }
+  .nav-bar > li.has-flyout.is-touch > a.flyout-toggle {
+    border-left: 1px dashed var(--c-994e96);
+  }
+  .nav-bar.vertical > li.has-flyout > a:first-child:after {
+    border: 4px solid var(--c-transparent);
+    border-left-color: var(--c-e6e6e6);
+  }
+  @media only screen and (max-width: 768px) {
+    .nav-bar > li > a.main {
+      border-top: 1px solid var(--c-ddd);
+    }
+    .nav-bar > li.has-flyout > a.flyout-toggle:hover span {
+      border-top-color: var(--c-141414);
+    }
+  }
+  label {
+    color: var(--c-4d4d4d);
+  }
+  span.postfix,
+  span.prefix {
+    background-color: var(--c-f2f2f2);
+    border: 1px solid var(--c-ccc);
+  }
+  ul.items li p.name a {
+    color: var(--c-ffc119);
+  }
+  ul.items li p.name a:hover {
+    color: var(--c-white);
+  }
+  .recent-release-episodes a {
+    color: var(--c-1e262f);
+  }
+  .recent-release-episodes a:hover {
+    color: var(--c-994e96);
+  }
+  .recent-release-episodes a:visited {
+    color: var(--c-ad471f);
+  }
+  .prev-fln {
+    color: var(--c-1e262f);
+  }
+  .prev-next {
+    background-color: var(--c-994e96);
+  }
+  .prev-fln a {
+    color: var(--c-e6e6e6);
+  }
+  .prev-next:hover {
+    background-color: var(--c-6d346b);
+  }
+  .slider-titles a {
+    color: var(--c-1e262f);
+  }
+  .anti-ad {
+    border: 1px dashed var(--c-d45928);
+  }
+  .anti-ad a {
+    color: var(--c-d45928);
+  }
+  .jcarousel-wrapper {
+    background-color: var(--c-fcfcf9);
+  }
+  .jcarousel li {
+    border: 3px solid var(--c-fcfcf9);
+  }
+  .jcarousel-control-next,
+  .jcarousel-control-prev {
+    background-color: var(--c-994e96);
+    box-shadow: 0 0 4px var(--c-f0efe7);
+    color: var(--c-white);
+    text-shadow: 0 0 1px var(--c-black);
+  }
+  .jcarousel-pagination a {
+    background-color: var(--c-white);
+    box-shadow: 0 0 2px var(--c-4e443c);
+    color: var(--c-4e443c);
+  }
+  .jcarousel-pagination a.active {
+    background-color: var(--c-4e443c);
+    box-shadow: 0 0 2px var(--c-f0efe7);
+    color: var(--c-white);
+  }
+  a.reklam_kapat {
+    background-color: var(--c-605f61);
+    border: 1px solid var(--c-aeaeae);
+    color: var(--c-white);
+  }
+  .wco-footer,
+  .wco-footer a {
+    color: var(--c-d45928);
+  }
+  .hover-img1:hover {
+    background-color: var(--c-4caf50);
+  }
+  #btnTopPage {
+    background-color: var(--c-red);
+    color: var(--c-white);
+  }
+  #btnTopPage:hover {
+    background-color: var(--c-555);
+  }
+  a {
+    color: var(--c-1e262f);
+  }
+  a:hover,
+  a:visited {
+    color: var(--c-994e96);
+  }
+  #sidebar_right {
+    background-color: var(--c-white);
+    border-color: var(--c-c9c9c9);
+  }
+  .blog2 {
+    border: 10px solid var(--c-994e96);
+  }
+  #blog div.letter li {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e2e2e2);
+  }
+  .letter a {
+    color: var(--c-black);
+  }
+  #blog div.letter li a:hover {
+    background-color: var(--c-994e96);
+    color: var(--c-white);
+  }
+  #blog div.ddmcc {
+    border-bottom: 1px solid var(--c-e0e0e0);
+  }
+  #blog .ddmcc h2 {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e0e0e0);
+  }
+  .ddmcc p.sep {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e0e0e0);
+  }
+  .form-control {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ced4da);
+    color: var(--c-212529);
+  }
+  .tt a,
+  .tt a:visited {
+    color: var(--c-ff7c00);
+  }
+  .tt {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-black);
+    color: var(--c-black);
+  }
+  .ftr_p a,
+  .ftr_p a:visited {
+    color: var(--c-white);
+  }
+  [style*="background:#fcfcf9" i] {
+    /* div[style]*/
+    background-color: var(--c-fcfcf9) !important;
+  }
+  [style*="color:#6d346b" i] {
+    /* span[style]*/
+    color: var(--c-6d346b) !important;
+  }
+  [style*="color:#1e262f" i] {
+    /* p[style]*/
+    color: var(--c-1e262f) !important;
+  }
+  [style*="color:white" i] {
+    /* a[href='https://user.wco.tv/wp-login.php?action=register'][target=_blank][style]*/
+    color: var(--c-white) !important;
+  }
+  [style*="background: green" i] {
+    /* a[href='https://user.wco.tv/wp-login.php?action=register'][target=_blank][style]*/
+    background-color: var(--c-green) !important;
+  }
+  [style*="border:1px solid #f1dada" i] {
+    /* div#hide-anime-video-0[style]*/
+    border: 1px solid var(--c-f1dada) !important;
+  }
+  [style*="background: #f1dada" i] {
+    /* div#hide-anime-video-0[style]*/
+    background-color: var(--c-f1dada) !important;
+  }
+  [style*="color:red" i] {
+    /* a[href='#'][onclick="myFunction('anime-video-0')"][style]*/
+    color: var(--c-red) !important;
+  }
+  [style*="background-color:#fcfcf9" i] {
+    /* div[style]*/
+    background-color: var(--c-fcfcf9) !important;
+  }
+  [style*="color:#e6e6e6" i] {
+    /* a[href='https://www.wcoanimedub.tv/contact'][style]*/
+    color: var(--c-e6e6e6) !important;
+  }
+  [style*="color:#232128" i] {
+    /* p[style]*/
+    color: var(--c-232128) !important;
+  }
+  [style*="color:#fff" i] {
+    /* p.ftr_p[align=center][style]*/
+    color: var(--c-white) !important;
+  }
+}
+@-moz-document domain("wcoanimesub.tv") {
+  /*
+   * generated
+   * formula: dark-full
+   * site: wcoanimesub.tv
+   * name: style.cssv1.css
+   * url: https://www.wcoanimesub.tv/theme/style.css?v=1
+   * name: index.embed1.css
+   * name: index.embed2.css
+   * name: movie.embed1.css
+   * name: movie.embed2.css
+   * name: style.css
+   * url: https://www.wcoanimesub.tv/theme/page-design/style.css
+   * name: subbed-anime-list.embed1.css
+   * name: subbed-anime-list.embed2.css
+   * name: subbed-anime-list.embed3.css
+   * name: inline-style-attrs.css
+   */
+  :root,
+  body {
+    /* color #3da1d2 n=32 rgb(61, 161, 210) oklch(6 14 22)*/
+    --c-3da1d2: oklch(from #3da1d2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color white n=31 rgb(255, 255, 255) oklch(1 0 180)*/
+    --c-white: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #1e262f n=21 rgb(30, 38, 47) oklch(6 14 22)*/
+    --c-1e262f: oklch(from #1e262f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #29769b n=21 rgb(41, 118, 155) oklch(6 14 22)*/
+    --c-29769b: oklch(from #29769b calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #fcfcf9 n=8 rgb(252, 252, 249) oklch(6 14 22)*/
+    --c-fcfcf9: oklch(from #fcfcf9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e6e6e6 n=5 rgb(230, 230, 230) oklch(6 0 180)*/
+    --c-e6e6e6: oklch(from #e6e6e6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color black n=3 rgb(0, 0, 0) oklch(0 0 0)*/
+    --c-black: oklch(from #000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #d45928 n=3 rgb(212, 89, 40) oklch(6 14 22)*/
+    --c-d45928: oklch(from #d45928 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e0e0e0 n=3 rgb(224, 224, 224) oklch(6 0 180)*/
+    --c-e0e0e0: oklch(from #e0e0e0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f9f9f9 n=3 rgb(249, 249, 249) oklch(6 0 180)*/
+    --c-f9f9f9: oklch(from #f9f9f9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4e443c n=3 rgb(78, 68, 60) oklch(6 14 22)*/
+    --c-4e443c: oklch(from #4e443c calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f0efe7 n=2 rgb(240, 239, 231) oklch(6 13 21)*/
+    --c-f0efe7: oklch(from #f0efe7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color aliceblue n=2 rgb(240, 248, 255) oklch(6 14 22)*/
+    --c-aliceblue: oklch(from #f0f8ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #202020 n=2 rgb(32, 32, 32) oklch(6 0 16)*/
+    --c-202020: oklch(from #202020 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color transparent n=2 rgba(0, 0, 0, 0) oklch(0 0 0 / 0)*/
+    --c-transparent: oklch(from transparent calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #73ad21 n=1 rgb(115, 173, 33) oklch(6 14 22)*/
+    --c-73ad21: oklch(from #73ad21 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ad471f n=1 rgb(173, 71, 31) oklch(6 14 22)*/
+    --c-ad471f: oklch(from #ad471f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #aeaeae n=1 rgb(174, 174, 174) oklch(6 0 16)*/
+    --c-aeaeae: oklch(from #aeaeae calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #b85128 n=1 rgb(184, 81, 40) oklch(6 14 22)*/
+    --c-b85128: oklch(from #b85128 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #141414 n=1 rgb(20, 20, 20) oklch(6 0 180)*/
+    --c-141414: oklch(from #141414 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #c9c9c9 n=1 rgb(201, 201, 201) oklch(6 0 180)*/
+    --c-c9c9c9: oklch(from #c9c9c9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ccc n=1 rgb(204, 204, 204) oklch(6 0 16)*/
+    --c-ccc: oklch(from #ccc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ced4da n=1 rgb(206, 212, 218) oklch(6 14 22)*/
+    --c-ced4da: oklch(from #ced4da calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ddd n=1 rgb(221, 221, 221) oklch(6 0 16)*/
+    --c-ddd: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #e2e2e2 n=1 rgb(226, 226, 226) oklch(6 0 180)*/
+    --c-e2e2e2: oklch(from #e2e2e2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f2f2f2 n=1 rgb(242, 242, 242) oklch(6 0 180)*/
+    --c-f2f2f2: oklch(from #f2f2f2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #f3e2a9 n=1 rgb(243, 226, 169) oklch(6 14 22)*/
+    --c-f3e2a9: oklch(from #f3e2a9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color red n=1 rgb(255, 0, 0) oklch(6 14 22)*/
+    --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #ffc119 n=1 rgb(255, 193, 25) oklch(6 13 21)*/
+    --c-ffc119: oklch(from #ffc119 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #212529 n=1 rgb(33, 37, 41) oklch(6 14 22)*/
+    --c-212529: oklch(from #212529 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #232128 n=1 rgb(35, 33, 40) oklch(6 14 22)*/
+    --c-232128: oklch(from #232128 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #333 n=1 rgb(51, 51, 51) oklch(6 0 180)*/
+    --c-333: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #3f474e n=1 rgb(63, 71, 78) oklch(6 14 22)*/
+    --c-3f474e: oklch(from #3f474e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4caf50 n=1 rgb(76, 175, 80) oklch(6 13 21)*/
+    --c-4caf50: oklch(from #4caf50 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #4d4d4d n=1 rgb(77, 77, 77) oklch(6 0 16)*/
+    --c-4d4d4d: oklch(from #4d4d4d calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #555 n=1 rgb(85, 85, 85) oklch(6 0 16)*/
+    --c-555: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /* color #605f61 n=1 rgb(96, 95, 97) oklch(6 14 22)*/
+    --c-605f61: oklch(from #605f61 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body {
+    background-color: var(--c-3f474e);
+    color: var(--c-333);
+  }
+  .header-top {
+    background-color: var(--c-3da1d2);
+    color: var(--c-1e262f);
+  }
+  .header-top a {
+    color: var(--c-1e262f);
+  }
+  .header-top a:hover {
+    color: var(--c-b85128);
+  }
+  .header-top a:visited {
+    color: var(--c-1e262f);
+  }
+  .footer-bottom {
+    background-color: var(--c-3da1d2);
+    color: var(--c-1e262f);
+  }
+  .button1 {
+    background-color: var(--c-3da1d2);
+    border: 1px solid var(--c-29769b);
+    color: var(--c-white);
+  }
+  .button1:hover {
+    background-color: var(--c-29769b);
+    color: var(--c-white);
+  }
+  .sidebar-all {
+    background-color: var(--c-fcfcf9);
+    border: 2px solid var(--c-3da1d2);
+  }
+  .sidebar-header {
+    background-color: var(--c-3da1d2);
+    color: var(--c-white);
+  }
+  .sidebar-titles {
+    color: var(--c-1e262f);
+  }
+  .recent-release {
+    background-color: var(--c-3da1d2);
+    color: var(--c-white);
+  }
+  .recent-release a {
+    color: var(--c-white);
+  }
+  .recent-release2 {
+    color: var(--c-1e262f);
+  }
+  .recent-release2 a {
+    color: var(--c-white);
+  }
+  .category {
+    border: 2px solid var(--c-3da1d2);
+  }
+  .today-buton {
+    background-color: var(--c-3da1d2);
+  }
+  .today-buton:hover {
+    background-color: var(--c-29769b);
+    color: var(--c-white);
+  }
+  .genre-buton {
+    background-color: var(--c-3da1d2);
+  }
+  .genre-buton:hover {
+    background-color: var(--c-29769b);
+  }
+  .genre-buton2 a {
+    background-color: var(--c-white);
+  }
+  .genre-buton2 a:hover {
+    background-color: var(--c-29769b);
+  }
+  .video-title2 {
+    background-color: var(--c-3da1d2);
+    color: var(--c-white);
+  }
+  .episode-descp {
+    color: var(--c-1e262f);
+  }
+  .episode-descp a {
+    color: var(--c-29769b);
+  }
+  .header-tag {
+    color: var(--c-1e262f);
+  }
+  .header-tag a {
+    color: var(--c-29769b);
+  }
+  .header-tag h2 {
+    color: var(--c-29769b);
+  }
+  .h1-tag {
+    color: var(--c-white);
+  }
+  .video-title {
+    background-color: var(--c-3da1d2);
+    color: var(--c-white);
+  }
+  .video-title a {
+    color: var(--c-1e262f);
+  }
+  .video-title4 {
+    background-color: var(--c-3da1d2);
+    color: var(--c-white);
+  }
+  #sidebar_right {
+    background-color: var(--c-fcfcf9);
+    border-color: var(--c-3da1d2);
+    color: var(--c-aliceblue);
+  }
+  #sidebar_cat,
+  #sidebar_today {
+    background-color: var(--c-fcfcf9);
+    border-color: var(--c-3da1d2);
+  }
+  #sidebar_cat {
+    color: var(--c-1e262f);
+  }
+  #sidebar_cat a {
+    color: var(--c-1e262f);
+  }
+  #sidebar_today a {
+    color: var(--c-white);
+  }
+  #sidebar_right2,
+  #sidebar_right3 {
+    background-color: var(--c-fcfcf9);
+    border-color: var(--c-3da1d2);
+  }
+  #sidebar_right3 a:visited {
+    color: var(--c-29769b);
+  }
+  #sidebar_right3 a:hover {
+    color: var(--c-white);
+  }
+  #sidebar_right4 {
+    background-color: var(--c-fcfcf9);
+    border-color: var(--c-3da1d2);
+  }
+  .div1 {
+    border: 3px solid var(--c-73ad21);
+  }
+  .cat-eps {
+    border-bottom: 1px dashed var(--c-3da1d2);
+  }
+  .cat-eps a {
+    color: var(--c-1e262f);
+  }
+  .cat-eps:hover {
+    background-color: var(--c-3da1d2);
+  }
+  .ad300 {
+    border: 1px solid var(--c-black);
+  }
+  .footer-kismi {
+    border-top: 2px solid var(--c-3da1d2);
+    color: var(--c-aliceblue);
+  }
+  .cerceve2 {
+    background-color: var(--c-white);
+  }
+  .cerceve2:hover {
+    background-color: var(--c-3da1d2);
+  }
+  .cerceve2 a {
+    color: var(--c-3da1d2);
+  }
+  .cerceve2 a:visited {
+    color: var(--c-29769b);
+  }
+  .cerceve2 a:hover {
+    color: var(--c-29769b);
+  }
+  .cerceve:hover {
+    background-color: var(--c-3da1d2);
+  }
+  .cerceve a {
+    color: var(--c-1e262f);
+  }
+  .cerceve a:visited {
+    color: var(--c-29769b);
+  }
+  .cerceve a:hover {
+    color: var(--c-white);
+  }
+  .todays-anime-main,
+  .video-top {
+    background-color: var(--c-white);
+    border: 2px solid var(--c-3da1d2);
+    color: var(--c-1e262f);
+  }
+  .todays-anime {
+    background-color: var(--c-3da1d2);
+    color: var(--c-1e262f);
+  }
+  .sidebar-titles li {
+    border-bottom: 1px dashed var(--c-3da1d2);
+  }
+  .sidebar-titles a,
+  .sidebar-titles a:visited {
+    color: var(--c-1e262f);
+  }
+  .sidebar-titles a:hover {
+    color: var(--c-29769b);
+  }
+  .episode-titles a,
+  .episode-titles a:visited {
+    color: var(--c-1e262f);
+  }
+  .episode-titles a:hover {
+    color: var(--c-29769b);
+  }
+  ul.episode-titles li {
+    border-bottom: 1px solid var(--c-3da1d2);
+  }
+  .episode-titles li:hover {
+    background-color: var(--c-f3e2a9);
+  }
+  .row {
+    background-color: var(--c-white);
+    border-left: 2px solid var(--c-202020);
+    border-right: 2px solid var(--c-202020);
+  }
+  .nav-bar {
+    background-color: var(--c-3da1d2);
+  }
+  .nav-bar > li.active {
+    background-color: var(--c-29769b);
+    border-color: var(--c-3da1d2);
+  }
+  .nav-bar > li.active > a {
+    color: var(--c-white);
+  }
+  .nav-bar > li.active:hover {
+    background-color: var(--c-29769b);
+  }
+  .nav-bar > li:hover {
+    background-color: var(--c-29769b);
+  }
+  .nav-bar > li a {
+    color: var(--c-e6e6e6);
+  }
+  .nav-bar > li.has-flyout > a:first-child:after {
+    border: 4px solid var(--c-transparent);
+    border-top-color: var(--c-e6e6e6);
+  }
+  .nav-bar > li.has-flyout.is-touch > a.flyout-toggle {
+    border-left: 1px dashed var(--c-3da1d2);
+  }
+  .nav-bar.vertical > li.has-flyout > a:first-child:after {
+    border: 4px solid var(--c-transparent);
+    border-left-color: var(--c-e6e6e6);
+  }
+  @media only screen and (max-width: 768px) {
+    .nav-bar > li > a.main {
+      border-top: 1px solid var(--c-ddd);
+    }
+    .nav-bar > li.has-flyout > a.flyout-toggle:hover span {
+      border-top-color: var(--c-141414);
+    }
+  }
+  label {
+    color: var(--c-4d4d4d);
+  }
+  span.postfix,
+  span.prefix {
+    background-color: var(--c-f2f2f2);
+    border: 1px solid var(--c-ccc);
+  }
+  ul.items li p.name a {
+    color: var(--c-ffc119);
+  }
+  ul.items li p.name a:hover {
+    color: var(--c-white);
+  }
+  .recent-release-episodes a {
+    color: var(--c-1e262f);
+  }
+  .recent-release-episodes a:hover {
+    color: var(--c-3da1d2);
+  }
+  .recent-release-episodes a:visited {
+    color: var(--c-ad471f);
+  }
+  .prev-fln {
+    color: var(--c-1e262f);
+  }
+  .prev-next {
+    background-color: var(--c-3da1d2);
+  }
+  .prev-fln a {
+    color: var(--c-e6e6e6);
+  }
+  .prev-next:hover {
+    background-color: var(--c-29769b);
+  }
+  .slider-titles a {
+    color: var(--c-1e262f);
+  }
+  .anti-ad {
+    border: 1px dashed var(--c-d45928);
+  }
+  .anti-ad a {
+    color: var(--c-d45928);
+  }
+  .jcarousel-wrapper {
+    background-color: var(--c-fcfcf9);
+  }
+  .jcarousel li {
+    border: 3px solid var(--c-fcfcf9);
+  }
+  .jcarousel-control-next,
+  .jcarousel-control-prev {
+    background-color: var(--c-3da1d2);
+    box-shadow: 0 0 4px var(--c-f0efe7);
+    color: var(--c-white);
+    text-shadow: 0 0 1px var(--c-black);
+  }
+  .jcarousel-pagination a {
+    background-color: var(--c-white);
+    box-shadow: 0 0 2px var(--c-4e443c);
+    color: var(--c-4e443c);
+  }
+  .jcarousel-pagination a.active {
+    background-color: var(--c-4e443c);
+    box-shadow: 0 0 2px var(--c-f0efe7);
+    color: var(--c-white);
+  }
+  a.reklam_kapat {
+    background-color: var(--c-605f61);
+    border: 1px solid var(--c-aeaeae);
+    color: var(--c-white);
+  }
+  .wco-footer,
+  .wco-footer a {
+    color: var(--c-d45928);
+  }
+  .hover-img1:hover {
+    background-color: var(--c-4caf50);
+  }
+  #btnTopPage {
+    background-color: var(--c-red);
+    color: var(--c-white);
+  }
+  #btnTopPage:hover {
+    background-color: var(--c-555);
+  }
+  a {
+    color: var(--c-1e262f);
+  }
+  a:hover,
+  a:visited {
+    color: var(--c-29769b);
+  }
+  #sidebar_right {
+    background-color: var(--c-white);
+    border-color: var(--c-c9c9c9);
+  }
+  .blog2 {
+    border: 10px solid var(--c-29769b);
+  }
+  #blog div.letter li {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e2e2e2);
+  }
+  .letter a {
+    color: var(--c-black);
+  }
+  #blog div.letter li a:hover {
+    background-color: var(--c-29769b);
+    color: var(--c-white);
+  }
+  #blog div.ddmcc {
+    border-bottom: 1px solid var(--c-e0e0e0);
+  }
+  #blog .ddmcc h2 {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e0e0e0);
+  }
+  .ddmcc p.sep {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e0e0e0);
+  }
+  .form-control {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ced4da);
+    color: var(--c-212529);
+  }
+  .ftr_p a,
+  .ftr_p a:visited {
+    color: var(--c-white);
+  }
+  [style*="color:#ffffff" i] {
+    /* a.genre-buton[href='/search-by-genre/page/25'][style]*/
+    color: var(--c-white) !important;
+  }
+  [style*="background-color:#fcfcf9" i] {
+    /* div[style]*/
+    background-color: var(--c-fcfcf9) !important;
+  }
+  [style*="color:#e6e6e6" i] {
+    /* a[href='https://www.wcoanimesub.tv/contact'][style]*/
+    color: var(--c-e6e6e6) !important;
+  }
+  [style*="color:#232128" i] {
+    /* p[style]*/
+    color: var(--c-232128) !important;
+  }
+  [style*="color:#fff" i] {
+    /* p[align=center][style]*/
+    color: var(--c-white) !important;
+  }
+}
+@-moz-document domain("wcostream.tv"), domain("watchcartoononline.cc") {
+  /*
+   * generated
+   * formula: dark-full
+   * site: wcostream.tv
+   * name: style.css
+   * url: https://www.wcostream.tv/wp-content/themes/animewp78712/style.css
+   * name: all.min.css
+   * url: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css
+   * name: index.embed1.css
+   * name: index.embed2.css
+   * name: index.embed3.css
+   * name: kp_css.cssver1.0.2.css
+   * url: https://www.wcostream.tv/wp-content/plugins/kaynak_playlist/css/kp_css.css?ver=1.0.2
+   * name: movie.embed1.css
+   * name: movie.embed2.css
+   * name: movie.embed3.css
+   * name: movie.embed4.css
+   * name: style.cssv3.css
+   * url: https://www.wcostream.tv/wp-content/themes/animewp78712/page-design/style.css?v=3
+   * name: cartoon-list.embed1.css
+   * name: cartoon-list.embed2.css
+   * name: cartoon-list.embed3.css
+   * name: cartoon-list.embed4.css
+   * name: inline-style-attrs.css
+   */
+  :root,
+  body {
+    /*color white n=82 rgb(255, 255, 255) oklch(1 0 180)*/
+    --c-white: oklch(from #fff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color black n=22 rgb(0, 0, 0) oklch(0 0 0)*/
+    --c-black: oklch(from #000 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ccc n=17 rgb(204, 204, 204) oklch(6 0 16)*/
+    --c-ccc: oklch(from #ccc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #333 n=14 rgb(51, 51, 51) oklch(6 0 180)*/
+    --c-333: oklch(from #333 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c9c9c9 n=9 rgb(201, 201, 201) oklch(6 0 180)*/
+    --c-c9c9c9: oklch(from #c9c9c9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d64107 n=9 rgb(214, 65, 7) oklch(6 14 22)*/
+    --c-d64107: oklch(from #d64107 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e35604 n=9 rgb(227, 86, 4) oklch(6 14 22)*/
+    --c-e35604: oklch(from #e35604 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ddd n=8 rgb(221, 221, 221) oklch(6 0 16)*/
+    --c-ddd: oklch(from #ddd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #eee n=8 rgb(238, 238, 238) oklch(6 0 180)*/
+    --c-eee: oklch(from #eee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #666 n=7 rgb(102, 102, 102) oklch(6 0 16)*/
+    --c-666: oklch(from #666 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #df2f00 n=7 rgb(223, 47, 0) oklch(6 14 22)*/
+    --c-df2f00: oklch(from #df2f00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ff7c00 n=7 rgb(255, 124, 0) oklch(6 14 22)*/
+    --c-ff7c00: oklch(from #ff7c00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fffaf2 n=7 rgb(255, 250, 242) oklch(6 14 22)*/
+    --c-fffaf2: oklch(from #fffaf2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e0e0e0 n=6 rgb(224, 224, 224) oklch(6 0 180)*/
+    --c-e0e0e0: oklch(from #e0e0e0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f6f6f6 n=6 rgb(246, 246, 246) oklch(6 0 16)*/
+    --c-f6f6f6: oklch(from #f6f6f6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fa6d30 n=6 rgb(250, 109, 48) oklch(6 14 21)*/
+    --c-fa6d30: oklch(from #fa6d30 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #3a3a3a n=6 rgb(58, 58, 58) oklch(6 0 16)*/
+    --c-3a3a3a: oklch(from #3a3a3a calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(0,0,0,.1) n=6 rgba(0, 0, 0, 14) oklch(0 0 0 / 14)*/
+    --c-rgba-0-0-0-11: oklch(from rgba(0, 0, 0, 0.1) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #df6900 n=5 rgb(223, 105, 0) oklch(6 14 22)*/
+    --c-df6900: oklch(from #df6900 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f0f0f0 n=5 rgb(240, 240, 240) oklch(6 0 180)*/
+    --c-f0f0f0: oklch(from #f0f0f0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f1f1f1 n=5 rgb(241, 241, 241) oklch(6 0 180)*/
+    --c-f1f1f1: oklch(from #f1f1f1 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f9f9f9 n=5 rgb(249, 249, 249) oklch(6 0 180)*/
+    --c-f9f9f9: oklch(from #f9f9f9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #949494 n=4 rgb(148, 148, 148) oklch(6 0 180)*/
+    --c-949494: oklch(from #949494 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #999 n=4 rgb(153, 153, 153) oklch(6 0 180)*/
+    --c-999: oklch(from #999 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e2e2e2 n=4 rgb(226, 226, 226) oklch(6 0 180)*/
+    --c-e2e2e2: oklch(from #e2e2e2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e25406 n=4 rgb(226, 84, 6) oklch(6 14 21)*/
+    --c-e25406: oklch(from #e25406 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #1a1a1a n=4 rgb(26, 26, 26) oklch(6 0 180)*/
+    --c-1a1a1a: oklch(from #1a1a1a calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #238c01 n=4 rgb(35, 140, 1) oklch(6 14 22)*/
+    --c-238c01: oklch(from #238c01 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #003c77 n=3 rgb(0, 60, 119) oklch(6 14 22)*/
+    --c-003c77: oklch(from #003c77 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #df5006 n=3 rgb(223, 80, 6) oklch(6 14 22)*/
+    --c-df5006: oklch(from #df5006 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ededed n=3 rgb(237, 237, 237) oklch(6 0 180)*/
+    --c-ededed: oklch(from #ededed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ff8716 n=3 rgb(255, 135, 22) oklch(6 14 22)*/
+    --c-ff8716: oklch(from #ff8716 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #4d90fe n=3 rgb(77, 144, 254) oklch(6 13 21)*/
+    --c-4d90fe: oklch(from #4d90fe calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(0,0,0,.3) n=3 rgba(0, 0, 0, 14) oklch(0 0 0 / 14)*/
+    --c-rgba-0-0-0-11: oklch(from rgba(0, 0, 0, 0.3) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #010028 n=2 rgb(1, 0, 40) oklch(6 14 22)*/
+    --c-010028: oklch(from #010028 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #b83d00 n=2 rgb(184, 61, 0) oklch(6 14 22)*/
+    --c-b83d00: oklch(from #b83d00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d33201 n=2 rgb(211, 50, 1) oklch(6 14 21)*/
+    --c-d33201: oklch(from #d33201 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e3e4e6 n=2 rgb(227, 228, 230) oklch(6 14 22)*/
+    --c-e3e4e6: oklch(from #e3e4e6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ed6303 n=2 rgb(237, 99, 3) oklch(6 14 21)*/
+    --c-ed6303: oklch(from #ed6303 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f1dada n=2 rgb(241, 218, 218) oklch(6 14 21)*/
+    --c-f1dada: oklch(from #f1dada calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color whitesmoke n=2 rgb(245, 245, 245) oklch(6 0 16)*/
+    --c-whitesmoke: oklch(from #f5f5f5 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f7b056 n=2 rgb(247, 176, 86) oklch(6 14 22)*/
+    --c-f7b056: oklch(from #f7b056 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f8f8f8 n=2 rgb(248, 248, 248) oklch(6 0 180)*/
+    --c-f8f8f8: oklch(from #f8f8f8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fb7600 n=2 rgb(251, 118, 0) oklch(6 14 22)*/
+    --c-fb7600: oklch(from #fb7600 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color red n=2 rgb(255, 0, 0) oklch(6 14 22)*/
+    --c-red: oklch(from red calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffa655 n=2 rgb(255, 166, 85) oklch(6 14 22)*/
+    --c-ffa655: oklch(from #ffa655 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fffce4 n=2 rgb(255, 252, 228) oklch(6 14 22)*/
+    --c-fffce4: oklch(from #fffce4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #357ae8 n=2 rgb(53, 122, 232) oklch(6 14 22)*/
+    --c-357ae8: oklch(from #357ae8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #3a3a5f n=2 rgb(58, 58, 95) oklch(6 14 22)*/
+    --c-3a3a5f: oklch(from #3a3a5f calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #444 n=2 rgb(68, 68, 68) oklch(6 0 180)*/
+    --c-444: oklch(from #444 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #555 n=2 rgb(85, 85, 85) oklch(6 0 16)*/
+    --c-555: oklch(from #555 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #595959 n=2 rgb(89, 89, 89) oklch(6 0 14)*/
+    --c-595959: oklch(from #595959 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color transparent n=2 rgba(0, 0, 0, 0) oklch(0 0 0 / 0)*/
+    --c-transparent: oklch(from transparent calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #060 n=1 rgb(0, 102, 0) oklch(6 14 22)*/
+    --c-060: oklch(from #060 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #00d9ff n=1 rgb(0, 217, 255) oklch(6 14 22)*/
+    --c-00d9ff: oklch(from #00d9ff calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color grey n=1 rgb(128, 128, 128) oklch(6 0 180)*/
+    --c-grey: oklch(from grey calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #888 n=1 rgb(136, 136, 136) oklch(6 0 180)*/
+    --c-888: oklch(from #888 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #9c9 n=1 rgb(153, 204, 153) oklch(6 14 22)*/
+    --c-9c9: oklch(from #9c9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #994e96 n=1 rgb(153, 78, 150) oklch(6 14 22)*/
+    --c-994e96: oklch(from #994e96 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #aa3030 n=1 rgb(170, 48, 48) oklch(6 14 22)*/
+    --c-aa3030: oklch(from #aa3030 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #adadad n=1 rgb(173, 173, 173) oklch(6 0 180)*/
+    --c-adadad: oklch(from #adadad calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #aeaeae n=1 rgb(174, 174, 174) oklch(6 0 16)*/
+    --c-aeaeae: oklch(from #aeaeae calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #b01d1c n=1 rgb(176, 29, 28) oklch(6 14 22)*/
+    --c-b01d1c: oklch(from #b01d1c calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #b13400 n=1 rgb(177, 52, 0) oklch(6 14 22)*/
+    --c-b13400: oklch(from #b13400 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #b83800 n=1 rgb(184, 56, 0) oklch(6 14 22)*/
+    --c-b83800: oklch(from #b83800 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #bfbfbf n=1 rgb(191, 191, 191) oklch(6 0 180)*/
+    --c-bfbfbf: oklch(from #bfbfbf calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color silver n=1 rgb(192, 192, 192) oklch(6 0 180)*/
+    --c-silver: oklch(from silver calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c6c6c6 n=1 rgb(198, 198, 198) oklch(6 0 180)*/
+    --c-c6c6c6: oklch(from #c6c6c6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #c94a00 n=1 rgb(201, 74, 0) oklch(6 14 22)*/
+    --c-c94a00: oklch(from #c94a00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #cdcdcd n=1 rgb(205, 205, 205) oklch(6 0 180)*/
+    --c-cdcdcd: oklch(from #cdcdcd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ced4da n=1 rgb(206, 212, 218) oklch(6 14 22)*/
+    --c-ced4da: oklch(from #ced4da calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d56500 n=1 rgb(213, 101, 0) oklch(6 14 22)*/
+    --c-d56500: oklch(from #d56500 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d54307 n=1 rgb(213, 67, 7) oklch(6 14 22)*/
+    --c-d54307: oklch(from #d54307 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d74207 n=1 rgb(215, 66, 7) oklch(6 13 21)*/
+    --c-d74207: oklch(from #d74207 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #d9d9d9 n=1 rgb(217, 217, 217) oklch(6 0 180)*/
+    --c-d9d9d9: oklch(from #d9d9d9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #dadada n=1 rgb(218, 218, 218) oklch(6 0 180)*/
+    --c-dadada: oklch(from #dadada calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #dba901 n=1 rgb(219, 169, 1) oklch(6 14 22)*/
+    --c-dba901: oklch(from #dba901 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color gainsboro n=1 rgb(220, 220, 220) oklch(6 0 180)*/
+    --c-gainsboro: oklch(from #dcdcdc calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #df4e06 n=1 rgb(223, 78, 6) oklch(6 14 22)*/
+    --c-df4e06: oklch(from #df4e06 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e3e3e3 n=1 rgb(227, 227, 227) oklch(6 0 16)*/
+    --c-e3e3e3: oklch(from #e3e3e3 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e56a19 n=1 rgb(229, 106, 25) oklch(6 14 22)*/
+    --c-e56a19: oklch(from #e56a19 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e5e5e5 n=1 rgb(229, 229, 229) oklch(6 0 16)*/
+    --c-e5e5e5: oklch(from #e5e5e5 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e6e6e6 n=1 rgb(230, 230, 230) oklch(6 0 180)*/
+    --c-e6e6e6: oklch(from #e6e6e6 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e65a04 n=1 rgb(230, 90, 4) oklch(6 13 21)*/
+    --c-e65a04: oklch(from #e65a04 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e86f00 n=1 rgb(232, 111, 0) oklch(6 14 22)*/
+    --c-e86f00: oklch(from #e86f00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e8e8e8 n=1 rgb(232, 232, 232) oklch(6 0 180)*/
+    --c-e8e8e8: oklch(from #e8e8e8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #e9e9e9 n=1 rgb(233, 233, 233) oklch(6 0 16)*/
+    --c-e9e9e9: oklch(from #e9e9e9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ee6919 n=1 rgb(238, 105, 25) oklch(6 14 22)*/
+    --c-ee6919: oklch(from #ee6919 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ef8400 n=1 rgb(239, 132, 0) oklch(6 13 21)*/
+    --c-ef8400: oklch(from #ef8400 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #1818a3 n=1 rgb(24, 24, 163) oklch(6 14 22)*/
+    --c-1818a3: oklch(from #1818a3 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f07200 n=1 rgb(240, 114, 0) oklch(6 14 22)*/
+    --c-f07200: oklch(from #f07200 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f3e2a9 n=1 rgb(243, 226, 169) oklch(6 14 22)*/
+    --c-f3e2a9: oklch(from #f3e2a9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f3f3f3 n=1 rgb(243, 243, 243) oklch(6 0 16)*/
+    --c-f3f3f3: oklch(from #f3f3f3 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f4c239 n=1 rgb(244, 194, 57) oklch(6 14 22)*/
+    --c-f4c239: oklch(from #f4c239 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f4f4f4 n=1 rgb(244, 244, 244) oklch(6 0 180)*/
+    --c-f4f4f4: oklch(from #f4f4f4 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f44336 n=1 rgb(244, 67, 54) oklch(6 14 22)*/
+    --c-f44336: oklch(from #f44336 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f62929 n=1 rgb(246, 41, 41) oklch(6 14 22)*/
+    --c-f62929: oklch(from #f62929 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f7f7f7 n=1 rgb(247, 247, 247) oklch(6 0 16)*/
+    --c-f7f7f7: oklch(from #f7f7f7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f87101 n=1 rgb(248, 113, 1) oklch(6 13 21)*/
+    --c-f87101: oklch(from #f87101 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fac583 n=1 rgb(250, 197, 131) oklch(6 14 22)*/
+    --c-fac583: oklch(from #fac583 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fafafa n=1 rgb(250, 250, 250) oklch(6 0 15)*/
+    --c-fafafa: oklch(from #fafafa calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fcfcf9 n=1 rgb(252, 252, 249) oklch(6 14 22)*/
+    --c-fcfcf9: oklch(from #fcfcf9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fde2a9 n=1 rgb(253, 226, 169) oklch(6 14 22)*/
+    --c-fde2a9: oklch(from #fde2a9 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fdfdfd n=1 rgb(253, 253, 253) oklch(6 0 180)*/
+    --c-fdfdfd: oklch(from #fdfdfd calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f03 n=1 rgb(255, 0, 51) oklch(6 14 22)*/
+    --c-f03: oklch(from #f03 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ff7b00 n=1 rgb(255, 123, 0) oklch(6 14 22)*/
+    --c-ff7b00: oklch(from #ff7b00 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #f90 n=1 rgb(255, 153, 0) oklch(6 14 22)*/
+    --c-f90: oklch(from #f90 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffa046 n=1 rgb(255, 160, 70) oklch(6 14 22)*/
+    --c-ffa046: oklch(from #ffa046 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffa44e n=1 rgb(255, 164, 78) oklch(6 14 22)*/
+    --c-ffa44e: oklch(from #ffa44e calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #ffc119 n=1 rgb(255, 193, 25) oklch(6 13 21)*/
+    --c-ffc119: oklch(from #ffc119 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #fff2e8 n=1 rgb(255, 242, 232) oklch(6 14 22)*/
+    --c-fff2e8: oklch(from #fff2e8 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color lightyellow n=1 rgb(255, 255, 224) oklch(6 14 22)*/
+    --c-lightyellow: oklch(from #ffffe0 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #1e5570 n=1 rgb(30, 85, 112) oklch(6 14 21)*/
+    --c-1e5570: oklch(from #1e5570 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #1f1a24 n=1 rgb(31, 26, 36) oklch(6 14 22)*/
+    --c-1f1a24: oklch(from #1f1a24 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #1f1d1b n=1 rgb(31, 29, 27) oklch(6 14 22)*/
+    --c-1f1d1b: oklch(from #1f1d1b calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #202020 n=1 rgb(32, 32, 32) oklch(6 0 16)*/
+    --c-202020: oklch(from #202020 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #2196f3 n=1 rgb(33, 150, 243) oklch(6 14 22)*/
+    --c-2196f3: oklch(from #2196f3 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #212529 n=1 rgb(33, 37, 41) oklch(6 14 22)*/
+    --c-212529: oklch(from #212529 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #222 n=1 rgb(34, 34, 34) oklch(6 0 16)*/
+    --c-222: oklch(from #222 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #232128 n=1 rgb(35, 33, 40) oklch(6 14 22)*/
+    --c-232128: oklch(from #232128 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #2973ee n=1 rgb(41, 115, 238) oklch(6 14 22)*/
+    --c-2973ee: oklch(from #2973ee calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #291d27 n=1 rgb(41, 29, 39) oklch(6 14 22)*/
+    --c-291d27: oklch(from #291d27 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #2f5bb7 n=1 rgb(47, 91, 183) oklch(6 14 22)*/
+    --c-2f5bb7: oklch(from #2f5bb7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #3079ed n=1 rgb(48, 121, 237) oklch(6 14 22)*/
+    --c-3079ed: oklch(from #3079ed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #050505 n=1 rgb(5, 5, 5) oklch(6 0 16)*/
+    --c-050505: oklch(from #050505 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #3b3a5a n=1 rgb(59, 58, 90) oklch(6 14 22)*/
+    --c-3b3a5a: oklch(from #3b3a5a calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #3da1d2 n=1 rgb(61, 161, 210) oklch(6 14 22)*/
+    --c-3da1d2: oklch(from #3da1d2 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #404040 n=1 rgb(64, 64, 64) oklch(6 0 180)*/
+    --c-404040: oklch(from #404040 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #427fed n=1 rgb(66, 127, 237) oklch(6 14 22)*/
+    --c-427fed: oklch(from #427fed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #0757b7 n=1 rgb(7, 87, 183) oklch(6 14 22)*/
+    --c-0757b7: oklch(from #0757b7 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #46a7f5 n=1 rgb(70, 167, 245) oklch(6 14 22)*/
+    --c-46a7f5: oklch(from #46a7f5 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #4787ed n=1 rgb(71, 135, 237) oklch(6 14 22)*/
+    --c-4787ed: oklch(from #4787ed calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #474f60 n=1 rgb(71, 79, 96) oklch(6 14 22)*/
+    --c-474f60: oklch(from #474f60 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #4f094c n=1 rgb(79, 9, 76) oklch(6 14 22)*/
+    --c-4f094c: oklch(from #4f094c calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #515151 n=1 rgb(81, 81, 81) oklch(6 0 16)*/
+    --c-515151: oklch(from #515151 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #515360 n=1 rgb(81, 83, 96) oklch(6 14 22)*/
+    --c-515360: oklch(from #515360 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #605f61 n=1 rgb(96, 95, 97) oklch(6 14 22)*/
+    --c-605f61: oklch(from #605f61 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #606061 n=1 rgb(96, 96, 97) oklch(6 14 22)*/
+    --c-606061: oklch(from #606061 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color #617798 n=1 rgb(97, 119, 152) oklch(6 14 22)*/
+    --c-617798: oklch(from #617798 calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(0,0,0,.8) n=1 rgba(0, 0, 0, 14) oklch(0 0 0 / 14)*/
+    --c-rgba-0-0-0-11: oklch(from rgba(0, 0, 0, 0.8) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+    /*color rgba(0,0,0,.15) n=1 rgba(0, 0, 0, 14) oklch(0 0 0 / 14)*/
+    --c-rgba-0-0-0-11: oklch(from rgba(0, 0, 0, 0.15) calc(var(--l) + var(--m) * l) calc(var(--c) + var(--d) * c) calc(var(--h) + var(--i) * h));
+  }
+  body {
+    background-color: var(--c-010028);
+  }
+  .tags {
+    background-color: var(--c-white);
+  }
+  #subbutton {
+    background-color: var(--c-555);
+  }
+  #box_wn_top {
+    background-color: var(--c-238c01);
+    color: var(--c-white);
+  }
+  #bwn_top_right a {
+    color: var(--c-white);
+  }
+  #box_wn_bottom {
+    background-color: var(--c-fcfcf9);
+    border: 2px solid var(--c-238c01);
+  }
+  #box_wn_bottom li {
+    border-bottom: 2px dashed var(--c-ff7c00);
+  }
+  #box_wn_bottom li:before {
+    color: var(--c-black);
+  }
+  .li_cat {
+    background-color: var(--c-lightyellow);
+  }
+  #box_wn_bottom a,
+  #box_wn_bottom a:hover,
+  #box_wn_bottom a:visited {
+    color: var(--c-black);
+  }
+  #box_watch_later,
+  #box_watch_later_small {
+    background-color: var(--c-white);
+    border: 2px solid var(--c-999);
+  }
+  .li-btn-delete {
+    background-color: var(--c-transparent);
+  }
+  .header-top-right a {
+    color: var(--c-e6e6e6);
+  }
+  .header-top-right span {
+    color: var(--c-white);
+  }
+  .download-player {
+    background-color: var(--c-f1dada);
+    border: 1px solid var(--c-f1dada);
+  }
+  .download-player a {
+    color: var(--c-black);
+  }
+  .tab {
+    background-color: var(--c-f1f1f1);
+    border-left: 2px solid var(--c-238c01);
+    border-right: 2px solid var(--c-238c01);
+  }
+  .tab button:hover {
+    background-color: var(--c-ddd);
+  }
+  .tab button.active {
+    background-color: var(--c-ccc);
+  }
+  .slider-watched {
+    background-color: var(--c-ccc);
+  }
+  .slider-watched:before {
+    background-color: var(--c-white);
+  }
+  input:checked + .slider-watched {
+    background-color: var(--c-ff7c00);
+  }
+  input:focus + .slider-watched {
+    box-shadow: 0 0 1px var(--c-ff7c00);
+  }
+  .fa-border {
+    border: 0.08em solid var(--c-eee);
+  }
+  .fa-inverse {
+    color: var(--c-white);
+  }
+  .alert {
+    background-color: var(--c-46a7f5);
+  }
+  ul.items li p.name a {
+    color: var(--c-ffc119);
+  }
+  ul.items li p.name a:hover {
+    color: var(--c-white);
+  }
+  .recent-release {
+    background-color: var(--c-d64107);
+    background: linear-gradient(90deg, var(--c-d64107) 0, var(--c-ff8716) 50%, var(--c-d64107) 100%, var(--c-d64107) 0);
+  }
+  .recent-release,
+  .recent-release a {
+    color: var(--c-white);
+  }
+  .recent-release-episodes a {
+    color: var(--c-3a3a3a);
+  }
+  .recent-release-episodes a:hover,
+  .recent-release-episodes a:visited {
+    color: var(--c-e25406);
+  }
+  .sidebar_body {
+    background-color: var(--c-f0f0f0);
+    border-color: var(--c-d64107);
+    color: var(--c-black);
+  }
+  #sidebar_today a {
+    color: var(--c-white);
+  }
+  .rr_header_bar ul {
+    background-color: var(--c-d64107);
+    background: linear-gradient(90deg, var(--c-d64107) 0, var(--c-ff8716) 50%, var(--c-d64107) 100%, var(--c-d64107) 0);
+  }
+  .rr_header_bar li a {
+    color: var(--c-white);
+  }
+  .rr_header_bar li a:hover {
+    background-color: var(--c-ff8716);
+    color: var(--c-black);
+  }
+  .modalDialog {
+    background-color: var(--c-rgba-0-0-0-11);
+  }
+  .modalDialog > div {
+    background-color: var(--c-white);
+    background: -o-linear-gradient(var(--c-white), var(--c-999));
+  }
+  .close {
+    background-color: var(--c-606061);
+    box-shadow: 1px 1px 3px var(--c-black);
+    color: var(--c-white);
+  }
+  .close:hover {
+    background-color: var(--c-00d9ff);
+  }
+  .pcat-share {
+    color: var(--c-3b3a5a);
+  }
+  .pcat-p-main {
+    background-color: var(--c-eee);
+  }
+  .pcat-p-title {
+    background-color: var(--c-fa6d30);
+    background-image: linear-gradient(90deg, var(--c-fa6d30), var(--c-ffa655), var(--c-fa6d30));
+  }
+  .pcat-p-title,
+  .pcat-p-title h2 {
+    color: var(--c-white);
+  }
+  .pcat-p-content {
+    background-color: var(--c-eee);
+    color: var(--c-3a3a5f);
+  }
+  .pcat-p-other {
+    background-color: var(--c-e2e2e2);
+    color: var(--c-2973ee);
+  }
+  .pcat-p-other a,
+  .pcat-p-other a:hover,
+  .pcat-p-other a:visited {
+    color: var(--c-427fed);
+  }
+  .pcat-p-other span {
+    color: var(--c-949494);
+  }
+  body {
+    background-color: var(--c-010028);
+    color: var(--c-333);
+  }
+  a,
+  a:visited {
+    color: var(--c-e25406);
+  }
+  a:hover {
+    color: var(--c-e25406);
+  }
+  .last,
+  .last a {
+    color: var(--c-white);
+  }
+  .singtit a {
+    color: var(--c-white);
+  }
+  .singtitr a {
+    color: var(--c-white);
+  }
+  .topb h1 {
+    color: var(--c-333);
+  }
+  #nav li {
+    color: var(--c-white);
+  }
+  #nav li a,
+  #nav li a:link,
+  #nav li a:visited {
+    color: var(--c-white);
+  }
+  #nav li a:active,
+  #nav li a:hover {
+    color: var(--c-black);
+  }
+  #searchbox {
+    color: var(--c-666);
+  }
+  #searchbutton {
+    color: var(--c-white);
+  }
+  .fontx {
+    color: var(--c-333);
+  }
+  #navi-outer li a span.navbar-title {
+    color: var(--c-1a1a1a);
+  }
+  #navi-outer li a span.navbar-tagline {
+    color: var(--c-1a1a1a);
+  }
+  #navi-outer li a.navi-active span.navbar-tagline,
+  #navi-outer li a:hover span.navbar-tagline {
+    color: var(--c-1a1a1a);
+  }
+  .fpss-introtext .slidetext h1,
+  .fpss-introtext .slidetext h1 a {
+    color: var(--c-0757b7);
+  }
+  .fpss-introtext .slidetext h1 a:hover {
+    color: var(--c-d33201);
+  }
+  .fpss-introtext .slidetext p {
+    color: var(--c-1818a3);
+  }
+  .fpss-introtext .slidetext a.readon,
+  .fpss-introtext .slidetext a.readon:hover {
+    color: var(--c-d33201);
+  }
+  #slide-wrapper #slide-outer .slide .slide-inner {
+    color: var(--c-white);
+  }
+  #navi-outer {
+    color: var(--c-1a1a1a);
+  }
+  .lbaslik,
+  .lbaslik:hover {
+    border: 1px solid var(--c-ccc);
+  }
+  .lbaslik:hover {
+    background-color: var(--c-003c77);
+  }
+  .lbaslik:hover a {
+    color: var(--c-white);
+  }
+  .lbaslik a {
+    color: var(--c-003c77);
+  }
+  .animeimg {
+    border: 1px solid var(--c-ccc);
+  }
+  .menu li {
+    border-bottom: 1px dashed var(--c-595959);
+  }
+  .menu a,
+  .menu a:visited {
+    color: var(--c-3a3a3a);
+  }
+  .menu a:hover {
+    color: var(--c-d74207);
+  }
+  .menustyle {
+    border: 0 solid var(--c-e3e4e6);
+  }
+  .bartitle h3 {
+    color: var(--c-white);
+  }
+  blockquote {
+    background-color: var(--c-e8e8e8);
+    border-color: var(--c-ddd) var(--c-666) var(--c-666) var(--c-ddd);
+  }
+  .tags {
+    background-color: var(--c-white);
+  }
+  .comments {
+    background-color: var(--c-white);
+    border: 0 solid var(--c-ddd);
+  }
+  #footer {
+    color: var(--c-white);
+  }
+  #footer a,
+  #footer a:hover,
+  #footer a:visited {
+    color: var(--c-white);
+  }
+  #subbox {
+    background-color: var(--c-eee) !important;
+    border-color: var(--c-666) var(--c-ddd) var(--c-ddd) var(--c-666);
+    color: var(--c-202020);
+  }
+  #subbutton {
+    background-color: var(--c-555);
+    border-color: var(--c-ddd) var(--c-666) var(--c-666) var(--c-ddd);
+    color: var(--c-white);
+  }
+  #email,
+  #link,
+  #name,
+  #not,
+  #submit,
+  #url {
+    background-color: var(--c-fffce4) !important;
+    border: 1px solid var(--c-e35604);
+    color: var(--c-e35604);
+  }
+  #words {
+    background-color: var(--c-fffce4) !important;
+    border: 1px solid var(--c-e35604);
+    color: var(--c-e35604);
+  }
+  .commentleft {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-e35604);
+    color: var(--c-black);
+  }
+  .isim {
+    background-color: var(--c-fffaf2);
+    border: 1px solid var(--c-fde2a9);
+    color: var(--c-e35604);
+  }
+  .isim a,
+  .isim a:visited {
+    color: var(--c-e35604);
+  }
+  .commentname {
+    color: var(--c-333);
+  }
+  .yor {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-e35604);
+    color: var(--c-black);
+  }
+  .katname {
+    background-color: var(--c-fb7600);
+    border: 1px dashed var(--c-df6900);
+  }
+  .katname h2 {
+    color: var(--c-white);
+  }
+  .katcont {
+    background-color: var(--c-fffaf2);
+    border: 1px dashed var(--c-df6900);
+    color: var(--c-fb7600);
+  }
+  .hm {
+    color: var(--c-3a3a3a);
+  }
+  .fm {
+    color: var(--c-white);
+  }
+  .kast li {
+    border-bottom: 1px solid var(--c-fdfdfd);
+  }
+  .kast li a {
+    color: var(--c-003c77);
+  }
+  .kast li a:hover {
+    color: var(--c-ee6919);
+  }
+  .lastba {
+    color: var(--c-white);
+  }
+  .ilbaslik h2 a {
+    color: var(--c-white);
+  }
+  .ilxbasalik h2 a {
+    color: var(--c-white);
+  }
+  .ildate,
+  .ildate a {
+    color: var(--c-949494);
+  }
+  .iltext {
+    color: var(--c-3a3a5f);
+  }
+  .vsbaslik {
+    color: var(--c-white);
+  }
+  .vsbaslik h2 a {
+    color: var(--c-white);
+  }
+  .catimg img {
+    border: 1px dashed var(--c-f90);
+  }
+  .series li {
+    background-color: var(--c-e9e9e9);
+    border: 1px solid var(--c-999);
+  }
+  .series li a {
+    color: var(--c-333);
+  }
+  .ilxbaslik h2 a {
+    color: var(--c-white);
+  }
+  .ilxbaslik8 h1 a {
+    color: var(--c-white);
+  }
+  .yoras {
+    background-color: var(--c-fffaf2);
+    border: 1px solid var(--c-e35604);
+    color: var(--c-c94a00);
+  }
+  div.sterms {
+    border: 1px dashed var(--c-black);
+    color: var(--c-black);
+  }
+  div.sterms h4 {
+    color: var(--c-black);
+  }
+  div.sterms ul {
+    color: var(--c-black);
+  }
+  ul.postTabs {
+    border-bottom: 1px solid var(--c-black) !important;
+  }
+  ul.postTabs li a {
+    background-color: var(--c-f3f3f3);
+    border: 1px solid var(--c-black) !important;
+    color: var(--c-black) !important;
+  }
+  ul.postTabs li.postTabs_curr a {
+    border-bottom: 1px solid var(--c-white) !important;
+  }
+  ul.postTabs li a:hover,
+  ul.postTabs li.postTabs_curr a {
+    background-color: var(--c-white);
+    color: var(--c-black) !important;
+  }
+  #raporform {
+    background-color: var(--c-f6f6f6);
+    border: 1px dotted var(--c-ccc);
+  }
+  #raporform input {
+    border: 1px solid var(--c-ccc);
+  }
+  #content .raporlama a {
+    color: var(--c-f03);
+  }
+  #content .raporlama a:hover {
+    color: var(--c-9c9);
+  }
+  .shadetabs li {
+    background-color: var(--c-b13400);
+    border: 1px dashed var(--c-ff7c00);
+  }
+  .shadetabs li a,
+  .shadetabs li a:hover,
+  .shadetabs li a:visited {
+    color: var(--c-white);
+  }
+  .shadetabs li a.selected {
+    color: var(--c-ffa44e);
+  }
+  .mansetlisteleme li a {
+    color: var(--c-white);
+    text-shadow: 1px 1px 0 var(--c-ef8400);
+  }
+  .mansetlisteleme li a:hover {
+    color: var(--c-b83800);
+  }
+  .vsbaslik2 {
+    color: var(--c-white);
+  }
+  .vsbaslik2 h2 a {
+    color: var(--c-white);
+  }
+  .ilxbaslik9 h1 a {
+    color: var(--c-white);
+  }
+  .ilxbaslik h1 a {
+    color: var(--c-white);
+  }
+  #raporform input,
+  select,
+  textarea {
+    background-color: var(--c-white);
+    background: -moz-linear-gradient(top, var(--c-white), var(--c-eee) 1px, var(--c-white) 25px);
+    border: 1px solid var(--c-e5e5e5);
+    box-shadow: 0 0 8px var(--c-rgba-0-0-0-11);
+    -moz-box-shadow: 0 0 8px var(--c-rgba-0-0-0-11);
+    -webkit-box-shadow: 0 0 8px var(--c-rgba-0-0-0-11);
+  }
+  #raporform input:focus,
+  #raporform input:hover,
+  select:focus,
+  select:hover,
+  textarea:focus,
+  textarea:hover {
+    border-color: var(--c-c9c9c9);
+    -webkit-box-shadow: 0 0 8px var(--c-rgba-0-0-0-11);
+  }
+  #raporform .form label {
+    color: var(--c-999);
+  }
+  #raporform .submit,
+  #raporform .submit select {
+    background-color: var(--c-617798);
+    color: var(--c-white);
+  }
+  .menulast li {
+    border-bottom: 1px dashed var(--c-595959);
+  }
+  .menu a:visited,
+  .menulast a {
+    color: var(--c-060);
+  }
+  .menulast a:hover {
+    color: var(--c-e25406);
+  }
+  .menulaststyle {
+    border: 0 solid var(--c-e3e4e6);
+  }
+  .catarsiv-title h2,
+  .catarsiv-title h2 a {
+    color: var(--c-white);
+  }
+  .catlist,
+  .catlist:hover {
+    border-left: 1px solid var(--c-df6900);
+    border-right: 1px solid var(--c-df6900);
+    border-top: 1px solid var(--c-df6900);
+  }
+  .catlisttitle a {
+    color: var(--c-d54307);
+  }
+  .catlistdate {
+    color: var(--c-515151);
+  }
+  .catlist-content {
+    background-color: var(--c-fffaf2);
+  }
+  .membership-form {
+    background-color: var(--c-f7f7f7);
+    box-shadow: 0 2px 2px var(--c-rgba-0-0-0-11);
+  }
+  .rc-button,
+  .rc-button:visited {
+    background-color: var(--c-whitesmoke);
+    background-image: linear-gradient(top, var(--c-whitesmoke), var(--c-f1f1f1));
+    border: 1px solid var(--c-gainsboro);
+    color: var(--c-444);
+  }
+  .rc-button:hover {
+    background-color: var(--c-f8f8f8);
+    background-image: linear-gradient(top, var(--c-f8f8f8), var(--c-f1f1f1));
+    border: 1px solid var(--c-c6c6c6);
+    box-shadow: 0 1px 1px var(--c-rgba-0-0-0-11);
+    color: var(--c-333);
+  }
+  .rc-button:active {
+    background-color: var(--c-f6f6f6);
+    background-image: -o- linear-gradient(top, var(--c-f6f6f6), var(--c-f1f1f1));
+    background-image: linear-gradient(top, var(--c-f6f6f6), var(--c-f1f1f1));
+    box-shadow: 0 1px 2px var(--c-rgba-0-0-0-11);
+  }
+  .rc-button-submit,
+  .rc-button-submit:visited {
+    background-color: var(--c-4d90fe);
+    background-image: linear-gradient(top, var(--c-4d90fe), var(--c-4787ed));
+    border: 1px solid var(--c-3079ed);
+    color: var(--c-white);
+    text-shadow: 0 1px var(--c-rgba-0-0-0-11);
+  }
+  .rc-button-submit:hover {
+    border: 1px solid var(--c-2f5bb7);
+    color: var(--c-white);
+    text-shadow: 0 1px var(--c-rgba-0-0-0-11);
+  }
+  .rc-button-submit:active,
+  .rc-button-submit:hover {
+    background-color: var(--c-357ae8);
+    background-image: linear-gradient(top, var(--c-4d90fe), var(--c-357ae8));
+  }
+  .rc-button-submit:active {
+    box-shadow: inset 0 1px 2px var(--c-rgba-0-0-0-11);
+  }
+  .membership-input {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-d9d9d9);
+    border-top-color: var(--c-silver);
+    color: var(--c-404040);
+  }
+  .stitched {
+    background-color: var(--c-d56500);
+    border: 2px dashed var(--c-white);
+    color: var(--c-white);
+    text-shadow: -1px -1px var(--c-aa3030);
+  }
+  .wcobtn {
+    background-color: var(--c-f7b056);
+    background-image: linear-gradient(180deg, var(--c-f7b056), var(--c-ff7b00));
+    border: 1px solid var(--c-b83d00);
+  }
+  .wcobtn,
+  .wcobtn a,
+  .wcobtn button {
+    color: var(--c-white);
+  }
+  div.cat-listview ul {
+    border-bottom: 1px solid var(--c-ccc);
+    border-top: 1px solid var(--c-ccc);
+  }
+  div.cat-listview li {
+    background-color: var(--c-f6f6f6);
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  div.cat-listview li a {
+    color: var(--c-333);
+  }
+  div.cat-listview li:hover {
+    background-color: var(--c-ededed);
+  }
+  div.ad-notice {
+    background-color: var(--c-dba901);
+    border: 1px dashed var(--c-ff7c00);
+    color: var(--c-black);
+  }
+  div.ad-notice a,
+  div.ad-notice a:hover,
+  div.ad-notice a:visited {
+    color: var(--c-white);
+  }
+  .allgenres a {
+    color: var(--c-white);
+  }
+  .cerceve {
+    background-color: var(--c-fffaf2);
+    border: 1px dashed var(--c-c9c9c9);
+  }
+  .cerceve:hover {
+    background-color: var(--c-f3e2a9);
+  }
+  .allgenres {
+    background-color: var(--c-fffaf2);
+    border: 1px dashed var(--c-ed6303);
+  }
+  .aramacizgisi {
+    border-color: var(--c-949494);
+  }
+  .cizgiyazisi {
+    color: var(--c-949494);
+  }
+  .genredugmesi {
+    background: linear-gradient(var(--c-fac583), var(--c-e86f00));
+    border: 1px solid var(--c-b83d00);
+    color: var(--c-white);
+  }
+  .cizgiyazisi a {
+    color: var(--c-white);
+  }
+  .aramadabaslik a {
+    color: var(--c-3a3a3a);
+  }
+  .genredugmesi:hover {
+    background-color: var(--c-f07200);
+  }
+  .aramamotoru {
+    border: 2px solid var(--c-df5006);
+  }
+  .searchresults {
+    border-bottom: 1px solid var(--c-c9c9c9);
+  }
+  .message {
+    background-color: var(--c-fffaf2);
+    border: 1px dashed var(--c-ed6303);
+  }
+  .button1 {
+    background-color: var(--c-f87101);
+    border: 2px solid var(--c-df5006);
+    color: var(--c-white);
+  }
+  .button1:hover {
+    background-color: var(--c-df5006);
+    color: var(--c-white);
+  }
+  .genrebutton {
+    color: var(--c-333);
+  }
+  .button2 {
+    background-color: var(--c-f0f0f0);
+    border-bottom: 1px solid var(--c-c9c9c9);
+    border-top: 1px solid var(--c-c9c9c9);
+    color: var(--c-333);
+  }
+  .button2:hover {
+    background-color: var(--c-ff7c00);
+    color: var(--c-3a3a3a);
+  }
+  .searchpost {
+    color: var(--c-333);
+  }
+  .postbutton2 {
+    background-color: var(--c-f0f0f0);
+    border-bottom: 1px solid var(--c-c9c9c9);
+    border-top: 1px solid var(--c-c9c9c9);
+    color: var(--c-333);
+  }
+  .postbutton2:hover {
+    background-color: var(--c-ff7c00);
+    color: var(--c-3a3a3a);
+  }
+  div.cat-listview2 ul {
+    border-bottom: 1px solid var(--c-ccc);
+    border-top: 1px solid var(--c-ccc);
+  }
+  div.cat-listview2 li {
+    background-color: var(--c-f0f0f0);
+    border-bottom: 1px solid var(--c-ccc);
+  }
+  div.cat-listview2 li a {
+    color: var(--c-333);
+  }
+  a.sonra:after {
+    background-color: var(--c-adadad);
+  }
+  div.cat-listview2 li:hover {
+    background-color: var(--c-dadada);
+  }
+  .jRatingAverage {
+    background-color: var(--c-f62929);
+  }
+  .jRatingColor {
+    background-color: var(--c-f4c239);
+  }
+  p.jRatingInfos {
+    background-color: var(--c-transparent);
+    color: var(--c-white);
+  }
+  p.jRatingInfos span.maxRate {
+    color: var(--c-c9c9c9);
+  }
+  .alert {
+    background-color: var(--c-f44336);
+  }
+  .alert.info {
+    background-color: var(--c-2196f3);
+  }
+  .alert {
+    background-color: var(--c-ffa046);
+    color: var(--c-white);
+  }
+  .closebtn {
+    color: var(--c-white);
+  }
+  .closebtn:hover {
+    color: var(--c-black);
+  }
+  #nav span a {
+    color: var(--c-white);
+  }
+  #dubbuton {
+    background-color: var(--c-994e96);
+  }
+  #dubbuton:hover {
+    background-color: var(--c-4f094c);
+  }
+  #dubbutons {
+    background-color: var(--c-3da1d2);
+  }
+  #dubbutons:hover {
+    background-color: var(--c-1e5570);
+  }
+  a {
+    color: var(--c-df2f00);
+  }
+  a:hover {
+    color: var(--c-black);
+  }
+  #menu li a:hover {
+    color: var(--c-white);
+  }
+  #sidebar_left .pool {
+    background-color: var(--c-white);
+  }
+  #sidebar_left #poll .wp-polls {
+    color: var(--c-474f60);
+  }
+  #sidebar_right {
+    background-color: var(--c-f0f0f0);
+    border-color: var(--c-c9c9c9);
+  }
+  #blog .pool h2 a {
+    color: var(--c-1f1d1b);
+  }
+  #blog .pool h2 a:hover {
+    color: var(--c-df2f00);
+  }
+  #blog .pool p img {
+    border: 1px solid var(--c-e0e0e0);
+  }
+  #blog .poool {
+    border-color: var(--c-ccc);
+  }
+  #blog .poool h3 {
+    color: var(--c-888);
+  }
+  #siteinfo {
+    background-color: var(--c-291d27);
+    border: 1px solid var(--c-1f1a24);
+    color: var(--c-white);
+  }
+  #link {
+    background-color: var(--c-050505);
+    border-top: 1px solid var(--c-black);
+    color: var(--c-222);
+  }
+  #link a {
+    color: var(--c-444);
+  }
+  #link a:hover {
+    color: var(--c-ccc);
+  }
+  #tags li a {
+    color: var(--c-black);
+  }
+  #tags li a:hover {
+    color: var(--c-df2f00);
+  }
+  #tags li.selectTag {
+    background-color: var(--c-white);
+  }
+  #tags li.selectTag a {
+    color: var(--c-df2f00);
+  }
+  #blog .navigation .alignleft a {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e2e2e2);
+  }
+  #blog .navigation .alignleft a:hover {
+    background-color: var(--c-df2f00);
+    color: var(--c-white);
+  }
+  .manga h2 {
+    color: var(--c-df2f00);
+  }
+  .manga p img {
+    border: 1px solid var(--c-e0e0e0);
+  }
+  .manga .poool2 {
+    border-color: var(--c-ccc);
+  }
+  .manga #vote h5 {
+    color: var(--c-e56a19);
+  }
+  .manga #vote .votes {
+    background-color: var(--c-f4f4f4);
+    border: 1px solid var(--c-e3e3e3);
+  }
+  #blog .post_list li {
+    border-bottom: 1px solid var(--c-ededed);
+  }
+  #blog .page-entry,
+  #blog div.letter li {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e2e2e2);
+  }
+  #blog div.letter li a:hover {
+    background-color: var(--c-df2f00);
+    color: var(--c-white);
+  }
+  #blog div.ddmcc {
+    border-bottom: 1px solid var(--c-e0e0e0);
+  }
+  #blog .ddmcc h2 {
+    border: 1px solid var(--c-e0e0e0);
+  }
+  #blog .cr_month_scores h2,
+  #blog .ddmcc h2 {
+    background-color: var(--c-f9f9f9);
+  }
+  #blog .cr_month_scores h2 {
+    border: 1px solid var(--c-e2e2e2);
+    color: var(--c-bfbfbf);
+  }
+  #blog .cr_month_scores div.right {
+    color: var(--c-grey);
+  }
+  .side-list {
+    background-color: var(--c-f9f9f9);
+  }
+  .side-list ol li {
+    border-bottom: 1px solid var(--c-eee);
+  }
+  .tags_list {
+    border-top: 1px solid var(--c-eee);
+  }
+  .cat-eps {
+    background-color: var(--c-f6f6f6);
+    border-bottom: 1px solid var(--c-ccc);
+    border-top: 1px solid var(--c-ccc);
+    color: var(--c-333);
+  }
+  .video-title2 {
+    background-color: var(--c-fa6d30);
+    background-image: linear-gradient(90deg, var(--c-fa6d30), var(--c-ffa655), var(--c-fa6d30));
+  }
+  .video-title2,
+  .video-title2 h2 {
+    color: var(--c-white);
+  }
+  .cat-eps:hover {
+    background-color: var(--c-ededed);
+  }
+  .cat-eps a {
+    color: var(--c-333);
+  }
+  #the_title {
+    color: var(--c-white);
+  }
+  .ddmcc ul ul {
+    border-bottom: 1px solid var(--c-e0e0e0);
+  }
+  .ddmcc p.sep {
+    background-color: var(--c-f9f9f9);
+    border: 1px solid var(--c-e0e0e0);
+  }
+  -- > #nav span a {
+    color: var(--c-white);
+  }
+  #nav span {
+    color: var(--c-white);
+  }
+  #blog .poool h2 a:hover,
+  #tags li a,
+  a {
+    color: var(--c-515360);
+  }
+  .form-control {
+    background-color: var(--c-white);
+    border: 1px solid var(--c-ced4da);
+    color: var(--c-212529);
+  }
+  a.reklam_kapat {
+    background-color: var(--c-605f61);
+    border: 1px solid var(--c-aeaeae);
+    color: var(--c-white);
+  }
+  [style*="border-bottom:1px dotted #b01d1c" i] {
+    /* div[style]*/
+    border-bottom: 1px dotted var(--c-b01d1c) !important;
+  }
+  [style*="color:#e65a04" i] {
+    /* div[style]*/
+    color: var(--c-e65a04) !important;
+  }
+  [style*="color: red" i] {
+    /* span.Apple-style-span[style]*/
+    color: var(--c-red) !important;
+  }
+  [bordercolor="\#cdcdcd" i] {
+    /* table[width='560'][border='1'][cellpadding='0'][cellspacing='0'][bordercolor='#CDCDCD']*/
+    border-color: var(--c-cdcdcd);
+  }
+  [bgcolor="\#fff2e8" i] {
+    /* td[height='91'][colspan='2'][bgcolor='#FFF2E8']*/
+    background-color: var(--c-fff2e8);
+  }
+  [bgcolor="\#eeeeee" i] {
+    /* td[bgcolor='#EEEEEE']*/
+    background-color: var(--c-eee);
+  }
+  [bgcolor="\#fafafa" i] {
+    /* td[bgcolor='#FAFAFA']*/
+    background-color: var(--c-fafafa);
+  }
+  [style*="background:#df4e06" i] {
+    /* div[style]*/
+    background-color: var(--c-df4e06) !important;
+  }
+  [style*="color:white" i] {
+    /* a[href='https://user.wco.tv/wp-login.php?action=register'][style]*/
+    color: var(--c-white) !important;
+  }
+  [style*="color:red" i] {
+    /* strong[style]*/
+    color: var(--c-red) !important;
+  }
+  [style*="color:#232128" i] {
+    /* p[style]*/
+    color: var(--c-232128) !important;
+  }
+
+  /* fixes */
+  #content {
+    background: linear-gradient(90deg, var(--c-d64107) 4px, var(--c-white) 4px 966px, var(--c-d64107) 966px);
+  }
+  td[style*="barbg.jpg"] {
+    background: linear-gradient(90deg, var(--c-d64107) 2px, var(--c-white) 2px 208px, var(--c-d64107) 208px) !important;
+  }
+  .larkax {
+    background: linear-gradient(90deg, var(--c-d64107) 2px, var(--c-white) 2px 558px, var(--c-d64107) 558px) !important;
+  }
+  .menu li {
+    background: var(--c-white);
+  }
+
+  .vsbaslik,
+  [class^="ilxbaslik"] {
+    height: 54px;
+  }
+  .bartitle {
+    height: 34px;
+  }
+  .lalyx,
+  img[src*="barbottom.png"],
+  #footer {
+    filter: invert(0.91) hue-rotate(180deg);
+  }
+
+  .mansetlisteleme li a {
+    color: var(--c-black);
+  }
+  .topb h1 {
+    color: var(--c-white);
+  }
+
+  .searchboxtop select {
+    color-scheme: light;
+  }
+}
+@-moz-document domain("wco.tv") {
+  @container style(--ath-fuck-anime: 1) {
+    :has(> .recent-release-main) {
+      display: flex;
+      flex-flow: column;
+    }
+    .recent-release-main:has(a[name="cartoon"]) {
+      order: -3;
+    }
+    .recent-release-main:has(#sidebar_right2) {
+      order: -2;
+    }
+    .recent-release-main:has(#sidebar_right3) {
+      order: -1;
+    }
+  }
+}
+@-moz-document domain("wcostream.tv"), domain("watchcartoononline.cc") {
+  @container style(--ath-fuck-anime: 1) {
+    :has(> .rr_header_bar) {
+      display: flex;
+      flex-flow: column;
+      > div:has(a[name="cartoon"]) {
+        order: -3;
+      }
+    }
+  }
+}
+@-moz-document domain("wco.tv"), domain("wcoanimedub.tv"), domain("wcoanimesub.tv"), domain("wcostream.tv"), domain("watchcartoononline.cc") {
+  :root {
+    color-scheme: var(--ath-color-scheme);
+  }
+  :root, body {
+    --c-rgba-0-0-0-11: #0004;
+  }
+  body {
+    background: #000;
+  }
+  .header-tag a {
+    color: var(--c-white);
+  }
+  .jcarousel li {
+    border: 3px solid var(--c-fcf5f5);
+  }
+  .row {
+    border-color: #0000;
+  }
+
+  img[src="https://www.wco.tv/logo.png"] {
+    margin: 0;
+  }
+
+  @container style(--ath-show-ads: 0) {
+    #top-alert,
+    .anti-ad,
+    td[width="160"],
+    [style*="min-width:200px; height:30px"],
+    [style*="width:320px; height:270px"],
+    [class^="addthis"],
+    div:has(> #h-right) {
+      display: none;
+    }
+    .columns:has(.video-page-main) {
+      width: 100%;
+    }
+  }
+}
