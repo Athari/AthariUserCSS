@@ -1,8 +1,8 @@
 /* ==UserStyle==
 @name           WatchCartoonOnline.cc – Dark Enhanced [Ath]
 @namespace      athari
-@version        1.0.0
-@description    Dark theme for WatchCartoonOnline/WCO/WCOAnimeDub/WCOAnimeSub with several enhancements: hiding ads, reordering of blocks, configurable colors.
+@version        1.1.0
+@description    Dark theme for WatchCartoonOnline/WCOFlix/WCO/WCOAnimeDub/WCOAnimeSub with several enhancements: hiding ads, reordering of blocks, configurable colors.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
 @supportURL     https://github.com/Athari/AthariUserCSS/issues
@@ -3062,6 +3062,35 @@
     }
   }
 }
+@-moz-document domain("wcoflix.tv") {
+  @container style(--ath-fuck-anime: 1) {
+    :has(> .recent-release-main) {
+      display: flex;
+      flex-flow: column;
+    }
+    .recent-release-main {
+      display: contents;
+    }
+    .recent-release:has(a[name="cartoon"]) {
+      order: -32;
+      + #sidebar_right {
+        order: -31;
+      }
+    }
+    .recent-release:has(+ #sidebar_right2) {
+      order: -22;
+      + #sidebar_right2 {
+        order: -21;
+      }
+    }
+    .recent-release:has(+ #sidebar_right2) {
+      order: -12;
+      + #sidebar_right2 {
+        order: -11;
+      }
+    }
+  }
+}
 @-moz-document domain("wcostream.tv"), domain("watchcartoononline.cc") {
   @container style(--ath-fuck-anime: 1) {
     :has(> .rr_header_bar) {
@@ -3073,10 +3102,29 @@
     }
   }
 }
-@-moz-document domain("wco.tv"), domain("wcoanimedub.tv"), domain("wcoanimesub.tv"), domain("wcostream.tv"), domain("watchcartoononline.cc") {
+@-moz-document domain("wco.tv"), domain("wcoanimedub.tv"), domain("wcoanimesub.tv"), domain("wcoflix.tv"), domain("wcostream.tv"), domain("watchcartoononline.cc") {
   :root {
     color-scheme: var(--ath-color-scheme);
   }
+
+  @container style(--ath-show-ads: 0) {
+    #top-alert,
+    .anti-ad,
+    .share-button,
+    td[width="160"],
+    img[src*="premiumad"],
+    [style*="min-width:200px; height:30px"],
+    [style*="width:320px; height:270px"],
+    [class^="addthis"],
+    div:has(> #h-right) {
+      display: none;
+    }
+    .columns:has(.video-page-main) {
+      width: 100%;
+    }
+  }
+}
+@-moz-document domain("wco.tv"), domain("wcoanimedub.tv"), domain("wcoanimesub.tv"), domain("wcostream.tv"), domain("watchcartoononline.cc") {
   :root, body {
     --c-rgba-0-0-0-11: #0004;
   }
@@ -3095,20 +3143,5 @@
 
   img[src="https://www.wco.tv/logo.png"] {
     margin: 0;
-  }
-
-  @container style(--ath-show-ads: 0) {
-    #top-alert,
-    .anti-ad,
-    td[width="160"],
-    [style*="min-width:200px; height:30px"],
-    [style*="width:320px; height:270px"],
-    [class^="addthis"],
-    div:has(> #h-right) {
-      display: none;
-    }
-    .columns:has(.video-page-main) {
-      width: 100%;
-    }
   }
 }
