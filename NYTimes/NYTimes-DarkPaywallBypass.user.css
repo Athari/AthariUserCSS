@@ -62,7 +62,8 @@
   }
   .vi-gateway-container {
     position: static !important;
-    > div:last-child {
+    /* alternative: > div[class], > div[class]:empty:last-child { */
+    > div:empty {
       display: none !important;
     }
   }
