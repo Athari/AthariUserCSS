@@ -48,6 +48,17 @@
     }
   }
 
+  /* show a banner for partial article */
+  .StoryBodyCompanionColumn > div > p:last-of-type:has(a[href^="https://www.nytimes.com/subscription"])::before {
+    content: "The rest of the article is visible to paying subscribers only.";
+    display: block;
+    /* text-align: center; */
+    color: #666;
+    border-top: thin solid red;
+    border-bottom: thin solid red;
+    background: black;
+  }
+
   html, body, main,
   .vi-gateway-container {
     height: auto !important;
