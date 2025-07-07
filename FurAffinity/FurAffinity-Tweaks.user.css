@@ -1,22 +1,22 @@
 /* ==UserStyle==
-@name           FurAffinity.net - Tweaks [Ath]
-@namespace      furaffinity
-@version        1.0.1
+@name           FurAffinity.net – Tweaks [Ath]
+@namespace      athari
+@version        1.1.0
 @description    FurAffinity.net: various usability tweaks.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
 @supportURL     https://github.com/Athari/AthariUserCSS/issues
 @license        MIT
 @preprocessor   less
-@var            checkbox ath-round-corners "Round corners" 1
-@var            checkbox ath-search-top "Search form on top" 1
-@var            checkbox ath-show-header-banner "Show header banner" 0
-@var            checkbox ath-show-plus "Show FA+ & virtue signalling" 0
-@var            checkbox ath-show-sub-extras "Show submission page redundancy" 0
-@var            checkbox ath-limit-page-width "Constrain page width" 0
-@var            checkbox ath-limit-image-height "Constrain submission height" 1
-@var            checkbox ath-static-prev-next "Static prev & next buttons" 1
-@var            range ath-rating-thickness "Submission rating border" [1, 0, 5, 1, 'px']
+@var            checkbox ath-round-corners      "Round corners"                   1
+@var            checkbox ath-search-top         "Search form on top"              1
+@var            checkbox ath-show-header-banner "Show header banner"              0
+@var            checkbox ath-show-plus          "Show FA+ & virtue signalling"    0
+@var            checkbox ath-show-sub-extras    "Show submission page redundancy" 0
+@var            checkbox ath-limit-page-width   "Constrain page width"            0
+@var            checkbox ath-limit-image-height "Constrain submission height"     1
+@var            checkbox ath-static-prev-next   "Static prev & next buttons"      1
+@var            range    ath-rating-thickness   "Submission rating border"        [1, 0, 5, 1, 'px']
 ==/UserStyle== */
 @-moz-document domain("furaffinity.net") {
 
@@ -85,7 +85,7 @@
           inset: 10px 10px auto auto !important;
         }
       }
-      
+
       &:has(.submission-area:hover) .favorite-nav {
         a:first-child,
         a:last-child {
@@ -217,11 +217,21 @@
         align-items: center !important;
         white-space: nowrap;
 
+        .hidebrowselowres,
         .sidebar-browse-container > h4 {
           display: none !important;
         }
         .browser-sidebar-search-box {
           padding: 0 !important;
+        }
+
+        .l-sidebar__searchBox {
+          flex: 1;
+          margin: 0;
+        }
+        .l-sidebar__pageSettings,
+        .l-sidebar__sortCriteria {
+          align-self: flex-end;
         }
 
         .flex-container:has(input[name="order-by"]) {
