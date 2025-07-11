@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Kinorium.com – Enhanced [Ath]
 @namespace      athari
-@version        1.3.1
+@version        1.4.0
 @description    Kinorium.com: various usability enhancements.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -14,6 +14,7 @@
 @var            checkbox ath-show-genre-movies    "Show top genre movies" 1
 @var            checkbox ath-show-actual-movies   "Show current movies"   1
 @var            checkbox ath-side-menus           "Side menus"            1
+@var            checkbox ath-expand-comments      "Expand comments"       1
 @var            checkbox ath-native-sliders       "Native sliders (requires userscript)" 1
 @var            checkbox ath-recolor-scrollbars   "Recolor scrollbars"    1
 @var            select   ath-hyphens              "Hyphens"               ["auto:Automatic", "manual:Manual*"]
@@ -349,6 +350,15 @@
         margin: 0 !important;
         .status-list__comment-text {
           margin: 0 !important;
+        }
+        @container style(--ath-expand-comments: 1) {
+          .status-list__comment_cutted {
+            cursor: revert;
+            max-height: none;
+            &::before {
+              content: revert;
+            }
+          }
         }
       }
       p {
