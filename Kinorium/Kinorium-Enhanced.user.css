@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Kinorium.com – Enhanced [Ath]
 @namespace      athari
-@version        1.4.0
+@version        1.4.1
 @description    Kinorium.com: various usability enhancements.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -141,6 +141,7 @@
     table-layout: fixed;
   }
 
+  .film-page__buttons-watch_under_description,
   .film-page__buttons-cinema,
   .ath-film-page__buttons-cinema {
     display: flex !important;
