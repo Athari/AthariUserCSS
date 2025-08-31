@@ -1,7 +1,7 @@
 /* ==UserStyle==
-@name           e621.net - Tricksta Esix [Ath]
+@name           e621.net – Tricksta Esix [Ath]
 @namespace      athari
-@version        1.1.0
+@version        1.1.2
 @description    Tricksta's Esix on the front page of e621.net, e926.net and e6ai.net as a mascot. Restyled controls on the front page to match the image. Small Esix at the bottom of each page.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -69,12 +69,23 @@
     position: absolute !important;
     inset: 0;
     inset: 500px 0 0 0 !important;
+    /*height: calc(100vh - 500px) !important;*/
+  }
+  .mascot-section {
+    display: none !important;
   }
   .home-section {
     backdrop-filter: none !important;
   }
+  .home-section.home-subscribestar {
+    position: absolute;
+    inset: auto auto 1.3em 0;
+    /*bottom: anchor(--anchor-footer-links top);*/ /* TODO: can't find anchor??? */
+    width: auto !important;
+    background: none !important;
+  }
   .home-section:has(#home-search-form) {
-    width: 380px;
+    width: 550px;
     margin: 0 auto;
     padding: 30px 100px 120px;
     background: var(--hexagon-image) 50% 0 no-repeat !important;
@@ -90,7 +101,7 @@
     inset: auto 1rem 5px auto;
     display: flex;
     flex-flow: column-reverse;
-    width: calc(min(50vw - 10rem, 800px));
+    width: calc(min(50vw - 10rem, 800px)) !important;
     background: none !important;
     opacity: 0.8;
     margin: 0 !important;
@@ -111,6 +122,7 @@
       inset: auto auto 5px 1rem;
       width: calc(min(50vw - 10rem, 800px));
       text-align: left;
+      anchor-name: --anchor-footer-links;
       br {
         display: none;
       }
