@@ -365,6 +365,11 @@ function processDecl(decl: Css.Decl, refonter: Refonter, opts: Opts) {
   debugDump('decl font', decl.prop, [ font ], 'Font');
 }
 
+function processAtRule(rule: Css.AtRule, refonter: Refonter, opts: Opts) {
+  if (opts.removeUnrelated && Kw.equals(rule.name, kw.atRule.fontFace))
+    rule.remove();
+}
+
 function processRule(rule: Css.Rule, refonter: Refonter, opts: Opts) {
   const font = createFontParser().parseRule(rule);
   if (!isDefined(font)) {
@@ -419,6 +424,7 @@ export default PostCss.declarePluginOpt<RefontOptions>('refont', defaultOpts, (o
   const refonter = new Refonter(opts, result);
   return {
     OnceExit(root: Css.Root) {
+      root.walkAtRules(rule => processAtRule(rule, refonter, opts));
       switch (opts.level) {
         case 'decl':
           root.walkDecls(decl => processDecl(decl, refonter, opts));
