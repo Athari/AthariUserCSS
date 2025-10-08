@@ -156,7 +156,7 @@ const re = new class {
 
 function roundStrNumbers(s: string): string {
   return s.replace(re.floats,
-    (_, d) => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
+    d => (+d).toFixed(2).replace(/(\.\d*)0+$/, "$1").replace(/\.0+$/, ""));
 }
 
 const isCnTokenHashOrIdent = Cn.isToken(isSome(Ct.isHash, Ct.isIdent));
@@ -174,7 +174,9 @@ function getIdentColorName(color: ColorData): CssColorName | null {
 
 function applyVarTransforms(name: string, tfs: RecolorVarTransform[]): string {
   name = name
-    .replace(/\./ig, "_").replace(/[^\w\d-]/ig, "-").replace(/-+/g, "-").replace(/^-?(.*?)-?$/, "$1")
+    .replace(/,0\./ig, ",_").replace(/\./ig, "_")
+    .replace(/[^\w\d-]/ig, "-").replace(/-+/g, "-")
+    .replace(/^-?(.*?)-?$/, "$1")
     .toLowerCase();
   for (let i = 0; i < tfs.length; i++) {
     const nameTf = tfs.reduce((r, t) => r.replace(t.regex!, t.replace), name);
