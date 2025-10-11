@@ -394,6 +394,31 @@
       ],
     },
 
+    // MARK: Packagist
+    {
+      name: "packagist.org",
+      options: {
+        recolor: {
+          extraRootSelectors: [ 'header', 'footer', '.wrapper-search', '.markdown-body', '.btn' ],
+        },
+        refont: {
+          enabled: true,
+        },
+        /* transformer breaks CSS of .btn buttons, but broken CSS looks better */
+        /*remove: {
+          enabled: true,
+          selector: {
+            class: [{ name: '/ btn \\b .* /' }],
+          },
+        },*/
+        combine: true,
+      },
+      css: [
+        { name: "app.css", url: "https://packagist.org/build/app.css" },
+        { name: "markdown.css", url: "https://packagist.org/css/github/markdown.css" },
+      ],
+    },
+
     // MARK: PrideLands.ru
     {
       name: "pridelands.ru",
@@ -497,6 +522,47 @@
         { name: "index.html", url: "https://vcpkg.io/en/" },
         { name: "package.html", url: "https://vcpkg.io/en/package/7zip" },
         { name: "packages.html", url: "https://vcpkg.io/en/packages?query=zip" },
+      ],
+    },
+
+    // MARK: WatchCartoonOnline
+    {
+      name: "wco.tv",
+      options: {},
+      html: [
+        { name: "index.html", path: "sites-data/wco.tv/index.html" },
+        { name: "movie.html", path: "sites-data/wco.tv/movie.html" },
+        { name: "cartoon-list.html", path: "sites-data/wco.tv/cartoon-list.html" },
+      ],
+    },
+    {
+      name: "wcoanimedub.tv",
+      options: {},
+      html: [
+        { name: "index.html", path: "sites-data/wcoanimedub.tv/index.html" },
+        { name: "movie.html", path: "sites-data/wcoanimedub.tv/movie.html" },
+        { name: "dubbed-anime-list.html", path: "sites-data/wcoanimedub.tv/dubbed-anime-list.html" },
+      ],
+    },
+    {
+      name: "wcoanimesub.tv",
+      options: {},
+      html: [
+        { name: "index.html", path: "sites-data/wcoanimesub.tv/index.html" },
+        { name: "movie.html", path: "sites-data/wcoanimesub.tv/movie.html" },
+        { name: "subbed-anime-list.html", path: "sites-data/wcoanimesub.tv/subbed-anime-list.html" },
+      ],
+    },
+    {
+      name: "wcostream.tv",
+      options: {},
+      css: [
+        { name: "style.css", path: "sites-data/wcostream.tv/style.css", url: "https://www.wcostream.tv/wp-content/themes/animewp78712/style.css" },
+      ],
+      html: [
+        { name: "index.html", path: "sites-data/wcostream.tv/index.html", url: "https://www.wcostream.tv/" },
+        { name: "movie.html", path: "sites-data/wcostream.tv/movie.html", url: "https://www.wcostream.tv/101-dalmatian-street-season-1-episode-26-the-de-vil-wears-puppies" },
+        { name: "cartoon-list.html", path: "sites-data/wcostream.tv/cartoon-list.html", url: "https://www.wcostream.tv/cartoon-list" },
       ],
     },
 
