@@ -603,3 +603,14 @@ function getSizeTableRow(opts: SizeOpts): SizeKey | -1 {
   const mediumSize = opts.defaultFontSize;
   return mediumSize >= sizeKeyBegin && mediumSize < sizeKeyEnd ? mediumSize as SizeKey : -1;
 }
+
+// MARK: Weight calc
+
+const weightTable: Record<number, number> = {
+  0: 400, // normal
+  1: 700, // bold
+};
+
+export function getNumericWeightForKeyword(keyword: string): Opt<number> {
+  return weightTable[Kw.index(keyword, kw.font.weight.absolute)];
+}

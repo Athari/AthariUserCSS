@@ -156,10 +156,10 @@ export function isNumeric(v: AnyValue): v is Numeric {
   return !!v && v.type === 'numeric';
 }
 
-export function isNumericUnit<T extends KwAny>(v: AnyValue, unitGuard: Guard<KwAny, T>): v is Numeric<T>;
+export function isNumericUnit<T extends KwAny>(v: AnyValue, unitGuard: Guard<KwAny | null | undefined, T | null>): v is Numeric<T>;
 export function isNumericUnit<T extends KwAny>(v: AnyValue, units: readonly T[] | T): v is Numeric<T>;
 export function isNumericUnit(v: AnyValue, units: null): v is Numeric<null>;
-export function isNumericUnit<T extends KwAny>(v: AnyValue, units: readonly T[] | T | Guard<KwAny, T> | null): v is Numeric<T> {
+export function isNumericUnit<T extends KwAny>(v: AnyValue, units: readonly T[] | T | Guard<KwAny | null | undefined, T | null> | null): v is Numeric<T> {
   if (!isNumeric(v))
     return false;
   if (isNull(units))

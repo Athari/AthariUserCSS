@@ -8,7 +8,7 @@ const debug = false as boolean;
 
 const kw = Kw.kw;
 const kwpf = kw.prop.font;
-const kwRefontable = [ kwpf.shorthand, kwpf.size, kwpf.lineHeight, kwpf.family ] as const;
+const kwRefontable = [ kwpf.shorthand, kwpf.size, kwpf.lineHeight, kwpf.weight, kwpf.family ] as const;
 
 const re = new class {
   readonly nonIdent = regex('gi')` [^ a-z 0-9 _ \- ] `;
@@ -38,7 +38,7 @@ interface Opts {
   rootSize: number;
   rootUnit: Cu.AbsoluteLength;
 
-  sizeToRem: boolean;
+  sizeConvert: boolean;
   sizeCombine: boolean;
   sizeVarMin: Opt<string>;
   sizeVarMax: Opt<string>;
@@ -46,13 +46,21 @@ interface Opts {
   sizeVarMult: Opt<string>;
   sizeVarPrefix: Opt<string>;
 
-  lineHeightToRem: boolean;
+  lineHeightConvert: boolean;
   lineHeightCombine: boolean;
   lineHeightVarMin: Opt<string>;
   lineHeightVarMax: Opt<string>;
   lineHeightVarOffset: Opt<string>;
   lineHeightVarMult: Opt<string>;
   lineHeightVarPrefix: Opt<string>;
+
+  weightConvert: boolean;
+  weightCombine: boolean;
+  weightVarMin: Opt<string>;
+  weightVarMax: Opt<string>;
+  weightVarOffset: Opt<string>;
+  weightVarMult: Opt<string>;
+  weightVarPrefix: Opt<string>;
 
   familyVars: boolean;
   familyVarPrefix: string;
@@ -77,7 +85,7 @@ const defaultOpts: Opts = {
   rootSize: 16,
   rootUnit: 'px',
 
-  sizeToRem: true,
+  sizeConvert: true,
   sizeCombine: true,
   sizeVarMin: 's0',
   sizeVarMax: 's1',
@@ -85,13 +93,21 @@ const defaultOpts: Opts = {
   sizeVarOffset: 'sb',
   sizeVarPrefix: 's-',
 
-  lineHeightToRem: true,
+  lineHeightConvert: true,
   lineHeightCombine: true,
   lineHeightVarMin: 'l0',
   lineHeightVarMax: 'l1',
   lineHeightVarMult: 'la',
   lineHeightVarOffset: 'lb',
   lineHeightVarPrefix: 'l-',
+
+  weightConvert: true,
+  weightCombine: true,
+  weightVarMin: 'w0',
+  weightVarMax: 'w1',
+  weightVarMult: 'wa',
+  weightVarOffset: 'wb',
+  weightVarPrefix: 'w-',
 
   familyVars: true,
   familyVarPrefix: 'f-',
@@ -104,9 +120,15 @@ export type RefontOptions = OptObject<Opts>;
 
 type KwRefontable = typeof kwRefontable[number];
 
-interface NumericPropOptions {
+interface NumericValueRangeOptions {
+  valueOffset: string;
+  valueMin: string;
+  valueMax: string;
+}
+
+interface NumericPropOptions extends NumericValueRangeOptions {
   prop: KwRefontable,
-  propToRem: boolean;
+  propConvert: boolean;
   propCombine: boolean;
   propMin: Opt<string>;
   propMax: Opt<string>;
@@ -130,7 +152,8 @@ class Refonter {
   #opts: Opts;
   #sizeOpts: CvFont.SizeOptions;
   #fontSizeOpts: NumericPropOptions;
-  #lineHeightSizeOpts: NumericPropOptions;
+  #lineHeightOpts: NumericPropOptions;
+  #fontWeightOpts: NumericPropOptions;
   #result: PostCss.Result;
   #rootSize: Cv.Numeric<Cu.AbsoluteLength>;
   #vars = new Map<string, VarEntry>();
@@ -139,8 +162,9 @@ class Refonter {
     this.#rootSize = Cv.numeric(opts.rootSize, opts.rootUnit);
     this.#opts = opts;
     this.#sizeOpts = { defaultFontSize: Cv.convertLengthStrict(this.#rootSize, 'px').value };
-    this.#fontSizeOpts = this.#toNumericOpts('font-size', 'size');
-    this.#lineHeightSizeOpts = this.#toNumericOpts('line-height', 'lineHeight');
+    this.#fontSizeOpts = this.#toNumericOpts('font-size', 'size', { valueOffset: '0px', valueMin: '0px', valueMax: '1e9px' });
+    this.#lineHeightOpts = this.#toNumericOpts('line-height', 'lineHeight', { valueOffset: '0px', valueMin: '0px', valueMax: '1e9px' });
+    this.#fontWeightOpts = this.#toNumericOpts('font-weight', 'weight', { valueOffset: '0', valueMin: '100', valueMax: '900' });
     this.#result = result;
   }
 
@@ -209,9 +233,13 @@ class Refonter {
     if (isDefined(sizeDecl))
       yield sizeDecl;
 
-    const lineHeightDecl = this.#generateNumericDecl(font.lineHeight, createDeclFn, this.#lineHeightSizeOpts);
+    const lineHeightDecl = this.#generateNumericDecl(font.lineHeight, createDeclFn, this.#lineHeightOpts);
     if (isDefined(lineHeightDecl))
       yield lineHeightDecl;
+
+    const weightDecl = this.#generateNumericDecl(font.weight, createDeclFn, this.#fontWeightOpts);
+    if (isDefined(weightDecl))
+      yield weightDecl;
 
     const familyDecl = this.#generateFamilyDecl(font.family, createDeclFn);
     if (isDefined(familyDecl))
@@ -219,7 +247,7 @@ class Refonter {
   }
 
   #generateNumericDecl(cv: Opt<Cv.AnyValue>, createDeclFn: CreateDeclFn, opts: NumericPropOptions): Opt<Css.Decl> {
-    if (!opts.propToRem || !isDefined(cv))
+    if (!opts.propConvert || !isDefined(cv))
       return;
 
     const cvNum = this.#getActualValue(cv);
@@ -244,25 +272,30 @@ class Refonter {
     }
   }
 
-  private buildNumericExpr(cvNum: Cv.Numeric<Cu.AbsoluteLength>, opts: NumericPropOptions) {
+  private buildNumericExpr(cvNum: Cv.Numeric<Cu.AbsoluteLength | null>, opts: NumericPropOptions) {
     const ref = (k: keyof NumericPropOptions, fallback: string) =>
       this.#opts.fallbacks ? `var(--${opts[k]},${fallback})` : `var(--${opts[k]})`;
 
-    let expr = (Cv.convertLengthStrict(cvNum, this.#opts.rootUnit).value / this.#opts.rootSize).toFixed(2);
-    expr = `${expr}rem`;
+    let expr;
+    if (Cv.isNumericUnit(cvNum, Cu.isAbsoluteLength)) {
+      expr = (Cv.convertLengthStrict(cvNum, this.#opts.rootUnit).value / this.#opts.rootSize).toFixed(2);
+      expr = `${expr}rem`;
+    } else {
+      expr = `${cvNum.value}`;
+    }
 
     // linear
     if (isDefined(opts.propMult))
       expr += ` * ${ref('propMult', '1')}`;
     if (isDefined(opts.propOffset))
-      expr += ` + ${ref('propOffset', '0px')}`;
+      expr += ` + ${ref('propOffset', opts.valueOffset)}`;
     if (isDefined(opts.propMult) || isDefined(opts.propOffset))
       expr = `calc(${expr})`;
 
     // clamp
     if (isDefined(opts.propMin) || isDefined(opts.propMax)) {
-      const refMin = ref('propMin', '0px');
-      const refMax = ref('propMax', '1e9px');
+      const refMin = ref('propMin', opts.valueMin);
+      const refMax = ref('propMax', opts.valueMax);
       if (isDefined(opts.propMin) && isDefined(opts.propMax))
         expr = `clamp(${refMin}, ${expr}, ${refMax})`;
       else if (isDefined(opts.propMin))
@@ -289,23 +322,29 @@ class Refonter {
     return createDeclFn(kw.prop.font.family, `var(${varName})`);
   }
 
-  #toNumericOpts(prop: KwRefontable, name: 'size' | 'lineHeight'): NumericPropOptions {
+  #toNumericOpts(prop: KwRefontable, name: 'size' | 'lineHeight' | 'weight', valueOpts: NumericValueRangeOptions): NumericPropOptions {
     return {
-      ...([ 'ToRem', 'Combine' ] as const).reduce(
+      ...([ 'Convert', 'Combine' ] as const).reduce(
         (a, k) => (a[`prop${k}`] = this.#opts[`${name}${k}`], a),  <NumericPropOptions>{}),
       ...([ 'Min', 'Max', 'Mult', 'Offset', 'Prefix' ] as const).reduce(
         (a, k) => (a[`prop${k}`] = this.#opts[`${name}Var${k}`], a),  <NumericPropOptions>{}),
+      ...valueOpts,
       prop,
     };
   }
 
-  #getActualValue(cv: Cv.AnyValue): Opt<Cv.Numeric<Cu.AbsoluteLength>> {
-    if (Cv.isNumericUnit(cv, Cu.isAbsoluteLength))
+  #getActualValue(cv: Cv.AnyValue): Opt<Cv.Numeric<Cu.AbsoluteLength | null>> {
+    if (Cv.isNumericUnit(cv, Cu.isAbsoluteLength) || Cv.isNumericUnit(cv, null))
       return cv;
     if (Cv.isKeywordName(cv, kw.font.size.absolute)) {
       const pixelSize = CvFont.getPixelSizeForKeyword(cv.name, this.#sizeOpts);
       if (isDefined(pixelSize))
         return Cv.numeric(pixelSize, 'px');
+    }
+    if (Cv.isKeywordName(cv, kw.font.weight.absolute)) {
+      const numericWeight = CvFont.getNumericWeightForKeyword(cv.name);
+      if (isDefined(numericWeight))
+        return Cv.numeric(numericWeight, null);
     }
     return;
   }

@@ -27,25 +27,27 @@ export type AnyAbsolute = Angle | Frequency | Resolution | Time | AbsoluteLength
 
 // MARK: Guards
 
-export const isAngle = (v: string) => Kw.equals(v, kw.unit.angle);
-export const isFrequency = (v: string) => Kw.equals(v, kw.unit.frequency);
-export const isPercent = (v: string) => Kw.equals(v, kw.unit.percent);
-export const isResolution = (v: string) => Kw.equals(v, kw.unit.resolution);
-export const isTime = (v: string) => Kw.equals(v, kw.unit.time);
+export const isAngle = (v: string | null | undefined) => Kw.equals(v, kw.unit.angle);
+export const isFrequency = (v: string | null | undefined) => Kw.equals(v, kw.unit.frequency);
+export const isPercent = (v: string | null | undefined) => Kw.equals(v, kw.unit.percent);
+export const isResolution = (v: string | null | undefined) => Kw.equals(v, kw.unit.resolution);
+export const isTime = (v: string | null | undefined) => Kw.equals(v, kw.unit.time);
 
-export const isAbsoluteLength = (v: string) => Kw.equals(v, kw.unit.length.absolute);
-export const isRelativeLength = (v: string) => Kw.equals(v, kw.unit.length.relative);
-export const isRelativeRootLength = (v: string) => Kw.equals(v, kw.unit.length.relativeRoot);
-export const isContainerQueryLength = (v: string) => Kw.equals(v, kw.unit.length.containerQuery);
-export const isViewportDefaultLength = (v: string) => Kw.equals(v, kw.unit.length.viewport.default);
-export const isViewportSmallLength = (v: string) => Kw.equals(v, kw.unit.length.viewport.small);
-export const isViewportLargeLength = (v: string) => Kw.equals(v, kw.unit.length.viewport.large);
-export const isViewportDynamicLength = (v: string) => Kw.equals(v, kw.unit.length.viewport.dynamic);
-export const isViewportLength = (v: string) => Kw.equals(v, kw.unit.length.viewport.all);
-export const isLength = (v: string) => Kw.equals(v, kw.unit.length.all);
+export const isAbsoluteLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.absolute);
+export const isRelativeLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.relative);
+export const isRelativeRootLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.relativeRoot);
+export const isContainerQueryLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.containerQuery);
+export const isViewportDefaultLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.viewport.default);
+export const isViewportSmallLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.viewport.small);
+export const isViewportLargeLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.viewport.large);
+export const isViewportDynamicLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.viewport.dynamic);
+export const isViewportLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.viewport.all);
+export const isLength = (v: string | null | undefined) => Kw.equals(v, kw.unit.length.all);
 
-export const isAny = (v: string) => Kw.equals(v, kw.unit.all);
-export const isAnyAbsolute = (v: string) => Kw.equals(v, kw.unit.allAbsolute);
+export const isAny = (v: string | null | undefined) => Kw.equals(v, kw.unit.all);
+export const isAnyAbsolute = (v: string | null | undefined) => Kw.equals(v, kw.unit.allAbsolute);
+
+export const isUnitless = (v: string | null | undefined) => v === null;
 
 // MARK: Convert
 

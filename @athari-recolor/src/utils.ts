@@ -251,10 +251,8 @@ export function isValueIn<K, U extends K>(value: K, values: readonly U[]): value
   return values.includes(value as U);
 }
 
-//export function isSome<T, G extends Guard<T>[]>(...guards: G): Guard<GuardReturnType<G[number]>>;
-//export function isSome<A, T extends A, G extends GuardT<A, T>[]>(...guards: G): GuardT<A, GuardReturnTypeT<A, T, G[number]>>;
-export function isSome<T, G extends GuardAny<T>[]>(...guards: G): GuardAny<GuardReturnType<G[number]>> {
-  return (x: unknown): x is GuardReturnType<G[number]> => guards.some(g => g(x));
+export function isSome<G extends readonly Guard<any, any>[]>(...guards: G): Guard<GuardParam<G[number]>, GuardReturnType<G[number]>> {
+  return ((x: unknown): x is GuardReturnType<G[number]> => guards.some(g => g(x))) as any;
 }
 
 export function isAssigned<T>(v: T): v is Assigned<T> {
@@ -542,13 +540,13 @@ export async function downloadText(url: string, init: DownloadInit = {}): Promis
       'dnt': '1',
       'pragma': 'no-cache',
       'referer': new URL(url).origin,
-      'sec-ch-ua': '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
+      'sec-ch-ua': '"Microsoft Edge";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
       'sec-ch-ua-mobile': "?0",
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
-      'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+      'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
     },
   })), downloadTimeout);
   if (!response.ok) {
