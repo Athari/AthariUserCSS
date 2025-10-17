@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Packagist.org – Dark Enhanced [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.1.0
 @description    Dark theme for Packagist (Packagist.com) with optional wide layout, accessibility improvements and configurable colors.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -10,6 +10,7 @@
 @preprocessor   default
 
 @var            checkbox ath-wide-layout        "Wide layout"           1
+@var            checkbox ath-fat-pagination     "Fix pagination"        1
 @var            checkbox ath-fix-fonts          "Fix fonts"             1
 @var            checkbox ath-fix-font-weight    "Fix font weight"       1
 @var            select   ath-color-scheme       "Controls color scheme" ["light:Light", "dark:Dark*"]
@@ -4310,6 +4311,38 @@
     box-shadow: 0px 2px 3px #0004;
   }
 
+  @container style(--ath-fat-pagination: 1) {
+    #powered-by {
+      display: none;
+    }
+    .pagination:not(#\0) {
+      display: flex;
+      flex-flow: row;
+      > div,
+      ul,
+      li {
+        display: contents;
+      }
+      span, a {
+        display: block;
+        box-sizing: content-box;
+        padding: .2em 1em;
+        min-width: 2ch;
+        font-size: 1.2em;
+        line-height: 2;
+        flex: 0 auto;
+        li:first-child & {
+          flex: 1;
+          text-align: left;
+        }
+        li:last-child & {
+          flex: 1;
+          text-align: right;
+        }
+      }
+    }
+  }
+
   @container style(--ath-wide-layout: 1) {
     @media (min-width: 1800px) {
       @supports (top: anchor(--top top)) {
@@ -4448,7 +4481,8 @@
             .tags {
               order: -2;
               margin: .1lh 0;
-              min-height: 2lh;
+              height: 2lh;
+              overflow: hidden auto;
             }
             .glyphicon-user {
               order: -1;
