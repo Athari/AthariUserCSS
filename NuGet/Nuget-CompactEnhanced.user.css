@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           NuGet.org – Compact Enhanced [Ath]
 @namespace      athari
-@version        1.0.0
+@version        1.1.0
 @description    Enhanced compact layout for NuGet (NuGet.org) which combines info from multiple tabs, colors icons etc.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -57,6 +57,52 @@
     font-size: 0;
     > * {
       font-size: 1.6rem;
+    }
+  }
+
+  .list-packages {
+    .package {
+      margin: 0 -15px;
+      padding: 1rem 15px;
+      &:nth-child(2n+1) {
+        background: #88888818;
+      }
+      .row {
+        display: flex;
+        flex-flow: row;
+        .col-package-icon {
+          width: 96px;
+          height: 96px;
+        }
+        .icon-text {
+          color: var(--neutralForeground3Hover);
+        }
+        .package-header {
+          display: flex;
+          flex-flow: row;
+          gap: 0.7ch;
+          .package-by {
+            margin-left: auto;
+          }
+        }
+        .package-tags {
+          .icon-text {
+            display: flex;
+            flex-flow: row wrap;
+            gap: 1ch;
+          }
+          a[title="View more tags"] {
+            font-size: 0;
+            &::after {
+              content: "...";
+              font-size: 1.5rem;
+            }
+          }
+        }
+        a[aria-label^="More information about "] {
+          display: none;
+        }
+      }
     }
   }
 
@@ -349,42 +395,46 @@
       content: none;
     }
   }
-  .ms-Icon--ReadingMode,
-  .ms-Icon--History {
+  .ms-Icon--ReadingMode::before,
+  .ms-Icon--History::before {
     color: yellowgreen;
   }
-  .ms-Icon--Globe {
+  .ms-Icon--Globe::before {
     color: deepskyblue;
   }
-  .ms-Icon--Certificate {
+  .ms-Icon--Certificate::before {
     color: orange;
   }
-  .ms-Icon--CloudDownload {
+  .ms-Icon--Download::before,
+  .ms-Icon--CloudDownload::before {
     color: skyblue;
   }
-  .ms-Icon--FabricFolderSearch {
+  .ms-Icon--FabricFolderSearch::before {
     color: gold;
   }
-  .ms-Icon--Dictionary {
+  .ms-Icon--Dictionary::before {
     color: palegreen;
   }
-  .ms-Icon--Package {
+  .ms-Icon--Package::before {
     color: orange;
   }
-  .ms-Icon--Packages {
+  .ms-Icon--Packages::before {
     color: burlywood;
   }
-  .ms-Icon--BranchFork2 {
+  .ms-Icon--BranchFork2::before {
     color: deepskyblue;
   }
-  .ms-Icon--Stopwatch {
+  .ms-Icon--Stopwatch::before {
     color: yellowgreen;
   }
-  .ms-Icon--Info {
+  .ms-Icon--Info::before {
     color: dodgerblue !important;
   }
-  .ms-Icon--Warning {
+  .ms-Icon--Warning::before {
     color: yellow;
+  }
+  .ms-Icon--Flag::before {
+    color: #c00;
   }
   .git-image-icon {
     filter: sepia(1) saturate(200) hue-rotate(70deg)  !important;
