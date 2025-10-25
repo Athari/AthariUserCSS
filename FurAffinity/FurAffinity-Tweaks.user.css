@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           FurAffinity.net – Tweaks [Ath]
 @namespace      athari
-@version        1.1.0
+@version        1.2.0
 @description    FurAffinity.net: various usability tweaks.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -16,6 +16,8 @@
 @var            checkbox ath-limit-page-width   "Constrain page width"            0
 @var            checkbox ath-limit-image-height "Constrain submission height"     1
 @var            checkbox ath-static-prev-next   "Static prev & next buttons"      1
+@var            checkbox ath-story-dark         "Story: dark theme"               1
+@var            range    ath-story-scale        "Story: scale"                    [1, 0.75, 2, 0.05]
 @var            range    ath-rating-thickness   "Submission rating border"        [1, 0, 5, 1, 'px']
 ==/UserStyle== */
 @-moz-document domain("furaffinity.net") {
@@ -92,6 +94,26 @@
           opacity: 1.0 !important;
         }
       }
+    }
+  }
+
+  & when (@ath-story-dark = 1) {
+    html:has(> body > #c-submissionContent) {
+      color-scheme: dark;
+      body {
+        background: #111;
+      }
+      [style*="color: rgb(0, 0, 0)"] {
+        color: #eee !important;
+      }
+    }
+  }
+
+  div[style*="max-width"] {
+    transform: scale(@ath-story-scale);
+    #c-submissionContent:has(iframe) {
+      height: 800px !important;
+      padding-block: calc(400px * (@ath-story-scale - 1)) !important;
     }
   }
 
