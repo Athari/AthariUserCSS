@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           DerpiBooru.org – Tweaks [Ath]
 @namespace      athari
-@version        1.1.1
+@version        1.1.2
 @description    DerpiBooru.org, TrixieBooru.org, Tantabus.ai: various usability tweaks.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -64,10 +64,12 @@
 
   & when (@ath-collapse-news = 1) {
     .flash--site-notice {
+      color-scheme: light dark;
       position: absolute;
       inset: calc(36px + 32px * @ath-expand-user-menu) 0 auto 700px;
       width: auto;
       height: 32px;
+      overflow: hidden auto;
       line-height: 32px;
       text-align: right;
       background: none;
