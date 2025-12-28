@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           FurAffinity.net – Tweaks [Ath]
 @namespace      athari
-@version        1.2.0
+@version        1.3.0
 @description    FurAffinity.net: various usability tweaks.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -11,10 +11,11 @@
 @var            checkbox ath-round-corners      "Round corners"                   1
 @var            checkbox ath-search-top         "Search form on top"              1
 @var            checkbox ath-show-header-banner "Show header banner"              0
+@var            checkbox ath-show-tab-block     "Show tag block buttons"          1
 @var            checkbox ath-show-plus          "Show FA+ & virtue signalling"    0
 @var            checkbox ath-show-sub-extras    "Show submission page redundancy" 0
 @var            checkbox ath-limit-page-width   "Constrain page width"            0
-@var            checkbox ath-limit-image-height "Constrain submission height"     1
+@var            checkbox ath-limit-image-height "Constrain submission height"     0
 @var            checkbox ath-static-prev-next   "Static prev & next buttons"      1
 @var            checkbox ath-story-dark         "Story: dark theme"               1
 @var            range    ath-story-scale        "Story: scale"                    [1, 0.75, 2, 0.05]
@@ -26,6 +27,15 @@
     --ath-border-radius: 16px;
     --ath-border-radius-inner: calc(var(--ath-border-radius) - 0px);
   }
+
+  /*.submission-content,
+  body {
+    overflow: visible !important;
+  }
+  .favorite-nav {
+    position: sticky;
+    bottom: 10px;
+  }*/
 
   & when (@ath-limit-page-width = 0) {
     html,
@@ -45,9 +55,11 @@
   & when (@ath-show-sub-extras = 0) {
 
     .submission-sidebar {
-      .buttons,
-      .info.text > :nth-child(2),
-      .info.text > :nth-child(3) {
+      /*.buttons,*/
+      section:has(a[href*="significant+amount+of+tags"]) :is(h3, br),
+      section.tags-row h3,
+      .info.text > :nth-child(1),
+      .info.text > :nth-child(2) {
         display: none !important;
       }
     }
@@ -183,6 +195,36 @@
       padding: 3px;
       background: none;
       backdrop-filter: none;
+    }
+  }
+
+  & when (@ath-show-tab-block = 0) {
+
+    .tags {
+      span {
+        position: relative;
+        .tag-block {
+          position: absolute;
+          left: 0;
+          top: 100%;
+          display: none;
+          font: inherit;
+          z-index: 1;
+          opacity: 1;
+          &.add-tag:after {
+            content: 'block';
+          }
+          &.remove-tag:after {
+            content: 'unblock';
+          }
+        }
+        &:hover .tag-block {
+          display: block;
+        }
+        &:has(.tag-invalid) .tag-block {
+          display: none;
+        }
+      }
     }
   }
 
