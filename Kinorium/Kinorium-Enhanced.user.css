@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Kinorium.com – Enhanced [Ath]
 @namespace      athari
-@version        1.4.1
+@version        1.5.0
 @description    Kinorium.com: various usability enhancements.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -92,6 +92,51 @@
     ::-webkit-scrollbar-corner {
       background: #222 !important;
     }
+  }
+
+  html:has(> .body-dark) {
+    background: #111 !important;
+  }
+  body.body-dark {
+    background: #111 !important;
+  }
+  .background-picture {
+    margin: 0;
+    .topMenu__wrapper {
+      position: sticky;
+      top: 0px;
+      background: #2d2d2d;
+    }
+    .topMenu_fixed {
+      height: auto;
+      .menu-extra-sticky {
+        top: 0;
+      }
+    }
+    .topMenu_with-topstringbanner {
+      top: 0;
+    }
+    .bannString {
+      display: none;
+    }
+    .userPage .user-collections-page .addFilm {
+      /*top: auto !important;*/
+      margin-top: 0;
+    }
+    .modalBluring {
+      position: static;
+    }
+    .container__arrow-next,
+    .container__arrow-prev {
+      margin-top: 0;
+      .landscapeSlider & {
+        margin-top: 0;
+        top: 0 !important;
+      }
+    }
+  }
+  .background-picture__link {
+    display: none !important;
   }
 
   .userPage__follow-buttons-box {
