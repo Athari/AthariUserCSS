@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Kinorium.com – Enhanced [Ath]
 @namespace      athari
-@version        1.5.0
+@version        1.5.1
 @description    Kinorium.com: various usability enhancements.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -249,14 +249,11 @@
       }
     }
     td {
-      /*background: hsl(calc(0deg + var(--h) * 2.5deg) 100% 50%) !important;*/
       background: oklch(70% 0.7 calc(30 + var(--h) * 2.5)) !important;
       a {
-        /*color: hsl(calc(0deg + var(--h) * 2.5deg) 100% 20%) !important;*/
-        /*color: oklch(30% 0.7 calc(30 + var(--h) * 2.5)) !important;*/
-        color: color-contrast(oklch(64% 0.7 calc(30 + var(--h) * 2.5)) vs
-          oklch(30% 0.7 calc(30 + var(--h) * 2.5)),
-          oklch(95% 0.7 calc(30 + var(--h) * 2.5))) !important;
+        font-weight: 500;
+        color: #000 !important;
+        text-shadow: 1px 1px 1px #fff, -1px 1px 1px #fff, 1px -1px 1px #fff, -1px -1px 1px #fff;
       }
     }
     .serial-rating-table__1-0 { --h: 00 }
@@ -378,7 +375,6 @@
           content: "X" !important;
           align-self: center !important;
           justify-self: center !important;
-          /*margin: 1rem 0 -1rem 0 !important;*/
           color: #000 !important;
         }
         &.number-1::before { content: "1" !important; }
@@ -445,10 +441,6 @@
         overflow: hidden !important;
         &:not(:has(> :not(.role))):has(img) > .role,
         .role:only-child {
-          /*width: auto !important;
-          float: none !important;
-          display: flex !important;
-          flex-flow: row !important;*/
           display: contents !important;
         }
         .item {
@@ -525,7 +517,7 @@
     }
   }
 
-  .addCommentPlaceHolder { /* fix random relative offset out of nowhere */
+  .addCommentPlaceHolder {
     .setCommentWindow, .setStatusWindow {
       position: static !important;
     }
