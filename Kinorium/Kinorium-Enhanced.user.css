@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Kinorium.com – Enhanced [Ath]
 @namespace      athari
-@version        1.5.1
+@version        1.6.0
 @description    Kinorium.com: various usability enhancements.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -29,6 +29,8 @@
   }
 
   @container style(--ath-show-banners: 0) {
+    .topMenu__pro-button,
+    .adsbygoogle,
     .proBan,
     .bwannners-left-box {
       display: none !important;
@@ -120,7 +122,6 @@
       display: none;
     }
     .userPage .user-collections-page .addFilm {
-      /*top: auto !important;*/
       margin-top: 0;
     }
     .modalBluring {
@@ -141,6 +142,10 @@
 
   .userPage__follow-buttons-box {
     width: 300rem;
+  }
+
+  .filmList .item {
+    padding: 10rem 25rem;
   }
 
   .film-page_leftContent {
@@ -188,9 +193,13 @@
 
   .film-page__buttons-watch_under_description,
   .film-page__buttons-cinema,
+  .buttovod,
   .ath-film-page__buttons-cinema {
     display: flex !important;
     flex-flow: row wrap;
+    .mobileView & {
+      flex-wrap: nowrap;
+    }
     a {
       &:hover {
         filter: contrast(0.8) brightness(1.4);
@@ -432,6 +441,10 @@
       width: auto !important;
       min-width: 0 !important;
       overflow: auto hidden !important;
+      &.unscrollable .inner {
+        flex-flow: wrap !important;
+        width: auto !important;
+      }
       .inner {
         width: max-content!important;
         height: auto !important;
@@ -443,6 +456,9 @@
         .role:only-child {
           display: contents !important;
         }
+        .role .item {
+          float: left !important;
+        }
         .item {
           float: none !important;
           transition: all 0.1s ease-in-out;
@@ -451,6 +467,9 @@
             overflow: clip clip !important;
             padding: 2px 4px !important;
             margin: -2px -4px !important;
+          }
+          &.slider_button-all_group {
+            margin-top: 24rem !important;
           }
           &:hover {
             filter: contrast(0.8) brightness(1.4);
@@ -514,6 +533,18 @@
       .inner .item {
         margin: 0 15rem 0 0 !important;
       }
+    }
+
+    .film-page__cast-wrap {
+      margin-top: 0 !important;
+    }
+    .headlines__wrap_show,
+    .film-page__gallery,
+    .film_gallery_trailers {
+      margin-bottom: 0 !important;
+    }
+    .unscrollable:not(#\0) {
+      padding-bottom: 0 !important;
     }
   }
 
