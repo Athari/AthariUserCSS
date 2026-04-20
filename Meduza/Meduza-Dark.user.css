@@ -108,6 +108,9 @@
   .GeneralMaterial-module-root {
     background: #111;
   }
+  .GeneralMaterial-module-article a {
+    background-color: transparent !important;
+  }
   [class^='Meta-module_root__'] {
     color: #999;
   }
