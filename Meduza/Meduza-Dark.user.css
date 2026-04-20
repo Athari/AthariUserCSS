@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Meduza.io – Dark [Ath]
 @namespace      athari
-@version        1.0.1
+@version        1.0.2
 @description    Dark theme for Meduza.io (Медуза.io). Supports all types of articles.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -107,6 +107,9 @@
   /* Material */
   .GeneralMaterial-module-root {
     background: #111;
+  }
+  .GeneralMaterial-module-article a {
+    background-color: transparent !important;
   }
   [class^='Meta-module_root__'] {
     color: #999;
