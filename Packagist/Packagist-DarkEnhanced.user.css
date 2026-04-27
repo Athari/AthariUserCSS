@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Packagist.org – Dark Enhanced [Ath]
 @namespace      athari
-@version        1.1.0
+@version        1.1.1
 @description    Dark theme for Packagist (Packagist.com) with optional wide layout, accessibility improvements and configurable colors.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -4426,7 +4426,7 @@
           .package-header {
             anchor-name: --ath-package-header;
           }
-          .package-aside:not(.versions-wrapper) {
+          .col-md-3:has(> .package-aside:not(.versions-wrapper)) {
             position: absolute;
             margin: 0 !important;
             left: 20px;
