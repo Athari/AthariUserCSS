@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Meduza.io – Dark [Ath]
 @namespace      athari
-@version        1.0.4
+@version        1.0.5
 @description    Dark theme for Meduza.io (Медуза.io). Supports all types of articles.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -13,6 +13,22 @@
 @-moz-document domain("meduza.io") {
   :root {
     color-scheme: dark;
+    --color-bg: #111;
+    --color-surface: #222;
+    --color-surface-alt: #333;
+    --color-card: #181818;
+    --color-text: #eee;
+    --color-muted: #999;
+    --color-link: #cfa66a;
+    --color-accent: #b78a54;
+    --color-border: #000;
+    --color-card-border: #080808;
+    --color-glow: #fff;
+    --color-skeleton: #777;
+    --color-skeleton-shine: #555;
+    --color-blockquote: #330;
+    --color-highlight: #440;
+    --color-transparent: #0000;
   }
 
   /* Promo */
@@ -22,53 +38,55 @@
 
   /* Main: News */
   .Grid-module-container {
-    background: #111;
+    background: var(--color-bg);
   }
   .SimpleBlock-module-root,
   .EpisodeBlock-module-root,
   .TopicBlock-module-root,
   .RichBlock-module-root {
-    background: #222;
-    color: #eee;
-    box-shadow: inset 0 0 0 1px #000;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: inset 0 0 0 1px var(--color-border);
   }
   .SimpleBlock-module-is1to1 {
-    background: #333;
-    box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #b78a54;
+    background: var(--color-surface-alt);
+    box-shadow:
+      inset 0 0 0 1px var(--color-border),
+      inset 0 0 0 4px var(--color-accent);
   }
   .TopicBlockItem-module-footer,
   .RichBlock-module-meta {
-    color: #999;
+    color: var(--color-muted);
   }
   .RichBlock-module-withTheme {
-    background: #222 !important;
-    --bgColor: #222 !important;
-    --textColor: #eee !important;
-    --metaColor: #999 !important;
+    background: var(--color-surface) !important;
+    --bgColor: var(--color-surface) !important;
+    --textColor: var(--color-text) !important;
+    --metaColor: var(--color-muted) !important;
   }
   .Modal-module-isAuth .Modal-module-container {
-    background: #333;
+    background: var(--color-surface-alt);
   }
   .Header-module-itemAuth,
   .Header-module-itemSearch {
-    filter: drop-shadow(0 0 1px #fff);
+    filter: drop-shadow(0 0 1px var(--color-glow));
   }
 
   /* Main: Chronology */
   .Chronology-module-footer,
   .Chronology-module-container {
-    background: #111;
+    background: var(--color-bg);
   }
   .ChronologyItem-module-root {
-    background: #222;
-    color: #eee;
-    box-shadow: inset 0 0 0 1px #000;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: inset 0 0 0 1px var(--color-border);
   }
   .Chronology-module-timestamp {
-    color: #eee;
+    color: var(--color-text);
   }
   .ChronologyItem-module-footer {
-    color: #999;
+    color: var(--color-muted);
   }
   .ChronologyItem-module-figure {
     margin: 1px; /* border fix */
@@ -76,122 +94,138 @@
 
   /* Main: Loading skeleton */
   .Skeleton-module-root.Skeleton-module-root:before {
-    background: #111;
+    background: var(--color-bg);
   }
   .Skeleton-module-layout.Skeleton-module-layout,
   .Skeleton-module-section.Skeleton-module-section:after {
-    background: #111;
-    border-color: #000;
+    background: var(--color-bg);
+    border-color: var(--color-border);
   }
   .Skeleton-module-wrapper {
-    background: #777;
+    background: var(--color-skeleton);
   }
   .Skeleton-module-wrapper:before {
-    background: #555;
+    background: var(--color-skeleton-shine);
   }
   .Skeleton-module-card:not(#\0) {
-    box-shadow: inset 0 0 0 1px #000;
+    box-shadow: inset 0 0 0 1px var(--color-border);
     border: none;
     &:before {
-      background-color: #333;
+      background-color: var(--color-surface-alt);
     }
   }
   .Skeleton-module-animation {
-    border-color: #222;
-    span:nth-child(2n+1)::before,
+    border-color: var(--color-surface);
+    span:nth-child(2n + 1)::before,
     span:nth-child(2n) {
-      background: #222;
+      background: var(--color-surface);
     }
-    span:nth-child(2n+1)::after {
-      box-shadow: 0 0 0 10px #222;
+    span:nth-child(2n + 1)::after {
+      box-shadow: 0 0 0 10px var(--color-surface);
     }
   }
 
   /* Material */
   .GeneralMaterial-module-root {
-    background: #111;
+    background: var(--color-bg);
   }
   .GeneralMaterial-module-article a {
-    background-color: transparent !important;
+    background: none !important;
+    box-shadow: none !important;
+    color: var(--color-text);
+    text-decoration-line: underline;
+    text-decoration-color: var(--color-link);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.14em;
   }
-  [class^='Meta-module_root__'] {
-    color: #999;
+  [class^="Meta-module_root__"] {
+    color: var(--color-muted);
   }
-  [class^='RelatedBlock-module_root__'] {
-    background: #222;
-    color: #eee;
+  [class^="RelatedBlock-module_root__"] {
+    background: var(--color-surface);
+    color: var(--color-text);
     a {
-      color: #eee;
+      color: var(--color-text);
     }
   }
   .TopBar-module-stuck .TopBar-module-container {
-    background: #111;
-    box-shadow: 0 1px #000;
+    background: var(--color-bg);
+    box-shadow: 0 1px var(--color-border);
   }
 
   /* Material: Card */
   .CardMaterial-module-root,
   .CardMaterial-module-head {
-    background: #111;
+    background: var(--color-bg);
   }
   .CardMaterial-module-header {
-    color: #eee;
+    color: var(--color-text);
   }
   .CardMaterial-module-card {
-    background: #181818;
-    box-shadow: inset 0 0 0 1px #080808;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-card-border);
   }
-  [class^='CardTitle-module_title__'] {
-    color: #eee;
+  [class^="CardTitle-module_title__"] {
+    color: var(--color-text);
   }
   .ChaptersModalWindow-module-modalContent {
-    background: #111;
+    background: var(--color-bg);
   }
   .ChaptersModalWindow-module-itemChapterFirst,
   .ChaptersModalWindow-module-itemChapterSecond {
-    color: #eee;
+    color: var(--color-text);
   }
 
   /* Material: Slide */
   .SlidesMaterial-module-root,
   .SlidesMaterial-module-bg {
-    background: #181818 !important;
+    background: var(--color-card) !important;
   }
   .Slide-module-slide {
-    background: #222;
-    color: #eee;
+    background: var(--color-surface);
+    color: var(--color-text);
   }
 
   /* Material: Audio */
   .AudioPanel-module-root {
-    background: #222;
+    background: var(--color-surface);
   }
-  [class^='Dropdown-module_root__Wv7S-'] ul {
-    background: #222;
+  [class^="Dropdown-module_root__Wv7S-"] ul {
+    background: var(--color-surface);
     a {
-      color: #eee;
+      color: var(--color-text);
     }
   }
 
   /* Material: Content */
-  [class^='SimpleBlock-module_blockquote__'] {
-    background: #330;
-  }
-  [class^='Image-module_root__'] {
-    background: #0000;
-  }
-  span[data-body] { /* footnote text */
-    background: #333;
-    &:hover {
-      background: #555;
+  [class^="SimpleBlock-module_blockquote__"] {
+    background: var(--color-blockquote);
+    a {
+      color: var(--color-text);
     }
   }
-  [class^='Footnote-module_root__'] {
-    background: #222;
+  [class^="MediaCaption-module_caption__"] {
+    color: var(--color-text);
+  }
+  [class^="MediaCaption-module_credit__"] {
+    color: var(--color-muted);
+  }
+  [class^="Image-module_root__"] {
+    background: var(--color-transparent);
+  }
+  span[data-body] {
+    /* footnote text */
+    background: var(--color-surface-alt);
+    &:hover {
+      background: var(--color-skeleton-shine);
+    }
+  }
+  [class^="Footnote-module_root__"] {
+    background: var(--color-surface);
   }
   mark {
-    background: #440;
-    color: #eee;
+    background: var(--color-highlight);
+    color: var(--color-text);
   }
 
   /* Inverted images */
