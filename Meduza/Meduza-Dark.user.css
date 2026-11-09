@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Meduza.io – Dark [Ath]
 @namespace      athari
-@version        1.0.6
+@version        1.0.7
 @description    Dark theme for Meduza.io (Медуза.io). Supports all types of articles.
 @author         Athari (https://github.com/Athari)
 @homepageURL    https://github.com/Athari/AthariUserCSS
@@ -17,18 +17,17 @@
     --color-surface: #222;
     --color-surface-alt: #333;
     --color-card: #181818;
-    --color-text: #eee;
+    --meduza-dark-text: #eee;
     --color-muted: #999;
     --color-link: #cfa66a;
     --color-accent: #b78a54;
     --color-border: #000;
     --color-card-border: #080808;
     --color-glow: #fff;
-    --color-skeleton: #777;
+    --color-skeleton: #333;
     --color-skeleton-shine: #555;
     --color-blockquote: #330;
     --color-highlight: #440;
-    --color-transparent: #0000;
   }
 
   /* Promo */
@@ -36,25 +35,76 @@
     display: none;
   }
 
-  /* Main: News */
-  .Grid-module-container,
-  .Feed-module-container {
+  /* Mobile menu */
+  .Header-module-menuToggle .Header-module-item {
+    color: var(--meduza-dark-text);
+  }
+  .HeaderOverlay-module-root {
     background: var(--color-bg);
+  }
+  .HeaderOverlay-module-cell,
+  .HeaderOverlay-module-magaz,
+  .HeaderOverlay-module-socialSection,
+  .HeaderOverlay-module-footerSection,
+  .ViewSwitcherButton-module-cell {
+    background: var(--color-surface);
+    color: var(--meduza-dark-text);
+  }
+  .HeaderOverlay-module-socialLink,
+  .HeaderOverlay-module-footerLink {
+    color: var(--meduza-dark-text);
+    &:hover,
+    &:focus-visible {
+      color: var(--color-link);
+    }
+  }
+  .HeaderOverlay-module-footerCopyright {
+    color: var(--color-muted);
+  }
+  .HeaderOverlay-module-cell,
+  .HeaderOverlay-module-magaz,
+  .ViewSwitcherButton-module-cell {
+    &:hover,
+    &:focus-visible {
+      background: var(--color-surface-alt);
+    }
+  }
+  .ViewSwitcherButton-module-toggle {
+    background: var(--color-surface-alt);
+  }
+  .ViewSwitcherButton-module-toggleActive {
+    background: var(--color-accent);
+  }
+
+  /* Main: News */
+  .LayoutSwitch-module-root,
+  .Grid-module-container,
+  .Feed-module-container,
+  .PodcastsListSpecialSection-module-root {
+    background: var(--color-bg);
+  }
+  .ViewSwitcherContainer-module-label,
+  .Informer-module-root {
+    color: var(--color-muted);
+  }
+  .Informer-module-link,
+  .PodcastListBlock-module-item {
+    color: var(--meduza-dark-text);
+  }
+  .LayoutSwitch-module-informer {
+    border-color: var(--color-surface-alt);
+  }
+  .ViewSwitcherContainer-module-chronoSwitcher {
+    background: var(--color-surface-alt);
+  }
+  .ViewSwitcherContainer-module-chronoSwitcher[aria-checked="true"] {
+    background: var(--color-accent);
   }
   .SimpleBlock-module-root,
   .EpisodeBlock-module-root,
   .TopicBlock-module-root,
-  .RichBlock-module-root,
-  .MediaBlock-module-root {
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: inset 0 0 0 1px var(--color-border);
-  }
-  .SimpleBlock-module-is1to1 {
-    background: var(--color-surface-alt);
-    box-shadow:
-      inset 0 0 0 1px var(--color-border),
-      inset 0 0 0 4px var(--color-accent);
+  .RichBlock-module-root {
+    color: var(--meduza-dark-text);
   }
   .TopicBlockItem-module-footer,
   .RichBlock-module-meta {
@@ -63,43 +113,35 @@
   .RichBlock-module-withTheme {
     background: var(--color-surface) !important;
     --bgColor: var(--color-surface) !important;
-    --textColor: var(--color-text) !important;
+    --textColor: var(--meduza-dark-text) !important;
     --metaColor: var(--color-muted) !important;
-  }
-  .Modal-module-isAuth .Modal-module-container {
-    background: var(--color-surface-alt);
-  }
-  .Header-module-itemAuth,
-  .Header-module-itemSearch {
-    filter: drop-shadow(0 0 1px var(--color-glow));
   }
 
   /* Main: Chronology */
   .Chronology-module-footer,
-  .Chronology-module-container {
+  .Chronology-module-container,
+  .Chronology-module-feed,
+  .ChronologyRubriks-module-container,
+  .ChronologyRubriks-module-footer {
     background: var(--color-bg);
   }
-  .ChronologyItem-module-root {
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: inset 0 0 0 1px var(--color-border);
+  .ChronologyItem-module-root,
+  .ChronologyRubriksItem-module-root {
+    background: transparent;
+    color: var(--meduza-dark-text);
+    box-shadow: none;
   }
   .Chronology-module-timestamp {
-    color: var(--color-text);
+    color: var(--meduza-dark-text);
   }
-  .ChronologyItem-module-footer {
+  .ChronologyItem-module-footer,
+  .ChronologyRubriksItem-module-footer {
     color: var(--color-muted);
-  }
-  .ChronologyItem-module-figure {
-    margin: 1px; /* border fix */
   }
 
   /* Main: Loading skeleton */
-  .Skeleton-module-root.Skeleton-module-root:before {
-    background: var(--color-bg);
-  }
-  .Skeleton-module-layout.Skeleton-module-layout,
-  .Skeleton-module-section.Skeleton-module-section:after {
+  .Skeleton-module-root .Skeleton-module-layout,
+  .Skeleton-module-root .Skeleton-module-section::after {
     background: var(--color-bg);
     border-color: var(--color-border);
   }
@@ -109,9 +151,9 @@
   .Skeleton-module-wrapper:before {
     background: var(--color-skeleton-shine);
   }
-  .Skeleton-module-card:not(#\0) {
-    box-shadow: inset 0 0 0 1px var(--color-border);
-    border: none;
+  .Skeleton-module-root .Skeleton-module-card {
+    box-shadow: none;
+    border-color: var(--color-border);
     &:before {
       background-color: var(--color-surface-alt);
     }
@@ -126,29 +168,56 @@
       box-shadow: 0 0 0 10px var(--color-surface);
     }
   }
+  .Skeleton-module-isInFeed
+    .Skeleton-module-media
+    .Skeleton-module-card::before,
+  .Skeleton-module-isInChronology .Skeleton-module-card::before,
+  :is(.Skeleton-module-isInFeed, .Skeleton-module-isInChronology)
+    .Skeleton-module-animation
+    span:nth-child(2n + 1)::after {
+    background-color: var(--color-surface-alt);
+    background-image: linear-gradient(
+      90deg,
+      var(--color-surface-alt),
+      var(--color-skeleton-shine) 50%,
+      var(--color-surface-alt)
+    );
+  }
 
   /* Material */
   .GeneralMaterial-module-root {
     background: var(--color-bg);
   }
+  .EmbedMaterial-module-root {
+    background: var(--color-bg);
+  }
+  .EmbedMaterial-module-container,
+  .Affiliate-module-root {
+    background: var(--color-surface);
+    color: var(--meduza-dark-text);
+  }
   .GeneralMaterial-module-article a {
     background: none !important;
     box-shadow: none !important;
-    color: var(--color-text);
+    color: var(--meduza-dark-text);
     text-decoration-line: underline;
     text-decoration-color: var(--color-link);
     text-decoration-thickness: 1px;
     text-underline-offset: 0.14em;
+    &:hover,
+    &:focus-visible {
+      color: var(--color-link);
+    }
   }
-  [class^="Meta-module_root__"] {
+  [class*="Meta-module_root__"] {
     color: var(--color-muted);
   }
   .RelatedList-module-root,
   .RelatedMaterial-module-root {
     background: var(--color-surface);
-    color: var(--color-text);
+    color: var(--meduza-dark-text);
     a {
-      color: var(--color-text);
+      color: var(--meduza-dark-text);
       &:hover {
         color: var(--color-glow) !important;
       }
@@ -156,12 +225,55 @@
   }
   .RelatedList-module-header,
   .RelatedMaterial-module-header,
-  .MediaBlock-module-control {
+  .RelatedList-module-meta {
     color: var(--color-muted);
+  }
+  [class*="ToolbarButton-module_root__"],
+  .MagicButton-module-default {
+    color: var(--meduza-dark-text);
+    fill: currentColor;
   }
   .TopBar-module-stuck .TopBar-module-container {
     background: var(--color-bg);
     box-shadow: 0 1px var(--color-border);
+  }
+  .AdBadge-module-root {
+    background: var(--color-surface);
+  }
+  .AdBadge-module-link {
+    color: var(--meduza-dark-text);
+  }
+  .AdBadge-module-description {
+    color: var(--color-muted);
+  }
+  .Modal-module-container {
+    background: var(--color-surface);
+    color: var(--meduza-dark-text);
+  }
+  .Modal-module-container
+    :is(.FormInput-module-root, .FormTextarea-module-root) {
+    background: var(--color-surface-alt);
+    border-color: var(--color-skeleton-shine);
+    color: var(--meduza-dark-text);
+    &::placeholder {
+      color: var(--color-muted);
+      opacity: 1;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--color-link);
+      outline-offset: 1px;
+    }
+  }
+  [class*="Button-module_gold__"]:not(:disabled) {
+    color: var(--color-bg);
+  }
+  [class*="Button-module_gray__"] {
+    background: var(--color-surface-alt);
+    color: var(--meduza-dark-text);
+    &:hover,
+    &:focus-visible {
+      background: var(--color-skeleton-shine);
+    }
   }
 
   /* Material: Card */
@@ -170,21 +282,36 @@
     background: var(--color-bg);
   }
   .CardMaterial-module-header {
-    color: var(--color-text);
+    color: var(--meduza-dark-text);
   }
   .CardMaterial-module-card {
     background: var(--color-card);
     box-shadow: inset 0 0 0 1px var(--color-card-border);
   }
-  [class^="CardTitle-module_title__"] {
-    color: var(--color-text);
+  [class*="CardTitle-module_title__"] {
+    color: var(--meduza-dark-text);
   }
   .ChaptersModalWindow-module-modalContent {
     background: var(--color-bg);
   }
   .ChaptersModalWindow-module-itemChapterFirst,
   .ChaptersModalWindow-module-itemChapterSecond {
-    color: var(--color-text);
+    color: var(--meduza-dark-text);
+  }
+  .ChaptersButton-module-modalButton {
+    background: var(--color-surface-alt);
+    color: var(--meduza-dark-text);
+    &:hover,
+    &:focus-visible {
+      background: var(--color-skeleton-shine);
+    }
+  }
+  .ChaptersModalWindow-module-modalChapterBlock {
+    border-color: var(--color-surface-alt);
+    &:hover,
+    &:focus-visible {
+      background: var(--color-surface);
+    }
   }
 
   /* Material: Slide */
@@ -194,35 +321,84 @@
   }
   .Slide-module-slide {
     background: var(--color-surface);
-    color: var(--color-text);
+    color: var(--meduza-dark-text);
   }
 
   /* Material: Audio */
-  .AudioPanel-module-root {
-    background: var(--color-surface);
+  .PodcastMaterial-module-head,
+  .PodcastMaterial-module-body {
+    background: var(--color-bg);
+    border-color: var(--color-border);
+    color: var(--meduza-dark-text);
   }
-  [class^="Dropdown-module_root__Wv7S-"] ul {
+  .PodcastMaterial-module-panel,
+  .Episodes-module-list,
+  [class*="Toolbar-module_podcast__"] {
     background: var(--color-surface);
-    a {
-      color: var(--color-text);
+    color: var(--meduza-dark-text);
+  }
+  .Episodes-module-episode {
+    border-color: var(--color-surface-alt);
+    &:hover,
+    &:focus-within {
+      background: var(--color-surface-alt);
     }
+  }
+  .EpisodeCover-module-metaContainer [class*="MetaItem-module_root__"] {
+    color: var(--color-muted);
+  }
+  .EpisodeCover-module-buttonPlayDark {
+    box-shadow: inset 0 0 0 2px var(--color-muted);
+    .PlayButton-module-root,
+    .PlayButton-module-root svg {
+      fill: var(--meduza-dark-text);
+    }
+  }
+  .Progress-module-isInPlaylist .Progress-module-played {
+    stroke: var(--meduza-dark-text);
+  }
+  .DownloadIcon-module-isInEpisodes {
+    color: var(--color-muted);
+  }
+  .PodcastMaterial-module-arrow {
+    filter: invert(1);
+  }
+  [class*="Dropdown-module_root__"] ul {
+    background: var(--color-surface);
+    box-shadow:
+      0 0 0 1px var(--color-surface-alt),
+      0 5px 20px var(--color-border);
+    a {
+      color: var(--meduza-dark-text);
+      &:hover,
+      &:focus-visible {
+        background: var(--color-surface-alt);
+        color: var(--meduza-dark-text);
+      }
+    }
+  }
+  [class*="Dropdown-module_root__"]:focus-within
+    [class*="Dropdown-module_menu__"] {
+    display: block;
+    opacity: 1;
+    visibility: visible;
   }
 
   /* Material: Content */
-  [class^="SimpleBlock-module_blockquote__"] {
+  [class*="SimpleBlock-module_blockquote__"] {
     background: var(--color-blockquote);
     a {
-      color: var(--color-text);
+      color: var(--meduza-dark-text);
     }
   }
-  [class^="MediaCaption-module_caption__"] {
-    color: var(--color-text);
+  [class*="MediaCaption-module_caption__"] {
+    color: var(--meduza-dark-text);
   }
-  [class^="MediaCaption-module_credit__"] {
+  [class*="MediaCaption-module_credit__"] {
     color: var(--color-muted);
   }
-  [class^="Image-module_root__"] {
-    background: var(--color-transparent);
+  [class*="Image-module_root__"] {
+    background: transparent;
   }
   span[data-body] {
     /* footnote text */
@@ -231,18 +407,19 @@
       background: var(--color-skeleton-shine);
     }
   }
-  [class^="Footnote-module_root__"] {
+  [class*="Footnote-module_root__"] {
     background: var(--color-surface);
   }
   mark {
     background: var(--color-highlight);
-    color: var(--color-text);
+    color: var(--meduza-dark-text);
   }
+}
 
-  /* Inverted images */
-  button,
-  .SupportPanel-module-root,
-  .SupportBlock-module-richPromoImage {
-    filter: hue-rotate(180deg) invert() hue-rotate(180deg);
+/* Embedded content has its own colors. */
+@-moz-document url-prefix("https://meduza.io/embed/")
+{
+  :root {
+    color-scheme: light;
   }
 }
